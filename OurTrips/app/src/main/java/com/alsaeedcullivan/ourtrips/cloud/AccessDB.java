@@ -10,6 +10,9 @@ public class AccessDB {
     // reference to the database
     private FirebaseFirestore mFirebase;
 
+    // THIS IS A TEST
+    private static final String TEST_VARIABLE = "TEST";
+
     /**
      * public constructor
      */
