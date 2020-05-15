@@ -2,7 +2,9 @@ package com.alsaeedcullivan.ourtrips.models;
 
 import java.util.ArrayList;
 
-// this is a trip object that will contain all the data about the trip
+/**
+ * Model to contain all the data associated with a trip
+ */
 public class Trip {
 
     // member variables
