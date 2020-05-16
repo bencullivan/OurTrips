@@ -1,11 +1,11 @@
 package com.alsaeedcullivan.ourtrips.cloud;
 
-import android.util.Log;
+import com.alsaeedcullivan.ourtrips.models.Trip;
+import com.alsaeedcullivan.ourtrips.models.User;
+import com.alsaeedcullivan.ourtrips.utils.Const;
 
 import androidx.annotation.NonNull;
 
-import com.alsaeedcullivan.ourtrips.models.User;
-import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -15,8 +15,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static androidx.constraintlayout.widget.Constraints.TAG;
+import android.util.Log;
 
 /**
  * Class to handle interactions with the database
@@ -42,10 +41,11 @@ public class AccessDB {
     public Task<Void> addNewUser(User user) {
         String id = user.getUserId();
 
-        // create a map to store the data to set
+        // create a map to store the document data
         Map<String, Object> data = new HashMap<>();
 
         // add the user data to the map
+        data.put(Const.USER_ID_KEY, user.getUserId());
         data.put(Const.USER_NAME_KEY, user.getName());
         data.put(Const.USER_AGE_KEY, user.getAge());
         data.put(Const.USER_GENDER_KEY, user.getGender());
@@ -53,8 +53,10 @@ public class AccessDB {
 
         Log.d(Const.TAG, "saveNewUser: ");
 
+        // add a new document to the users collection
         Task<Void> addNewUser = mFirebase.collection(Const.USERS_COLLECTION)
                 .document(id).set(data);
+
         addNewUser.addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -68,6 +70,7 @@ public class AccessDB {
                 Log.d(Const.TAG, "onFailure: user not added");
             }
         });
+
         return addNewUser;
     }
 
@@ -79,8 +82,8 @@ public class AccessDB {
     }
 
     /**
-     * updateUserFriends()
-     * updates the friends that the user is associated
+     * addUserFriend()
+     * adds a new friend to the current user's friends sub-collection
      */
     public Task<DocumentReference> addUserFriend(String friendId) {
 //        if (mAuth.getCurrentUser() == null) return;
@@ -88,9 +91,11 @@ public class AccessDB {
 
         String id = "test_user_id";
 
+        // map to contain the document data
         Map<String, Object> data = new HashMap<>();
         data.put(Const.FRIEND_ID_KEY, friendId);
 
+        // add the friend to the friends sub-collection
         Task<DocumentReference> addFriend = mFirebase.collection(Const.USERS_COLLECTION)
                 .document(id).collection(Const.USER_FRIENDS_COLLECTION).add(data);
 
@@ -112,8 +117,8 @@ public class AccessDB {
     }
 
     /**
-     * updateUserTrips()
-     * updates the trips that the user is associated with
+     * addUserTrip()
+     * adds a new trip to the current user's trips sub-collection
      */
     public Task<DocumentReference> addUserTrip(String tripId) {
 //        if (mAuth.getCurrentUser() == null) return;
@@ -121,9 +126,11 @@ public class AccessDB {
 
         String id = "test_user_id";
 
+        // map to contain the document data
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_ID_KEY, tripId);
 
+        // add the trip to the trips sub-collection
         Task<DocumentReference> addTrip = mFirebase.collection(Const.USERS_COLLECTION)
                 .document(id).collection(Const.USER_TRIPS_COLLECTION).add(data);
 
@@ -149,13 +156,41 @@ public class AccessDB {
      * deletes a user from the database
      */
     public void deleteUser() {
+
     }
 
     /**
      * addTrip()
      * adds a new trip to the database
      */
-    public void addTrip() {
+    public Task<Void> addTrip(Trip trip) {
+        // map to contain the trip data
+        HashMap<String, Object> data = new HashMap<>();
+
+        // add the trip data to the map
+        data.put(Const.TRIP_ID_KEY, trip.getTripId());
+        data.put(Const.TRIP_TITLE_KEY, trip.getTitle());
+        data.put(Const.TRIP_COMMENTS_LIST_KEY, trip.getCommentsList());
+        data.put(Const.TRIP_USERS_LIST_KEY, trip.getUsersList());
+
+        Task<Void> addTrip = mFirebase.collection(Const.TRIPS_COLLECTION)
+                .document(trip.getTripId()).set(data);
+
+        addTrip.addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(Const.TAG, "onSuccess: trip added");
+            }
+        });
+        addTrip.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(Const.TAG, "onFailure: " + e);
+                Log.d(Const.TAG, "onFailure: trip not added");
+            }
+        });
+
+        return addTrip;
     }
 
     /**

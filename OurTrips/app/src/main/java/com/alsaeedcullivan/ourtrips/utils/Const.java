@@ -30,5 +30,8 @@ public class Const {
 
     // Trip keys
     public static final String TRIP_ID_KEY = "trip_id";
+    public static final String TRIP_TITLE_KEY = "trip_title";
+    public static final String TRIP_USERS_LIST_KEY = "users_list";
+    public static final String TRIP_COMMENTS_LIST_KEY = "comments_list";
 
 }

@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
+import com.alsaeedcullivan.ourtrips.models.Trip;
 import com.alsaeedcullivan.ourtrips.models.User;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.Task;
