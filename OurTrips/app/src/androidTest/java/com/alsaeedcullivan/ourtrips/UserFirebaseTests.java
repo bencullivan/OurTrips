@@ -7,11 +7,13 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
+import com.alsaeedcullivan.ourtrips.cloud.CloudFunctions;
 import com.alsaeedcullivan.ourtrips.models.Trip;
 import com.alsaeedcullivan.ourtrips.models.User;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.functions.HttpsCallableResult;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,22 +83,5 @@ public class UserFirebaseTests {
         while (!testTask.isComplete()) { }
 
         Log.d(Const.TAG, "saveNewUserFriend: complete");
-    }
-
-    @Test
-    public void recursiveDeleteTest() {
-
-        // create an instance of the class that accesses the database
-        AccessDB testAccess = new AccessDB();
-
-        String id = "testUserId";
-
-        String path1 = Const.USERS_COLLECTION+"/"+id+"/"+Const.USER_TRIPS_COLLECTION;
-
-        Task<String> testTask = testAccess.recursiveDelete(path1);
-
-        while (!testTask.isComplete()) { }
-
-        Log.d(Const.TAG, "recursiveDelete: complete");
     }
 }

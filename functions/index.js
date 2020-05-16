@@ -1,12 +1,21 @@
 const functions = require('firebase-functions');
 const firebase_tools = require('firebase-tools');
+const admin = require("firebase-admin");
+
+// initialize app
+admin.initializeApp({
+  credential: admin.credential.applicationDefault()
+});
+
+// get a reference to firestore
+const db = admin.firestore();
 
 /**
  * NOTE:
  * recursiveDelete is provided by google at:
  * https://firebase.google.com/docs/firestore/solutions/delete-collections
  * 
- * It has been slightly modified for functionality
+ * It has been modified for functionality
  */
 
 /**
@@ -50,3 +59,44 @@ exports.recursiveDelete = functions
         };
       });
   });
+
+
+  /**
+   * custom function to find the dates that two users are both available
+   * @author Ben Cullivan
+   */
+exports.matchDates = functions.https.onCall((data) => {
+  
+  // get the user ids
+  const user1 = data.user1;
+  const user2 = data.user2;
+
+  // get the document corresponding to each user
+  let doc1Ref = db.collection("users").doc(user1)
+  let doc1 = doc1Ref.get().then(doc => {
+    if (doc.exists) {
+      console.log('Document data:', doc.data());
+      return doc.data();
+    } else {
+      throw new Error("document does not exist")
+    }
+  }).catch(err => {
+    console.log('Error getting document', err);
+  });
+
+  let doc2Ref = db.collection("users").doc(user2)
+  let doc2 = doc2Ref.get().then(doc => {
+    if (doc.exists) {
+      console.log('Document data:', doc.data());
+      return doc.data();
+    } else {
+      throw new Error("document does not exist")
+    }
+  }).catch(err => {
+    console.log('Error getting document', err);
+  });
+
+  // get the list of times the users are available
+
+
+});

@@ -36,8 +36,9 @@ public class Const {
 
     // Cloud function names
     public static final String FUNC_RECURSIVE_DELETE = "recursiveDelete";
+    public static final String FUNC_MATCH_DATES = "matchDates";
 
     // Cloud Function Keys
-    public static final String RECURSIVE_DELETE_PATH_KEY = "path";
-
+    public static final String USER_1_KEY = "user1";
+    public static final String USER_2_KEY = "user2";
 }

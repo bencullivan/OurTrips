@@ -16,6 +16,7 @@ public class User {
     private String gender = "";
     private String affiliation = "";
     private String age = "";
+    private ArrayList<String> datesAvailable = new ArrayList<>();
     private ArrayList<String> friendsList = new ArrayList<>();
     private ArrayList<String> tripsList = new ArrayList<>();
 
