@@ -1,5 +1,7 @@
 package com.alsaeedcullivan.ourtrips.models;
 
+import android.graphics.Bitmap;
+
 import java.util.ArrayList;
 
 /**
@@ -7,27 +9,34 @@ import java.util.ArrayList;
  */
 public class Trip {
 
-    // member variables
-    private String mTitle = "";
-    private ArrayList<String> mCommentsList = new ArrayList<>();
-    ArrayList<String> mPhotoPaths = new ArrayList<>();
-
+    // Trip data
+    private String title = "";
+    private ArrayList<String> commentsList = new ArrayList<>();
+    private ArrayList<Bitmap> photoAlbum = new ArrayList<>();
 
     // getters and setters
 
-    public void setTitle(String title) {
-        mTitle = title;
-    }
     public String getTitle() {
-        return mTitle;
+        return title;
     }
-    public void addComment(String comment) {
-        mCommentsList.add(comment);
+
+    public void setTitle(String title) {
+        this.title = title;
     }
-    public ArrayList<String> getComments() {
-        return mCommentsList;
+
+    public ArrayList<String> getCommentsList() {
+        return commentsList;
     }
-    public ArrayList<String> getPhotoPaths() {
-        return mPhotoPaths;
+
+    public void setCommentsList(ArrayList<String> commentsList) {
+        this.commentsList = commentsList;
+    }
+
+    public ArrayList<Bitmap> getPhotoAlbum() {
+        return photoAlbum;
+    }
+
+    public void setPhotoAlbum(ArrayList<Bitmap> photoAlbum) {
+        this.photoAlbum = photoAlbum;
     }
 }
