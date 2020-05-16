@@ -37,8 +37,8 @@ public class UserFirebaseTests {
     public void saveNewUserTest() {
         // create a new User object
         User user = new User();
-        user.setUserId("test_user_id");
-        user.setName("test_user_name");
+        user.setUserId("testUserId");
+        user.setName("testUserName");
         user.setAffiliation("student at dartmouth");
         user.setAge("19");
         user.setGender("Male");
@@ -61,7 +61,7 @@ public class UserFirebaseTests {
         AccessDB testAccess = new AccessDB();
 
         // save the trip to the user's sub-collection
-        Task<DocumentReference> testTask = testAccess.addUserTrip("test_trip_2");
+        Task<DocumentReference> testTask = testAccess.addUserTrip("testTrip3");
 
         while (!testTask.isComplete()) { }
         Log.d(Const.TAG, "saveNewUserTrip: complete: " + testTask.isComplete());
@@ -76,10 +76,27 @@ public class UserFirebaseTests {
         // create an instance of the class that accesses the database
         AccessDB testAccess = new AccessDB();
 
-        Task<DocumentReference> testTask = testAccess.addUserFriend("test_friend_id");
+        Task<DocumentReference> testTask = testAccess.addUserFriend("testFriendId");
 
         while (!testTask.isComplete()) { }
 
         Log.d(Const.TAG, "saveNewUserFriend: complete");
+    }
+
+    @Test
+    public void recursiveDeleteTest() {
+
+        // create an instance of the class that accesses the database
+        AccessDB testAccess = new AccessDB();
+
+        String id = "testUserId";
+
+        String path1 = Const.USERS_COLLECTION+"/"+id+"/"+Const.USER_TRIPS_COLLECTION;
+
+        Task<String> testTask = testAccess.recursiveDelete(path1);
+
+        while (!testTask.isComplete()) { }
+
+        Log.d(Const.TAG, "recursiveDelete: complete");
     }
 }

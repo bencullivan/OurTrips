@@ -6,12 +6,15 @@ import com.alsaeedcullivan.ourtrips.utils.Const;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.functions.FirebaseFunctions;
+import com.google.firebase.functions.HttpsCallableResult;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -89,7 +92,7 @@ public class AccessDB {
 //        if (mAuth.getCurrentUser() == null) return;
 //        String id = mAuth.getCurrentUser().getUid();
 
-        String id = "test_user_id";
+        String id = "testUserId";
 
         // map to contain the document data
         Map<String, Object> data = new HashMap<>();
@@ -124,7 +127,7 @@ public class AccessDB {
 //        if (mAuth.getCurrentUser() == null) return;
 //        String id = mAuth.getCurrentUser().getUid();
 
-        String id = "test_user_id";
+        String id = "testUserId";
 
         // map to contain the document data
         Map<String, Object> data = new HashMap<>();
@@ -156,7 +159,11 @@ public class AccessDB {
      * deletes a user from the database
      */
     public void deleteUser() {
+//        if (mAuth.getCurrentUser() == null) return;
+//        String id = mAuth.getCurrentUser().getUid();
+        String id = "test_user_id";
 
+        String path1 = Const.USERS_PATH+"/"+id+"/"+Const.USER_TRIPS_COLLECTION;
     }
 
     /**
@@ -198,6 +205,38 @@ public class AccessDB {
      * deletes a trip from the database
      */
     public void deleteTrip() {
+    }
+
+
+    // invocations of cloud functions
+
+    /**
+     * recursiveDelete()
+     * this calls the recursiveDelete cloud function (see index.js) which deletes an entire
+     * collection at a given path in the database
+     * this will be invoked when a user deletes their account to delete their entire collection of
+     * references to trips as well as their entire collection of references to friends
+     */
+    public Task<String> recursiveDelete(String path) {
+
+        // get a reference to the firebase cloud functions
+        FirebaseFunctions functions = FirebaseFunctions.getInstance();
+
+        Task<String> task = functions.getHttpsCallable(Const.FUNC_RECURSIVE_DELETE)
+                .call(path)
+                .continueWith(new Continuation<HttpsCallableResult, String>() {
+                    @Override
+                    public String then(@NonNull Task<HttpsCallableResult> task) throws Exception {
+                        // This continuation runs on either success or failure, but if the task
+                        // has failed then getResult() will throw an Exception which will be
+                        // propagated down.
+                        if (task.getResult() == null) return "";
+                        return (String) task.getResult().getData();
+                    }
+                });
+
+        return task;
+
     }
 
 }
