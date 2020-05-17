@@ -3,6 +3,7 @@ package com.alsaeedcullivan.ourtrips.models;
 import android.graphics.Bitmap;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Model to contain the data associated with a user
@@ -16,7 +17,7 @@ public class User {
     private String gender = "";
     private String affiliation = "";
     private String age = "";
-    private ArrayList<String> datesAvailable = new ArrayList<>();
+    private List<String> datesAvailable = new ArrayList<>();
     private ArrayList<String> friendsList = new ArrayList<>();
     private ArrayList<String> tripsList = new ArrayList<>();
 
@@ -84,5 +85,13 @@ public class User {
 
     public void setProfilePic(Bitmap profilePic) {
         this.profilePic = profilePic;
+    }
+
+    public List<String> getDatesAvailable() {
+        return datesAvailable;
+    }
+
+    public void setDatesAvailable(List<String> datesAvailable) {
+        this.datesAvailable = datesAvailable;
     }
 }

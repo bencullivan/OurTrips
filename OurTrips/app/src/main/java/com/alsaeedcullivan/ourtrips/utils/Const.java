@@ -12,33 +12,30 @@ public class Const {
     public static final String USERS_COLLECTION = "users";
     public static final String TRIPS_COLLECTION = "trips";
 
-    // Cloud FireStore database paths
-    public static final String USERS_PATH = "users/";
-    public static final String TRIPS_PATH = "trips/";
-
     // User keys
-    public static final String USER_ID_KEY = "userId";
-    public static final String USER_NAME_KEY = "userName";
-    public static final String USER_GENDER_KEY = "userGender";
-    public static final String USER_AFFILIATION_KEY = "userAffiliation";
-    public static final String USER_AGE_KEY = "userAge";
-    public static final String FRIEND_ID_KEY = "friendUserId";
+    public static final String USER_ID_KEY = "user_id";
+    public static final String USER_NAME_KEY = "user_name";
+    public static final String USER_GENDER_KEY = "user_gender";
+    public static final String USER_AFFILIATION_KEY = "user_affiliation";
+    public static final String USER_AGE_KEY = "user_age";
+    public static final String FRIEND_ID_KEY = "friend_user_id";
+    public static final String DATE_LIST_KEY = "date_list";
 
     // User sub-collections
-    public static final String USER_FRIENDS_COLLECTION = "userFriends";
-    public static final String USER_TRIPS_COLLECTION = "userTrips";
+    public static final String USER_FRIENDS_COLLECTION = "user_friends";
+    public static final String USER_TRIPS_COLLECTION = "user_trips";
 
     // Trip keys
-    public static final String TRIP_ID_KEY = "tripId";
-    public static final String TRIP_TITLE_KEY = "tripTitle";
-    public static final String TRIP_USERS_LIST_KEY = "usersList";
-    public static final String TRIP_COMMENTS_LIST_KEY = "commentsList";
+    public static final String TRIP_ID_KEY = "trip_id";
+    public static final String TRIP_TITLE_KEY = "trip_title";
+    public static final String TRIP_USERS_LIST_KEY = "users_list";
+    public static final String TRIP_COMMENTS_LIST_KEY = "comments_list";
 
     // Cloud function names
     public static final String FUNC_RECURSIVE_DELETE = "recursiveDelete";
     public static final String FUNC_MATCH_DATES = "matchDates";
 
     // Cloud Function Keys
-    public static final String USER_1_KEY = "user1";
-    public static final String USER_2_KEY = "user2";
+    public static final String LIST_1_KEY = "list1";
+    public static final String LIST_2_KEY = "list2";
 }

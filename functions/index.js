@@ -60,43 +60,69 @@ exports.recursiveDelete = functions
       });
   });
 
-
   /**
-   * custom function to find the dates that two users are both available
+   * matchDates
+   * custom cloud function to find the dates that two users are both available
    * @author Ben Cullivan
+   * @param {object} data - a map that contains the user ids of the two users whose dates will be compared
+   * @returns a list of all the dates that the two users have in common
    */
 exports.matchDates = functions.https.onCall((data) => {
-  
   // get the user ids
-  const user1 = data.user1;
-  const user2 = data.user2;
+  const list1 = data.list1;
+  const list2 = data.list2;
 
-  // get the document corresponding to each user
-  let doc1Ref = db.collection("users").doc(user1)
-  let doc1 = doc1Ref.get().then(doc => {
-    if (doc.exists) {
-      console.log('Document data:', doc.data());
-      return doc.data();
-    } else {
-      throw new Error("document does not exist")
+  // initialize the list to hold the shared dates
+  let matchedDates = [];
+
+  // loop over the lists of dates and add the shared dates to the list of shared dates
+  let a = 0;
+  let b = 0;
+  while (a < list1.length && b < list2.length) {
+    let result = compareDates(list1[a], list2[b]);
+    if (result === -1) a++;
+    else if (result === 1) b++;
+    else {
+      matchedDates.push(list1[a]);
+      a++;
+      b++;
     }
-  }).catch(err => {
-    console.log('Error getting document', err);
-  });
+  }
 
-  let doc2Ref = db.collection("users").doc(user2)
-  let doc2 = doc2Ref.get().then(doc => {
-    if (doc.exists) {
-      console.log('Document data:', doc.data());
-      return doc.data();
-    } else {
-      throw new Error("document does not exist")
-    }
-  }).catch(err => {
-    console.log('Error getting document', err);
-  });
-
-  // get the list of times the users are available
-
-
+  // return the list of shared dates
+  return matchedDates
 });
+
+/**
+ * compareDates()
+ * @author Ben Cullivan
+ * helper function to compare two string dates
+ * @param {string} date1 
+ * @param {string} date2 
+ * @returns -1 if date1 < date2, 0 if date1 == date2, 1 if date1 > date2
+ */
+let compareDates = (date1, date2) => {
+    // get lists of the components of each date mm-dd-YYYY
+    // they will always be of length 3
+    let date1nums = date1.split("-");
+    let date2nums = date2.split("-");
+
+    // convert the strings to ints
+    for (let i = 0; i < 3; i++) {
+      date1nums[i] = parseInt(date1nums[i]);
+      date2nums[i] = parseInt(date2nums[i]);
+    }
+
+    // compare the dates
+    if (date1nums[2] < date2nums[2]) return -1;
+    else if (date1nums[2] > date2nums[2]) return 1;
+    else {
+      if (date1nums[0] < date2nums[0]) return -1;
+      else if (date1nums[0] > date2nums[0]) return 1;
+      else {
+        if (date1nums[1] < date2nums[1]) return -1;
+        else if (date1nums[1] > date2nums[1]) return 1;
+        else return 0;
+      }
+    }
+}

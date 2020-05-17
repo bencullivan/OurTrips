@@ -8,11 +8,16 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.alsaeedcullivan.ourtrips.cloud.CloudFunctions;
 import com.alsaeedcullivan.ourtrips.utils.Const;
+import com.alsaeedcullivan.ourtrips.utils.TestVars;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.functions.HttpsCallableResult;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -47,13 +52,16 @@ public class CloudFunctionTests {
 
     @Test
     public void matchDatesTest() {
-        String user1 = "testUserId";
-        String user2 = "test_user_id";
+        CloudFunctions cloud = new CloudFunctions();
 
-        Task<HttpsCallableResult> testTask = CloudFunctions.matchDates(user1, user2);
+        Task<List<String>> testTask = cloud.matchDates(Arrays.asList(TestVars.dates1),
+                Arrays.asList(TestVars.dates2));
 
         while (!testTask.isComplete()) { }
 
+        Log.d(Const.TAG, "matchDatesTest: " + testTask.getResult());
+
         Log.d(Const.TAG, "matchDatesTest: complete");
     }
+
 }

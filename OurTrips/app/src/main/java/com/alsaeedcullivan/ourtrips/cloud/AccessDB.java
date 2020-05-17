@@ -47,6 +47,7 @@ public class AccessDB {
         data.put(Const.USER_AGE_KEY, user.getAge());
         data.put(Const.USER_GENDER_KEY, user.getGender());
         data.put(Const.USER_AFFILIATION_KEY, user.getAffiliation());
+        data.put(Const.DATE_LIST_KEY, user.getDatesAvailable());
 
         Log.d(Const.TAG, "saveNewUser: ");
 
@@ -166,7 +167,7 @@ public class AccessDB {
 //        String id = auth.getCurrentUser().getUid();
         String id = "test_user_id";
 
-        String path1 = Const.USERS_PATH+"/"+id+"/"+Const.USER_TRIPS_COLLECTION;
+        String path1 = Const.USERS_COLLECTION+"/"+id+"/"+Const.USER_TRIPS_COLLECTION;
     }
 
     /**

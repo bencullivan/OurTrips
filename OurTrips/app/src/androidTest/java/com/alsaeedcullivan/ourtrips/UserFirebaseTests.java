@@ -11,12 +11,16 @@ import com.alsaeedcullivan.ourtrips.cloud.CloudFunctions;
 import com.alsaeedcullivan.ourtrips.models.Trip;
 import com.alsaeedcullivan.ourtrips.models.User;
 import com.alsaeedcullivan.ourtrips.utils.Const;
+import com.alsaeedcullivan.ourtrips.utils.TestVars;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.functions.HttpsCallableResult;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -39,11 +43,12 @@ public class UserFirebaseTests {
     public void saveNewUserTest() {
         // create a new User object
         User user = new User();
-        user.setUserId("testUserId");
-        user.setName("testUserName");
+        user.setUserId("test_user_id_2");
+        user.setName("test_user_name_2");
         user.setAffiliation("student at dartmouth");
         user.setAge("19");
         user.setGender("Male");
+        user.setDatesAvailable(Arrays.asList(TestVars.dates2));
 
         // create an instance of the class that accesses the database
         AccessDB testAccess = new AccessDB();
