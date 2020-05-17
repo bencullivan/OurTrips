@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RegisterActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/img_profile"
+            android:layout_width="@dimen/img_side_dp"
+            android:layout_height="@dimen/img_side_dp"
+            android:layout_marginTop="@dimen/top_vertical_margin"
+            android:contentDescription="Profile Picture"
+            android:src="@drawable/ic_launcher_background"
+            app:layout_constraintHorizontal_bias="0.128"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/change_pic_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:onClick="onChangeClicked"
+            android:padding="@dimen/padding_dp"
+            android:text="@string/change_pic_text"
+            android:textColor="@color/colorSecondaryDark"
+            app:layout_constraintHorizontal_bias="0.767"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_dp"
+            app:layout_constraintTop_toBottomOf="@id/img_profile">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/name_text"
+                android:inputType="textCapWords"
+                android:singleLine="true"
+                android:textColorHint="@color/colorSecondaryDark" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <RadioGroup
+            android:id="@+id/input_gender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/input_name">
+
+            <RadioButton
+                android:id="@+id/edit_gender_female"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:padding="@dimen/padding_dp"
+                android:text="@string/female_text"
+                android:textColor="@color/colorSecondaryDark" />
+
+            <RadioButton
+                android:id="@+id/edit_gender_male"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:padding="@dimen/padding_dp"
+                android:text="@string/male_text"
+                android:textColor="@color/colorSecondaryDark" />
+
+            <RadioButton
+                android:id="@+id/edit_gender_other"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:padding="@dimen/padding_dp"
+                android:text="@string/other_text"
+                android:textColor="@color/colorSecondaryDark" />
+        </RadioGroup>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_dp"
+            app:layout_constraintTop_toBottomOf="@id/input_gender">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_email"
+                android:inputType="textEmailAddress"
+                android:singleLine="true"
+                android:textColorHint="@color/colorSecondaryDark" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_dp"
+            app:layout_constraintTop_toBottomOf="@id/input_email"
+            app:passwordToggleEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_password"
+                android:inputType="textPassword"
+                android:singleLine="true"
+                android:textColorHint="@color/colorSecondaryDark" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_affiliation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_dp"
+            app:layout_constraintTop_toBottomOf="@id/input_password">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_affiliation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_affiliation"
+                android:inputType="textCapCharacters"
+                android:singleLine="true"
+                android:textColorHint="@color/colorSecondaryDark" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_birthday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_dp"
+            app:layout_constraintTop_toBottomOf="@id/input_affiliation">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_birthday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_birthday"
+                android:inputType="date"
+                android:singleLine="true"
+                android:textColorHint="@color/colorSecondaryDark" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>

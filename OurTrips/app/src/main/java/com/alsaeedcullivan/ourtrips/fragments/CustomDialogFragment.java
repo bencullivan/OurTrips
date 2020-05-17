@@ -14,6 +14,7 @@ import androidx.fragment.app.DialogFragment;
 public class CustomDialogFragment extends DialogFragment {
 
     // public constants
+    public static final int PICTURE_DIALOG_ID = 0;
 
     // private constants
     private static final String KEY_ID = "key_id";

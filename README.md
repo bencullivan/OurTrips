@@ -1,2 +1,9 @@
-<<< Our Trips >>>
-This is the Our Trips project created by Omar Alsaeed and Ben Cullivan.
+<<< Our Trips App >>>
+
+Authors:
+Omar Alsaeed & Ben Cullivan.
+
+
+
+Color palette:
+https://coolors.co/b1c462-8aa399-7d84b2-0d0630-eac8ca

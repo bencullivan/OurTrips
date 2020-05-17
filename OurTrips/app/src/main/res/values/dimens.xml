@@ -5,4 +5,7 @@
 
     <dimen name="register_horizontal_margin">16dp</dimen>
     <dimen name="register_vertical_margin">24dp</dimen>
+    <dimen name="top_vertical_margin">32dp</dimen>
+    <dimen name="img_side_dp">120dp</dimen>
+    <dimen name="padding_dp">18dp</dimen>
 </resources>
