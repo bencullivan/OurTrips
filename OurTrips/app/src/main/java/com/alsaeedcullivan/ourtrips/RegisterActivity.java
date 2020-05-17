@@ -8,7 +8,7 @@ import androidx.fragment.app.DialogFragment;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,14 +19,17 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -218,10 +221,40 @@ public class RegisterActivity extends AppCompatActivity {
 
     /**
      * createUser()
-     * method to add this user to firebase
+     * method to add this user to FireStore
      */
-    private void createUser(String email, String password) {
+    private void createUser() {
+        // create a map with the user's information
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.USER_ID_KEY, mUser.getUid());
+        data.put(Const.USER_NAME_KEY, mNameEditText.getText().toString());
+        data.put(Const.USER_BIRTHDAY_KEY, mBirthdayEditText.getText().toString());
+        String gender;
+        int checked = mInputGender.getCheckedRadioButtonId();
+        if (checked == R.id.edit_gender_female) gender = "Female";
+        else if (checked == R.id.edit_gender_male) gender = "Male";
+        else gender = "Other";
+        data.put(Const.USER_GENDER_KEY, gender);
+        data.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
+        data.put(Const.DATE_LIST_KEY, new ArrayList<String>());
 
+        // add the user's data to the database
+        Task<Void> addTask = AccessDB.addNewUser(mUser.getUid(), data);
+        addTask.addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // Inform the user that they were registered successfully
+
+                } else {
+                    // inform that their data could not be added
+                    Toast t = Toast.makeText(RegisterActivity.this,
+                            R.string.string_register_failure, Toast.LENGTH_SHORT);
+                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                    t.show();
+                }
+            }
+        });
     }
 
     private void loadProfile() {

@@ -27,4 +27,5 @@
     <string name="verify_email_string">Verify Email</string>
     <string name="email_not_valid">Email is not valid</string>
     <string name="profile_picture_string">Profile Picture</string>
+    <string name="string_register_failure">We were not able to register your account. Are you sure you entered everything correctly?</string>
 </resources>

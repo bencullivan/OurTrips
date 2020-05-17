@@ -22,7 +22,7 @@ public class Const {
     public static final String USER_NAME_KEY = "user_name";
     public static final String USER_GENDER_KEY = "user_gender";
     public static final String USER_AFFILIATION_KEY = "user_affiliation";
-    public static final String USER_AGE_KEY = "user_age";
+    public static final String USER_BIRTHDAY_KEY = "user_birthday";
     public static final String FRIEND_ID_KEY = "friend_user_id";
     public static final String DATE_LIST_KEY = "date_list";
     public static final String USER_PASSWORD_KEY = "UserPassword";

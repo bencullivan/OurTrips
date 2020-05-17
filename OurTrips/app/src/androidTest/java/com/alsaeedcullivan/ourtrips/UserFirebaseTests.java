@@ -3,6 +3,7 @@ package com.alsaeedcullivan.ourtrips;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -12,6 +13,7 @@ import com.alsaeedcullivan.ourtrips.models.Trip;
 import com.alsaeedcullivan.ourtrips.models.User;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.alsaeedcullivan.ourtrips.utils.TestVars;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.functions.HttpsCallableResult;
@@ -21,6 +23,8 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -42,19 +46,25 @@ public class UserFirebaseTests {
     @Test
     public void saveNewUserTest() {
         // create a new User object
-        User user = new User();
-        user.setUserId("test_user_id_5");
-        user.setName("test_user_name_5");
-        user.setAffiliation("student at dartmouth");
-        user.setAge("19");
-        user.setGender("Male");
-        user.setDatesAvailable(Arrays.asList(TestVars.dates2));
-
-        // create an instance of the class that accesses the database
-        AccessDB testAccess = new AccessDB();
+        String id = "test_user_id_1";
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.USER_ID_KEY, id);
+        data.put(Const.USER_NAME_KEY, "test_user_name_1");
+        data.put(Const.USER_GENDER_KEY, "Male");
+        data.put(Const.USER_BIRTHDAY_KEY, "02-05-2001");
+        data.put(Const.DATE_LIST_KEY, new ArrayList<String>());
+        data.put(Const.USER_AFFILIATION_KEY, "dartmouth student");
 
         // save the user to the database
-        Task<Void> testTask = testAccess.addNewUser(user);
+        Task<Void> testTask = AccessDB.addNewUser(id, data);
+        testTask.addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Log.d(Const.TAG, "onComplete: success add user");
+                } else Log.d(Const.TAG, "onComplete: fail add user");
+            }
+        });
 
         while (!testTask.isComplete()) { }
 

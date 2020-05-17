@@ -23,53 +23,19 @@ import android.util.Log;
  * Class to handle interactions with the database
  */
 public class AccessDB {
+    
 
     /**
-     * empty public constructor
-     */
-    public AccessDB() { }
-
-    /**
-     * saveNewUser()
+     * addNewUser()
      * saves a new user to the database
      */
-    public Task<Void> addNewUser(User user) {
+    public static Task<Void> addNewUser(String id, Map<String, Object> data) {
+        // get a reference to the FireStore database
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        String id = user.getUserId();
-
-        // create a map to store the document data
-        Map<String, Object> data = new HashMap<>();
-
-        // add the user data to the map
-        data.put(Const.USER_ID_KEY, user.getUserId());
-        data.put(Const.USER_NAME_KEY, user.getName());
-        data.put(Const.USER_AGE_KEY, user.getAge());
-        data.put(Const.USER_GENDER_KEY, user.getGender());
-        data.put(Const.USER_AFFILIATION_KEY, user.getAffiliation());
-        data.put(Const.DATE_LIST_KEY, user.getDatesAvailable());
-
-        Log.d(Const.TAG, "saveNewUser: ");
-
         // add a new document to the users collection
-        Task<Void> addNewUser = db.collection(Const.USERS_COLLECTION)
+        return db.collection(Const.USERS_COLLECTION)
                 .document(id).set(data);
-
-        addNewUser.addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(Const.TAG, "onSuccess: user added");
-            }
-        });
-        addNewUser.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(Const.TAG, "onFailure: " + e);
-                Log.d(Const.TAG, "onFailure: user not added");
-            }
-        });
-
-        return addNewUser;
     }
 
     /**
