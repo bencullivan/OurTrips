@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -228,6 +229,7 @@ public class RegisterActivity extends AppCompatActivity {
         // create a map with the user's information
         Map<String, Object> data = new HashMap<>();
         data.put(Const.USER_ID_KEY, mUser.getUid());
+        data.put(Const.USER_EMAIL_KEY, mUser.getEmail());
         data.put(Const.USER_NAME_KEY, mNameEditText.getText().toString());
         data.put(Const.USER_BIRTHDAY_KEY, mBirthdayEditText.getText().toString());
         String gender;
@@ -246,7 +248,16 @@ public class RegisterActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
                     // Inform the user that they were registered successfully
+                    Toast t = Toast.makeText(RegisterActivity.this,
+                            R.string.string_register_success, Toast.LENGTH_SHORT);
+                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                    t.show();
 
+                    // send the user to MainActivity
+                    Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                    intent.putExtra(Const.MAIN_KEY, Const.REGISTER_KEY);
+                    startActivity(intent);
+                    finish();
                 } else {
                     // inform that their data could not be added
                     Toast t = Toast.makeText(RegisterActivity.this,
@@ -256,6 +267,10 @@ public class RegisterActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void updateProfile() {
+
     }
 
     private void loadProfile() {

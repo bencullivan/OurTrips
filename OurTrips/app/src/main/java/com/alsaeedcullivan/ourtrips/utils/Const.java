@@ -13,6 +13,7 @@ public class Const {
     // intent keys
     public static final String REGISTER_KEY = "RegisterActivity";
     public static final String VERIFY_KEY = "VerifyActivity";
+    public static final String MAIN_KEY = "MainActivity";
 
     // codes
     public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;
@@ -24,6 +25,7 @@ public class Const {
     // User keys
     public static final String USER_ID_KEY = "user_id";
     public static final String USER_NAME_KEY = "user_name";
+    public static final String USER_EMAIL_KEY = "user_email";
     public static final String USER_GENDER_KEY = "user_gender";
     public static final String USER_AFFILIATION_KEY = "user_affiliation";
     public static final String USER_BIRTHDAY_KEY = "user_birthday";
