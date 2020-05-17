@@ -16,6 +16,7 @@ import com.alsaeedcullivan.ourtrips.utils.TestVars;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.functions.HttpsCallableResult;
 
 import org.junit.Test;
@@ -24,6 +25,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -75,22 +77,41 @@ public class UserFirebaseTests {
     public void saveNewUserTrip() {
 
         // save the trip to the user's sub-collection
-        Task<Void> testTask = AccessDB.addUserTrip("test_user_id_1", "testTrip3");
+        Task<Void> testTask = AccessDB.addUserTrip("test_user_id_1", "testTrip2");
 
         while (!testTask.isComplete()) { }
-        Log.d(Const.TAG, "saveNewUserTrip: complete: " + testTask.isComplete());
         Log.d(Const.TAG, "saveNewUserTrip: successful: " + testTask.isSuccessful());
-        Log.d(Const.TAG, "saveNewUserTrip: canceled: " + testTask.isCanceled());
 
     }
 
     @Test
     public void saveNewUserFriend() {
 
-        Task<Void> testTask = AccessDB.addUserFriend("test_user_id_1", "test_user_id_5");
+        Task<Void> testTask = AccessDB.addUserFriend("test_user_id_5", "test_user_id_1");
 
         while (!testTask.isComplete()) { }
 
         Log.d(Const.TAG, "saveNewUserFriend: complete");
+    }
+
+    @Test
+    public void getFriendsList() {
+        String id = "test_user_id_1";
+
+        Task<List<String>> task = AccessDB.getFriendsList(id);
+
+        while (!task.isComplete()) { }
+
+        Log.d(Const.TAG, "getFriendsList: complete");
+    }
+
+    @Test
+    public void deleteUserTest() {
+
+        Task<Void> task = AccessDB.deleteUser("test_user_id_1");
+
+        while (!task.isComplete()) { }
+
+        Log.d(Const.TAG, "deleteUserTest: complete");
     }
 }

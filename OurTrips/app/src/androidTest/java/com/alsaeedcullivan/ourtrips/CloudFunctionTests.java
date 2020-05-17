@@ -6,10 +6,12 @@ import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.cloud.CloudFunctions;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.alsaeedcullivan.ourtrips.utils.TestVars;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.functions.HttpsCallableResult;
 
 import org.junit.Test;
@@ -38,19 +40,6 @@ public class CloudFunctionTests {
     }
 
     @Test
-    public void recursiveDeleteTest() {
-        String id = "testUserId";
-
-        String path1 = Const.USERS_COLLECTION+"/"+id+"/"+Const.USER_TRIPS_COLLECTION;
-
-        Task<HttpsCallableResult> testTask = CloudFunctions.recursiveDelete(path1);
-
-        while (!testTask.isComplete()) { }
-
-        Log.d(Const.TAG, "recursiveDelete: complete");
-    }
-
-    @Test
     public void matchDatesTest() {
 
         Task<List<String>> testTask = CloudFunctions.matchDates(Arrays.asList(TestVars.dates1),
@@ -61,26 +50,6 @@ public class CloudFunctionTests {
         Log.d(Const.TAG, "matchDatesTest: " + testTask.getResult());
 
         Log.d(Const.TAG, "matchDatesTest: complete");
-    }
-
-    @Test
-    public void removeFromFriendsTest() {
-
-        String id = "test_user_id_1";
-
-        String[] friendsList = {
-                "test_user_id_2",
-                "test_user_id_3",
-                "test_user_id_4",
-                "test_user_id_5"
-        };
-
-        Task<HttpsCallableResult> testTask = CloudFunctions.removeFromFriends(id,
-                Arrays.asList(friendsList));
-
-        while (!testTask.isComplete()) { }
-
-        Log.d(Const.TAG, "removeFromFriendsTest: complete");
     }
 
 }

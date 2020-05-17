@@ -1,29 +1,24 @@
 package com.alsaeedcullivan.ourtrips.cloud;
 
-import com.alsaeedcullivan.ourtrips.models.Trip;
-import com.alsaeedcullivan.ourtrips.models.User;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.functions.FirebaseFunctions;
-import com.google.firebase.functions.HttpsCallableResult;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import android.util.Log;
 
 /**
  * Class to handle interactions with the database
  */
 public class AccessDB {
-
 
     /**
      * addNewUser()
@@ -32,11 +27,9 @@ public class AccessDB {
      * @param data the user info that is being added
      */
     public static Task<Void> addNewUser(String id, Map<String, Object> data) {
-        // get a reference to the FireStore database
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
         // add a new document to the users collection
-        return db.collection(Const.USERS_COLLECTION)
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
                 .document(id)
                 .set(data);
     }
@@ -46,11 +39,9 @@ public class AccessDB {
      * updates the profile of a user
      */
     public static Task<Void> updateUserProfile(String userId, Map<String, Object> data) {
-        // get a reference to the FireStore database
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
         // update the user's profile info
-        return db.collection(Const.USERS_COLLECTION)
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .update(data);
     }
@@ -60,15 +51,13 @@ public class AccessDB {
      * adds a new friend to the current user's friends sub-collection
      */
     public static Task<Void> addUserFriend(String userId, String friendId) {
-        // get a reference to the FireStore database
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        // map to contain the document data
+        // map to contain the friend id
         Map<String, Object> data = new HashMap<>();
         data.put(Const.FRIEND_ID_KEY, friendId);
 
         // add the friend to the friends sub-collection
-        return db.collection(Const.USERS_COLLECTION)
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_FRIENDS_COLLECTION)
                 .document(friendId)
@@ -80,15 +69,13 @@ public class AccessDB {
      * adds a new trip to the current user's trips sub-collection
      */
     public static Task<Void> addUserTrip(String userId, String tripId) {
-        // get a reference to the FireStore database
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
         // map to contain the document data
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_ID_KEY, tripId);
 
-        // add the trip to the trips sub-collection
-        return db.collection(Const.USERS_COLLECTION)
+        // add the trip to the user_trips sub-collection
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_TRIPS_COLLECTION)
                 .document(tripId)
@@ -98,16 +85,17 @@ public class AccessDB {
     /**
      * deleteUser()
      * deletes a user from the database
+     * NOTE: ** This function only deletes the document associated with a user
+     *         it does NOT delete the user_friends or user_trips sub collections
+     *         it also does NOT delete this user from the friends lists of their friends.
+     *         These three actions are performed by the onUserDeleted Cloud Function
+     *         (see index.js) **
      */
-    public static void deleteUser() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-
-//        if (auth.getCurrentUser() == null) return;
-//        String id = auth.getCurrentUser().getUid();
-        String id = "test_user_id";
-
-        String path1 = Const.USERS_COLLECTION+"/"+id+"/"+Const.USER_TRIPS_COLLECTION;
+    public static Task<Void> deleteUser(String userId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .delete();
     }
 
     /**
@@ -115,9 +103,6 @@ public class AccessDB {
      * adds a new trip to the database
      */
     public static Task<Void> addTrip(String tripId, Map<String, Object> data) {
-        // get a reference to the cloud FireStore database
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
 //        // map to contain the trip data
 //        HashMap<String, Object> data = new HashMap<>();
 //
@@ -128,7 +113,8 @@ public class AccessDB {
 //        data.put(Const.TRIP_USERS_LIST_KEY, trip.getUsersList());
 
         // add the trip to the database
-        return db.collection(Const.TRIPS_COLLECTION)
+        return FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .set(data);
     }
@@ -144,6 +130,35 @@ public class AccessDB {
     public void deleteTrip() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    }
+
+    /**
+     * getFriendsList()
+     * gets the friends list of a user
+     */
+    public static Task<List<String>> getFriendsList(String userId) {
+        // get a list of the friends ids of a user
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .collection(Const.USER_FRIENDS_COLLECTION)
+                .get()
+                .continueWith(new Continuation<QuerySnapshot, List<String>>() {
+                    @Override
+                    public List<String> then(@NonNull Task<QuerySnapshot> task) {
+                        if (task.getResult() == null ||
+                                task.getResult().getDocuments().size() == 0)
+                            return new ArrayList<>();
+
+                        // extract and return the ids of the documents
+                        List<DocumentSnapshot> docList = task.getResult().getDocuments();
+                        List<String> friendIds = new ArrayList<>();
+                        for (DocumentSnapshot doc : docList) {
+                            friendIds.add(doc.getId());
+                        }
+                        return friendIds;
+                    }
+                });
     }
 
 }

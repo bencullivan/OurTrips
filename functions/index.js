@@ -11,62 +11,12 @@ admin.initializeApp({
 const db = admin.firestore();
 
 /**
- * recursiveDelete
- * 
- * Initiate a recursive delete of documents at a given path.
- * 
- * The calling user must be authenticated and have the custom "admin" attribute
- * set to true on the auth token.
- * 
- * This delete is NOT an atomic operation and it's possible
- * that it may fail after only deleting some documents.
- * 
- * @param {string} data.path the document or collection path to delete.
- * 
- * NOTE:
- * recursiveDelete is provided by google at:
- * https://firebase.google.com/docs/firestore/solutions/delete-collections
- * 
- * It has been modified for functionality
- */
-exports.recursiveDelete = functions
-  .runWith({
-    timeoutSeconds: 540,
-    memory: '2GB'
-  })
-  .https.onCall((path) => {
-    // // Only allow admin users to execute this function.
-    // if (!(context.auth && context.auth.token && context.auth.token.admin)) {
-    //   throw new functions.https.HttpsError(
-    //     'permission-denied',
-    //     'Must be an administrative user to initiate delete.'
-    //   );
-    // }
-
-    // Run a recursive delete on the given document or collection path.
-    // The 'token' must be set in the functions config, and can be generated
-    // at the command line by running 'firebase login:ci'.
-    return firebase_tools.firestore
-      .delete(path, {
-        project: process.env.GCLOUD_PROJECT,
-        recursive: true,
-        yes: true,
-        token: functions.config().fb.token
-      })
-      .then(() => {
-        return {
-          path: path 
-        };
-      });
-  });
-
-  /**
-   * matchDates
-   * custom cloud function to find the dates that two users are both available
-   * @author Ben Cullivan
-   * @param {object} data - a map that contains the user ids of the two users whose dates will be compared
-   * @returns a list of all the dates that the two users have in common
-   */
+* matchDates
+* custom cloud function to find the dates that two users are both available
+* @author Ben Cullivan
+* @param {object} data - a map that contains the user ids of the two users whose dates will be compared
+* @returns a list of all the dates that the two users have in common
+*/
 exports.matchDates = functions.https.onCall((data) => {
   // get the date lists
   const list1 = data.list1;
@@ -127,21 +77,67 @@ let compareDates = (date1, date2) => {
     }
 }
 
+
 /**
- * removeFromFriends
- * custom workhorse cloud function to remove a user from the friends list of all of the user's friends
- * called when a user deletes their account
+ * onUserDeleted
+ * triggered when the document associated with a user is deleted,
+ * this function deletes the user from the user_friends sub collection of all of their friends
+ * it also deletes the user_friends and user_trips sub collections of this user
  * @author Ben Cullivan
- * @param {object} data - a map that contains the user's id as well as a list of all of the user's friends ids
+ * @param {DocumentSnapshot} snap - a snapshot associated with the document that is being deleted
  */
-exports.removeFromFriends = functions.https.onCall((data) => {
-  // get the id of the user being deleted
-  const id = data.id;
-  // get the list of the user's friends ids
-  const friendsList = data.friends
-  
-  // delete the document corresponding to this user from the friends list of each of this user's friends
-  for (let i = 0; i < friendsList.length; i++) {
-    db.collection("users").doc(friendsList[i]).collection("user_friends").doc(id).delete();
-  }
+exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
+  .firestore.document('users/{user}').onDelete((snap) => {
+    // get the id of the document that was deleted
+    const id = snap.id;
+
+    // establish the paths of the sub collections
+    const path1 = "users/"+id+"/user_friends";
+    const path2 = "users/"+id+"/user_trips";
+
+    // remove this user from the friends list of all their friends
+    db.collection(path1).get()
+      .then(snapshot => {
+        snapshot.forEach(friend => {
+          db.collection("users").doc(friend.id).collection("user_friends").doc(id).delete();
+        });
+        return snapshot;
+      })
+      .catch(err => {
+        console.log("error removing from friends", err);
+      })
+
+    
+    // delete the trips sub-collection
+    firebase_tools.firestore.delete(path2, {
+        project: process.env.GCLOUD_PROJECT,
+        recursive: true,
+        yes: true,
+        token: functions.config().fb.token
+      })
+      .then(() => {
+        return {
+          path: path2 
+        };
+      })
+      .catch(err => {
+        console.log(err);
+      });
+
+      // delete the friends sub-collection
+      firebase_tools.firestore.delete(path1, {
+        project: process.env.GCLOUD_PROJECT,
+        recursive: true,
+        yes: true,
+        token: functions.config().fb.token
+      })
+      .then(() => {
+        return {
+          path: path1 
+        };
+      })
+      .catch(err => {
+        console.log(err);
+      });
+
 });
