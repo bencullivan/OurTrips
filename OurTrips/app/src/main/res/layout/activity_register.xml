@@ -16,7 +16,7 @@
             android:layout_width="@dimen/img_side_dp"
             android:layout_height="@dimen/img_side_dp"
             android:layout_marginTop="@dimen/top_vertical_margin"
-            android:contentDescription="Profile Picture"
+            android:contentDescription="@string/profile_picture_string"
             android:src="@drawable/ic_launcher_background"
             app:layout_constraintHorizontal_bias="0.128"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -108,31 +108,31 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/input_email"
-            app:passwordToggleEnabled="true">
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:id="@+id/input_password"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="@dimen/padding_dp"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/input_email"-->
+<!--            app:passwordToggleEnabled="true">-->
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/prompt_password"
-                android:inputType="textPassword"
-                android:singleLine="true"
-                android:textColorHint="@color/colorSecondaryDark" />
+<!--            <com.google.android.material.textfield.TextInputEditText-->
+<!--                android:id="@+id/edit_password"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:hint="@string/prompt_password"-->
+<!--                android:inputType="textPassword"-->
+<!--                android:singleLine="true"-->
+<!--                android:textColorHint="@color/colorSecondaryDark" />-->
 
-        </com.google.android.material.textfield.TextInputLayout>
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_affiliation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/input_password">
+            app:layout_constraintTop_toBottomOf="@id/input_email">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_affiliation"

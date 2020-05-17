@@ -11,14 +11,8 @@ admin.initializeApp({
 const db = admin.firestore();
 
 /**
- * NOTE:
- * recursiveDelete is provided by google at:
- * https://firebase.google.com/docs/firestore/solutions/delete-collections
+ * recursiveDelete
  * 
- * It has been modified for functionality
- */
-
-/**
  * Initiate a recursive delete of documents at a given path.
  * 
  * The calling user must be authenticated and have the custom "admin" attribute
@@ -28,6 +22,12 @@ const db = admin.firestore();
  * that it may fail after only deleting some documents.
  * 
  * @param {string} data.path the document or collection path to delete.
+ * 
+ * NOTE:
+ * recursiveDelete is provided by google at:
+ * https://firebase.google.com/docs/firestore/solutions/delete-collections
+ * 
+ * It has been modified for functionality
  */
 exports.recursiveDelete = functions
   .runWith({
@@ -95,8 +95,8 @@ exports.matchDates = functions.https.onCall((data) => {
 
 /**
  * compareDates()
- * @author Ben Cullivan
  * helper function to compare two string dates
+ * @author Ben Cullivan
  * @param {string} date1 
  * @param {string} date2 
  * @returns -1 if date1 < date2, 0 if date1 == date2, 1 if date1 > date2
@@ -126,3 +126,22 @@ let compareDates = (date1, date2) => {
       }
     }
 }
+
+/**
+ * removeFromFriends
+ * custom workhorse cloud function to remove a user from the friends list of all of the user's friends
+ * called when a user deletes their account
+ * @author Ben Cullivan
+ * @param {object} data - a map that contains the user's id as well as a list of all of the user's friends ids
+ */
+exports.removeFromFriends = functions.https.onCall((data) => {
+  // get the id of the user being deleted
+  const id = data.id;
+  // get the list of the user's friends ids
+  const friendsList = data.friends
+  
+  // delete the document corresponding to this user from the friends list of each of this user's friends
+  for (let i = 0; i < friendsList.length; i++) {
+    db.collection("users").doc(friendsList[i]).collection("user_friends").doc(id).delete();
+  }
+});

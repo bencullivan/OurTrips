@@ -83,34 +83,34 @@ public class AccessDB {
      * addUserFriend()
      * adds a new friend to the current user's friends sub-collection
      */
-    public Task<DocumentReference> addUserFriend(String friendId) {
+    public Task<Void> addUserFriend(String friendId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
 //        if (auth.getCurrentUser() == null) return;
 //        String id = auth.getCurrentUser().getUid();
 
-        String id = "testUserId";
+        String id = "test_user_id_1";
 
         // map to contain the document data
         Map<String, Object> data = new HashMap<>();
         data.put(Const.FRIEND_ID_KEY, friendId);
 
         // add the friend to the friends sub-collection
-        Task<DocumentReference> addFriend = db.collection(Const.USERS_COLLECTION)
-                .document(id).collection(Const.USER_FRIENDS_COLLECTION).add(data);
+        Task<Void> addFriend = db.collection(Const.USERS_COLLECTION)
+                .document(id).collection(Const.USER_FRIENDS_COLLECTION)
+                .document(friendId).set(data);
 
-        addFriend.addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+        addFriend.addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onSuccess(DocumentReference documentReference) {
-                Log.d(Const.TAG, "onSuccess: user friend added");
+            public void onSuccess(Void aVoid) {
+                Log.d(Const.TAG, "onSuccess: friend added");
             }
         });
         addFriend.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.d(Const.TAG, "onFailure: " + e);
-                Log.d(Const.TAG, "onFailure: user friend not added");
+                Log.d(Const.TAG, "onFailure: friend not added " + e);
             }
         });
 

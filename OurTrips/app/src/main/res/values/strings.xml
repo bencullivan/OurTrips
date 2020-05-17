@@ -6,7 +6,7 @@
     <string name="title_activity_Edit">Edit Profile</string>
     <!--    messages  -->
     <string name="invalid_username">Invalid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="invalid_password">Password must be > 5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="required_field">field is required</string>
     <!--    prompts  -->
@@ -24,4 +24,7 @@
     <string name="prompt_birthday">Birthday</string>
     <string name="prompt_register">Register</string>
     <string name="prompt_update">Update</string>
+    <string name="verify_email_string">Verify Email</string>
+    <string name="email_not_valid">Email is not valid</string>
+    <string name="profile_picture_string">Profile Picture</string>
 </resources>

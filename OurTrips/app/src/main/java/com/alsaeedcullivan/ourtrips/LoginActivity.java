@@ -144,7 +144,7 @@ public class LoginActivity extends AppCompatActivity {
                 Log.d(Const.TAG, "onClick: sign up");
 
                 // proceed to RegisterActivity
-                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                Intent intent = new Intent(LoginActivity.this, VerifyActivity.class);
                 intent.putExtra(Const.SOURCE_TAG, TAG);
                 // add email to intent
                 intent.putExtra(Const.USER_ID_KEY,mUsernameEditText.getText().toString());

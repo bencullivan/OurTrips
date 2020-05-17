@@ -43,8 +43,8 @@ public class UserFirebaseTests {
     public void saveNewUserTest() {
         // create a new User object
         User user = new User();
-        user.setUserId("test_user_id_2");
-        user.setName("test_user_name_2");
+        user.setUserId("test_user_id_5");
+        user.setName("test_user_name_5");
         user.setAffiliation("student at dartmouth");
         user.setAge("19");
         user.setGender("Male");
@@ -83,7 +83,7 @@ public class UserFirebaseTests {
         // create an instance of the class that accesses the database
         AccessDB testAccess = new AccessDB();
 
-        Task<DocumentReference> testTask = testAccess.addUserFriend("testFriendId");
+        Task<Void> testTask = testAccess.addUserFriend("test_user_id_5");
 
         while (!testTask.isComplete()) { }
 

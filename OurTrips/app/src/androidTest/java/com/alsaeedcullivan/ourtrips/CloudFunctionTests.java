@@ -52,9 +52,8 @@ public class CloudFunctionTests {
 
     @Test
     public void matchDatesTest() {
-        CloudFunctions cloud = new CloudFunctions();
 
-        Task<List<String>> testTask = cloud.matchDates(Arrays.asList(TestVars.dates1),
+        Task<List<String>> testTask = CloudFunctions.matchDates(Arrays.asList(TestVars.dates1),
                 Arrays.asList(TestVars.dates2));
 
         while (!testTask.isComplete()) { }
@@ -62,6 +61,26 @@ public class CloudFunctionTests {
         Log.d(Const.TAG, "matchDatesTest: " + testTask.getResult());
 
         Log.d(Const.TAG, "matchDatesTest: complete");
+    }
+
+    @Test
+    public void removeFromFriendsTest() {
+
+        String id = "test_user_id_1";
+
+        String[] friendsList = {
+                "test_user_id_2",
+                "test_user_id_3",
+                "test_user_id_4",
+                "test_user_id_5"
+        };
+
+        Task<HttpsCallableResult> testTask = CloudFunctions.removeFromFriends(id,
+                Arrays.asList(friendsList));
+
+        while (!testTask.isComplete()) { }
+
+        Log.d(Const.TAG, "removeFromFriendsTest: complete");
     }
 
 }

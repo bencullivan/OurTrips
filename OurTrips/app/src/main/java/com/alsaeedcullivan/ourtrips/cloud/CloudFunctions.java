@@ -20,8 +20,6 @@ import java.util.Map;
 
 public class CloudFunctions {
 
-    private static List<String> resultDates;
-
     /**
      * recursiveDelete()
      * this calls the recursiveDelete cloud function (see index.js) which deletes an entire
@@ -104,6 +102,40 @@ public class CloudFunctions {
         });
 
         // return the task
+        return task;
+    }
+
+    /**
+     * removeFromFriends()
+     * this calls the removeFromFriends cloud function (see index.js) which takes a user id and a
+     * list of the user's friends and removes the user from the friends list of each of the friends
+     */
+    public static Task<HttpsCallableResult> removeFromFriends(String userId, List<String> friendsList) {
+        // get a reference to the Firebase cloud functions
+        FirebaseFunctions functions = FirebaseFunctions.getInstance();
+
+        // create a data object to hold the userId and friendsList
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.UID_KEY, userId);
+        data.put(Const.FRIENDS_LIST_KEY, friendsList);
+
+        Task<HttpsCallableResult> task = functions.getHttpsCallable(Const.FUNC_REMOVE_FROM_FRIENDS)
+                .call(data);
+
+        task.addOnSuccessListener(new OnSuccessListener<HttpsCallableResult>() {
+            @Override
+            public void onSuccess(HttpsCallableResult httpsCallableResult) {
+                Log.d(Const.TAG, "onSuccess: removed from friends");
+            }
+        });
+        task.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(Const.TAG, "onFailure: " + e);
+                Log.d(Const.TAG, "onFailure: not removed from friends");
+            }
+        });
+
         return task;
     }
 }

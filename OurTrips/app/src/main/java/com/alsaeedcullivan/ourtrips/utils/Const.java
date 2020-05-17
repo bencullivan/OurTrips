@@ -40,8 +40,11 @@ public class Const {
     // Cloud function names
     public static final String FUNC_RECURSIVE_DELETE = "recursiveDelete";
     public static final String FUNC_MATCH_DATES = "matchDates";
+    public static final String FUNC_REMOVE_FROM_FRIENDS = "removeFromFriends";
 
     // Cloud Function Keys
     public static final String LIST_1_KEY = "list1";
     public static final String LIST_2_KEY = "list2";
+    public static final String UID_KEY = "id";
+    public static final String FRIENDS_LIST_KEY = "friends";
 }

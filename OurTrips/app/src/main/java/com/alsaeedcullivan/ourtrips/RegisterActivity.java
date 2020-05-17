@@ -25,6 +25,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Objects;
 
@@ -32,8 +33,10 @@ public class RegisterActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
 
+    private FirebaseUser mUser;
+
     private ImageView mProfileImageView;
-    private EditText mNameEditText, mEmailEditText, mPasswordEditText, mAffiliationEditText, mBirthdayEditText;
+    private EditText mNameEditText, mEmailEditText, mAffiliationEditText, mBirthdayEditText;
     private RadioGroup mInputGender;
     private RadioButton mFemaleRadioButton, mMaleRadioButton, mOtherRadioButton;
     private Button mChangePictureButton;
@@ -49,6 +52,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         // initialize the FireBaseAuth
         mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
 
         // get reference to the ImageView
         mProfileImageView = findViewById(R.id.img_profile);
@@ -56,7 +60,6 @@ public class RegisterActivity extends AppCompatActivity {
         // get references to the EditTexts & Radios
         mNameEditText = findViewById(R.id.edit_name);
         mEmailEditText = findViewById(R.id.edit_email);
-        mPasswordEditText = findViewById(R.id.edit_password);
         mAffiliationEditText = findViewById(R.id.edit_affiliation);
         mBirthdayEditText = findViewById(R.id.edit_birthday);
         mInputGender = findViewById(R.id.input_gender);
@@ -66,6 +69,10 @@ public class RegisterActivity extends AppCompatActivity {
 
         // get reference to the change picture Button
         mChangePictureButton = findViewById(R.id.change_picture);
+
+        // display the user's email as uneditable
+        mEmailEditText.setText(mUser.getEmail());
+        mEmailEditText.setEnabled(false);
 
         // get source activity & load accordingly
         mSourceExtra = getIntent().getStringExtra(Const.SOURCE_TAG);
@@ -80,6 +87,24 @@ public class RegisterActivity extends AppCompatActivity {
         // request read/write permissions
         updatePermission();
         requestPermission();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // get the user that is signed in or null if there is no user signed in
+        mUser = mAuth.getCurrentUser();
+
+        if (mUser != null && mUser.isEmailVerified()) {
+            // they are logged in and verified, send them to main activity
+            Toast.makeText(this, "got to main", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     // handle permissions //
@@ -191,18 +216,12 @@ public class RegisterActivity extends AppCompatActivity {
 
     // handle tasks //
 
+    /**
+     * createUser()
+     * method to add this user to firebase
+     */
     private void createUser(String email, String password) {
-        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this,
-                new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(Const.TAG, "onComplete: successfully registered!");
-                        } else {
-                            Log.d(Const.TAG, "onComplete: email was not valid");
-                        }
-                    }
-                });
+
     }
 
     private void loadProfile() {
