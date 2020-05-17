@@ -15,6 +15,7 @@ public class CustomDialogFragment extends DialogFragment {
 
     // public constants
     public static final int PICTURE_DIALOG_ID = 0;
+    public static final int GALLERY_PERMISSION_DIALOG_ID = 1;
 
     // private constants
     private static final String KEY_ID = "key_id";

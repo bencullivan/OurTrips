@@ -10,12 +10,14 @@ public class Const {
     public static final String SOURCE_TAG = "source";
     public static final String DIALOG_TAG = "dialog";
 
+    // codes
+    public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;
+
     // Cloud FireStore root collection names
     public static final String USERS_COLLECTION = "users";
     public static final String TRIPS_COLLECTION = "trips";
 
     // User keys
-<<<<<<< Updated upstream
     public static final String USER_ID_KEY = "user_id";
     public static final String USER_NAME_KEY = "user_name";
     public static final String USER_GENDER_KEY = "user_gender";
@@ -23,15 +25,7 @@ public class Const {
     public static final String USER_AGE_KEY = "user_age";
     public static final String FRIEND_ID_KEY = "friend_user_id";
     public static final String DATE_LIST_KEY = "date_list";
-=======
-    public static final String USER_ID_KEY = "userId";
     public static final String USER_PASSWORD_KEY = "UserPassword";
-    public static final String USER_NAME_KEY = "userName";
-    public static final String USER_GENDER_KEY = "userGender";
-    public static final String USER_AFFILIATION_KEY = "userAffiliation";
-    public static final String USER_AGE_KEY = "userAge";
-    public static final String FRIEND_ID_KEY = "friendUserId";
->>>>>>> Stashed changes
 
     // User sub-collections
     public static final String USER_FRIENDS_COLLECTION = "user_friends";

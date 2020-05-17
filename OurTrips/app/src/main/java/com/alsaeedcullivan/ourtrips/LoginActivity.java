@@ -146,9 +146,8 @@ public class LoginActivity extends AppCompatActivity {
                 // proceed to RegisterActivity
                 Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
                 intent.putExtra(Const.SOURCE_TAG, TAG);
-
-                /*add input email to intent*/
-                
+                // add email to intent
+                intent.putExtra(Const.USER_ID_KEY,mUsernameEditText.getText().toString());
                 startActivity(intent);
             }
         });
