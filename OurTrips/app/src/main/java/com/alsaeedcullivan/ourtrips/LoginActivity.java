@@ -18,12 +18,14 @@ import android.widget.Toast;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.alsaeedcullivan.ourtrips.utils.Utilities;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
 
     public static final String TAG = "LoginInActivity";
 
     private FirebaseAuth mAuth;
+    private FirebaseUser mUser;
 
     private EditText mUsernameEditText, mPasswordEditText;
     private Button signInButton, signUpButton;
@@ -32,6 +34,16 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // determine whether there is a verified user that is logged in
+        mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
+
+        // if there is a verified user logged in, go straight to main activity
+        if (mUser != null && mUser.isEmailVerified()) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        }
+
         setContentView(R.layout.activity_login);
 
         // set-up activity title

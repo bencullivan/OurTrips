@@ -74,11 +74,8 @@ public class UserFirebaseTests {
     @Test
     public void saveNewUserTrip() {
 
-        // create an instance of the class that accesses the database
-        AccessDB testAccess = new AccessDB();
-
         // save the trip to the user's sub-collection
-        Task<DocumentReference> testTask = testAccess.addUserTrip("testTrip3");
+        Task<Void> testTask = AccessDB.addUserTrip("test_user_id_1", "testTrip3");
 
         while (!testTask.isComplete()) { }
         Log.d(Const.TAG, "saveNewUserTrip: complete: " + testTask.isComplete());
@@ -90,10 +87,7 @@ public class UserFirebaseTests {
     @Test
     public void saveNewUserFriend() {
 
-        // create an instance of the class that accesses the database
-        AccessDB testAccess = new AccessDB();
-
-        Task<Void> testTask = testAccess.addUserFriend("test_user_id_5");
+        Task<Void> testTask = AccessDB.addUserFriend("test_user_id_1", "test_user_id_5");
 
         while (!testTask.isComplete()) { }
 

@@ -128,8 +128,7 @@ public class VerifyActivity extends AppCompatActivity {
                                         t.setGravity(Gravity.TOP |
                                                 Gravity.CENTER_HORIZONTAL, 0, 0);
                                         t.show();
-                                    }
-                                    else {
+                                    } else {
                                         // inform the user that an email was not sent
                                         Toast t = Toast.makeText(VerifyActivity.this,
                                                 "We were not able to send a verification email" +
@@ -142,8 +141,7 @@ public class VerifyActivity extends AppCompatActivity {
                                     }
                                 }
                             });
-                        }
-                        else {
+                        } else {
                             // inform the user that the email was not valid
                             mEmailText.setError(getString(R.string.email_not_valid));
                             mEmailText.requestFocus();
