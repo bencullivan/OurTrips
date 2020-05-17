@@ -68,7 +68,7 @@ exports.recursiveDelete = functions
    * @returns a list of all the dates that the two users have in common
    */
 exports.matchDates = functions.https.onCall((data) => {
-  // get the user ids
+  // get the date lists
   const list1 = data.list1;
   const list2 = data.list2;
 
