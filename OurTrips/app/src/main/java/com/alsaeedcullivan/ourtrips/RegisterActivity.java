@@ -269,8 +269,45 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * updateProfile()
+     * method to update a user's profile info in the FireStore database
+     */
     private void updateProfile() {
+        // create a map with the new profile info
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.USER_NAME_KEY, mNameEditText.getText().toString());
+        data.put(Const.USER_BIRTHDAY_KEY, mBirthdayEditText.getText().toString());
+        String gender;
+        int checked = mInputGender.getCheckedRadioButtonId();
+        if (checked == R.id.edit_gender_female) gender = "Female";
+        else if (checked == R.id.edit_gender_male) gender = "Male";
+        else gender = "Other";
+        data.put(Const.USER_GENDER_KEY, gender);
+        data.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
 
+        // add the new profile data to the database
+        Task<Void> updateTask = AccessDB.updateUserProfile(mUser.getUid(), data);
+        updateTask.addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // inform the user that their profile has been updated
+                    Toast t = Toast.makeText(RegisterActivity.this,
+                            R.string.string_update_profile, Toast.LENGTH_SHORT);
+                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                    t.show();
+                    // finish the activity
+                    finish();
+                } else {
+                    // inform that their data could not be updated
+                    Toast t = Toast.makeText(RegisterActivity.this,
+                            R.string.update_profile_fail, Toast.LENGTH_SHORT);
+                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                    t.show();
+                }
+            }
+        });
     }
 
     private void loadProfile() {

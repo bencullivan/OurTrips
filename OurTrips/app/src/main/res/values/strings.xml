@@ -29,4 +29,6 @@
     <string name="profile_picture_string">Profile Picture</string>
     <string name="string_register_failure">We were not able to register your account. Are you sure you entered everything correctly?</string>
     <string name="string_register_success">You have registered successfully!</string>
+    <string name="string_update_profile">Your profile has been updated!</string>
+    <string name="update_profile_fail">Your profile could not be updated. Check that you have filled all the required fields.</string>
 </resources>

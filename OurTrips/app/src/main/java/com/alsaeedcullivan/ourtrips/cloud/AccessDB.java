@@ -36,97 +36,70 @@ public class AccessDB {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // add a new document to the users collection
-        return db.collection(Const.USERS_COLLECTION).document(id).set(data);
+        return db.collection(Const.USERS_COLLECTION)
+                .document(id)
+                .set(data);
     }
 
     /**
      * updateUserProfile()
      * updates the profile of a user
      */
-    public void updateUserProfile() {
+    public static Task<Void> updateUserProfile(String userId, Map<String, Object> data) {
+        // get a reference to the FireStore database
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // update the user's profile info
+        return db.collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .update(data);
     }
 
     /**
      * addUserFriend()
      * adds a new friend to the current user's friends sub-collection
      */
-    public Task<Void> addUserFriend(String friendId) {
+    public static Task<Void> addUserFriend(String userId, String friendId) {
+        // get a reference to the FireStore database
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-
-//        if (auth.getCurrentUser() == null) return;
-//        String id = auth.getCurrentUser().getUid();
-
-        String id = "test_user_id_1";
 
         // map to contain the document data
         Map<String, Object> data = new HashMap<>();
         data.put(Const.FRIEND_ID_KEY, friendId);
 
         // add the friend to the friends sub-collection
-        Task<Void> addFriend = db.collection(Const.USERS_COLLECTION)
-                .document(id).collection(Const.USER_FRIENDS_COLLECTION)
-                .document(friendId).set(data);
-
-        addFriend.addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(Const.TAG, "onSuccess: friend added");
-            }
-        });
-        addFriend.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(Const.TAG, "onFailure: friend not added " + e);
-            }
-        });
-
-        return addFriend;
+        return db.collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .collection(Const.USER_FRIENDS_COLLECTION)
+                .document(friendId)
+                .set(data);
     }
 
     /**
      * addUserTrip()
      * adds a new trip to the current user's trips sub-collection
      */
-    public Task<DocumentReference> addUserTrip(String tripId) {
+    public static Task<Void> addUserTrip(String userId, String tripId) {
+        // get a reference to the FireStore database
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-
-//        if (auth.getCurrentUser() == null) return;
-//        String id = auth.getCurrentUser().getUid();
-
-        String id = "testUserId";
 
         // map to contain the document data
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_ID_KEY, tripId);
 
         // add the trip to the trips sub-collection
-        Task<DocumentReference> addTrip = db.collection(Const.USERS_COLLECTION)
-                .document(id).collection(Const.USER_TRIPS_COLLECTION).add(data);
-
-        addTrip.addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-            @Override
-            public void onSuccess(DocumentReference documentReference) {
-                Log.d(Const.TAG, "onSuccess: user trip added");
-            }
-        });
-        addTrip.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(Const.TAG, "onFailure: " + e);
-                Log.d(Const.TAG, "onFailure: user trip not added");
-            }
-        });
-
-        return addTrip;
+        return db.collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .collection(Const.USER_TRIPS_COLLECTION)
+                .document(tripId)
+                .set(data);
     }
 
     /**
      * deleteUser()
      * deletes a user from the database
      */
-    public void deleteUser() {
+    public static void deleteUser() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
@@ -141,36 +114,27 @@ public class AccessDB {
      * addTrip()
      * adds a new trip to the database
      */
-    public Task<Void> addTrip(Trip trip) {
+    public static Task<Void> addTrip(String tripId, Map<String, Object> data) {
+        // get a reference to the cloud FireStore database
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // map to contain the trip data
-        HashMap<String, Object> data = new HashMap<>();
+//        // map to contain the trip data
+//        HashMap<String, Object> data = new HashMap<>();
+//
+//        // add the trip data to the map
+//        data.put(Const.TRIP_ID_KEY, trip.getTripId());
+//        data.put(Const.TRIP_TITLE_KEY, trip.getTitle());
+//        data.put(Const.TRIP_COMMENTS_LIST_KEY, trip.getCommentsList());
+//        data.put(Const.TRIP_USERS_LIST_KEY, trip.getUsersList());
 
-        // add the trip data to the map
-        data.put(Const.TRIP_ID_KEY, trip.getTripId());
-        data.put(Const.TRIP_TITLE_KEY, trip.getTitle());
-        data.put(Const.TRIP_COMMENTS_LIST_KEY, trip.getCommentsList());
-        data.put(Const.TRIP_USERS_LIST_KEY, trip.getUsersList());
+        // add the trip to the database
+        return db.collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .set(data);
+    }
 
-        Task<Void> addTrip = db.collection(Const.TRIPS_COLLECTION)
-                .document(trip.getTripId()).set(data);
+    public void updateTrip() {
 
-        addTrip.addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(Const.TAG, "onSuccess: trip added");
-            }
-        });
-        addTrip.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(Const.TAG, "onFailure: " + e);
-                Log.d(Const.TAG, "onFailure: trip not added");
-            }
-        });
-
-        return addTrip;
     }
 
     /**
