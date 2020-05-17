@@ -10,6 +10,10 @@ public class Const {
     public static final String SOURCE_TAG = "source";
     public static final String DIALOG_TAG = "dialog";
 
+    // intent keys
+    public static final String REGISTER_KEY = "RegisterActivity";
+    public static final String VERIFY_KEY = "VerifyActivity";
+
     // codes
     public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;
 

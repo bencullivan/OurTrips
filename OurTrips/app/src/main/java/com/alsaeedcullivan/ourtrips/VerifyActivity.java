@@ -79,6 +79,7 @@ public class VerifyActivity extends AppCompatActivity {
                 if (user.isEmailVerified()) {
                     Intent intent = new Intent(VerifyActivity.this,
                             RegisterActivity.class);
+                    intent.putExtra(Const.VERIFY_KEY, Const.VERIFY_KEY);
                     startActivity(intent);
                     finish();
                 }

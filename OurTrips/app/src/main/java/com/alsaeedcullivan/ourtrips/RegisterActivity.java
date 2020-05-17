@@ -199,6 +199,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void onRegisterClicked() {
+
     }
 
     // handle dialog fragments //

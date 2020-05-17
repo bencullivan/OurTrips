@@ -23,19 +23,20 @@ import android.util.Log;
  * Class to handle interactions with the database
  */
 public class AccessDB {
-    
+
 
     /**
      * addNewUser()
      * saves a new user to the database
+     * @param id the id of the user being added
+     * @param data the user info that is being added
      */
     public static Task<Void> addNewUser(String id, Map<String, Object> data) {
         // get a reference to the FireStore database
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // add a new document to the users collection
-        return db.collection(Const.USERS_COLLECTION)
-                .document(id).set(data);
+        return db.collection(Const.USERS_COLLECTION).document(id).set(data);
     }
 
     /**
