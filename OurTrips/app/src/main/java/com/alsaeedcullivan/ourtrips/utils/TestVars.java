@@ -1,8 +1,5 @@
 package com.alsaeedcullivan.ourtrips.utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 public class TestVars {
 
     public static String[] dates1 = new String[] {

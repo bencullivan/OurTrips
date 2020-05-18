@@ -31,7 +31,8 @@ public class Const {
     public static final String USER_BIRTHDAY_KEY = "user_birthday";
     public static final String FRIEND_ID_KEY = "friend_user_id";
     public static final String DATE_LIST_KEY = "date_list";
-    public static final String USER_PASSWORD_KEY = "UserPassword";
+    public static final String USER_PASSWORD_KEY = "user_password";
+    public static final String USER_PROFILE_PIC_KEY = "user_profile_pic_uri";
 
     // User sub-collections
     public static final String USER_FRIENDS_COLLECTION = "user_friends";
@@ -53,4 +54,9 @@ public class Const {
     public static final String LIST_2_KEY = "list2";
     public static final String UID_KEY = "id";
     public static final String FRIENDS_LIST_KEY = "friends";
+
+    // Cloud Storage paths
+    public static final String PROFILE_PIC_PATH = "profile_pictures";
+    public static final String PROFILE_PIC_NAME = "profile.jpg";
+
 }

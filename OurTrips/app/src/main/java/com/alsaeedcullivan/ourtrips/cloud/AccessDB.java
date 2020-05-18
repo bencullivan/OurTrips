@@ -47,6 +47,25 @@ public class AccessDB {
     }
 
     /**
+     * loadUserProfile()
+     * loads the profile info of a user
+     */
+    public static Task<Map<String, Object>> loadUserProfile(String userId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .get()
+                .continueWith(new Continuation<DocumentSnapshot, Map<String, Object>>() {
+                    @Override
+                    public Map<String, Object> then(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.getResult() != null) {
+                            return task.getResult().getData();
+                        } else return new HashMap<>();
+                    }
+                });
+    }
+
+    /**
      * addUserFriend()
      * adds a new friend to the current user's friends sub-collection
      */
@@ -129,7 +148,6 @@ public class AccessDB {
      */
     public void deleteTrip() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-
     }
 
     /**

@@ -44,7 +44,7 @@ exports.matchDates = functions.https.onCall((data) => {
 });
 
 /**
- * compareDates()
+ * compareDates
  * helper function to compare two string dates
  * @author Ben Cullivan
  * @param {string} date1 
@@ -91,7 +91,7 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
     // get the id of the document that was deleted
     const id = snap.id;
 
-    // establish the paths of the sub collections
+    // establish the paths of the sub-collections
     const path1 = "users/"+id+"/user_friends";
     const path2 = "users/"+id+"/user_trips";
 
@@ -124,8 +124,8 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
         console.log(err);
       });
 
-      // delete the friends sub-collection
-      firebase_tools.firestore.delete(path1, {
+    // delete the friends sub-collection
+    firebase_tools.firestore.delete(path1, {
         project: process.env.GCLOUD_PROJECT,
         recursive: true,
         yes: true,
@@ -140,4 +140,5 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
         console.log(err);
       });
 
+    return 1;
 });

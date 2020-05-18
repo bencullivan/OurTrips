@@ -39,10 +39,11 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
 
-        // if there is a verified user logged in, go straight to main activity
-        if (mUser != null && mUser.isEmailVerified()) {
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-        }
+        //TODO: uncomment this
+//        // if there is a verified user logged in, go straight to main activity
+//        if (mUser != null && mUser.isEmailVerified()) {
+//            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+//        }
 
         setContentView(R.layout.activity_login);
 

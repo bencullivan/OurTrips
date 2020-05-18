@@ -1,6 +1,7 @@
 package com.alsaeedcullivan.ourtrips;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
@@ -8,7 +9,10 @@ import androidx.fragment.app.DialogFragment;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,23 +24,38 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.alsaeedcullivan.ourtrips.cloud.AccessBucket;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.utils.Const;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+
+/**
+ * This activity uses the Android Image Cropper open source library
+ * Android Image Cropper is licensed under the Apache License, Version 2.0
+ * Android Image Cropper can be found on github at https://github.com/ArthurHub/Android-Image-Cropper
+ * The library has been in no way modified, we merely implement it in this activity for photo cropping
+ */
 public class RegisterActivity extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;
+    private static final String URI_KEY = "uri_key";
 
+    private FirebaseAuth mAuth;
     private FirebaseUser mUser;
 
     private ImageView mProfileImageView;
@@ -44,6 +63,9 @@ public class RegisterActivity extends AppCompatActivity {
     private RadioGroup mInputGender;
     private RadioButton mFemaleRadioButton, mMaleRadioButton, mOtherRadioButton;
     private Button mChangePictureButton;
+
+    private Uri mProfileUri;
+    private Drawable mProfilePic;
 
     private boolean mPermission;
 
@@ -83,8 +105,6 @@ public class RegisterActivity extends AppCompatActivity {
         if (mSourceExtra != null) {
             if (mSourceExtra.equalsIgnoreCase(MainActivity.TAG)) {// load profile
                 loadProfile();
-            } else {// load email from LoginActivity
-                mEmailEditText.setText(getIntent().getStringExtra(Const.USER_ID_KEY));
             }
         }
 
@@ -94,21 +114,19 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-        // get the user that is signed in or null if there is no user signed in
-        mUser = mAuth.getCurrentUser();
-
-        if (mUser != null && mUser.isEmailVerified()) {
-            // they are logged in and verified, send them to main activity
-            Toast.makeText(this, "got to main", Toast.LENGTH_SHORT).show();
-        }
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mProfileUri != null) outState.putParcelable(URI_KEY, mProfileUri);
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // if there is a uri, restore it and set the pic
+        if (savedInstanceState.getParcelable(URI_KEY) != null) {
+            mProfileUri = savedInstanceState.getParcelable(URI_KEY);
+            setPic(mProfileUri);
+        }
     }
 
     // handle permissions //
@@ -161,7 +179,7 @@ public class RegisterActivity extends AppCompatActivity {
         // enable back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         // check source activity & set-up title & visible menu button accordingly
-        if (mSourceExtra != null && mSourceExtra.equals(LoginActivity.TAG)) {
+        if (mSourceExtra != null && mSourceExtra.equals(Const.VERIFY_KEY)) {
             menu.findItem(R.id.register_button).setVisible(true);
             menu.findItem(R.id.update_button).setVisible(false);
             // set up activity title
@@ -195,12 +213,17 @@ public class RegisterActivity extends AppCompatActivity {
     // on click listeners //
 
     public void onChangeClicked(View view) {
-        // if clicked, read/write permissions granted
-        createPhotoPickerDialogFragment();
+        // the user has given permission
+        // select the pic
+        selectPic();
     }
 
     private void onRegisterClicked() {
 
+        //TODO: check to make sure all the fields have been filled
+
+        // create a user using these credentials
+        createUser();
     }
 
     // handle dialog fragments //
@@ -217,6 +240,55 @@ public class RegisterActivity extends AppCompatActivity {
         DialogFragment dialog = CustomDialogFragment.newInstance(CustomDialogFragment
                 .GALLERY_PERMISSION_DIALOG_ID);
         dialog.show(getSupportFragmentManager(), Const.DIALOG_TAG);
+    }
+
+    // handle setting profile pic //
+
+    /**
+     * selectPic()
+     * allows the user to select a picture from their gallery and crop it
+     */
+    private void selectPic() {
+        // start picker to get the image for cropping and then use the result
+        CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setFixAspectRatio(true)
+                .setAspectRatio(1, 1)
+                .start(this);
+    }
+
+    private void setPic(Uri uri) {
+        try {
+            // open an InputStream from the Uri
+            InputStream is = getContentResolver().openInputStream(uri);
+            mProfilePic = Drawable.createFromStream(is, uri.toString());
+            mProfileImageView.setImageDrawable(mProfilePic);
+        } catch (IOException e) {
+            Log.d(Const.TAG, Log.getStackTraceString(e));
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // if the activity was an image crop
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            // get the result of the Crop
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                // get the Uri of the cropped pic
+                if (result != null) mProfileUri = result.getUri();
+                setPic(mProfileUri);
+
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                // get the error
+                Exception error = null;
+                if (result != null) error = result.getError();
+                if (error != null)
+                    Log.d(Const.TAG, "onActivityResult: " + Log.getStackTraceString(error));
+            }
+        }
     }
 
     // handle tasks //
@@ -240,6 +312,23 @@ public class RegisterActivity extends AppCompatActivity {
         data.put(Const.USER_GENDER_KEY, gender);
         data.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
         data.put(Const.DATE_LIST_KEY, new ArrayList<String>());
+
+        // if they have set a profile pic
+        if (mProfileUri != null) {
+            // establish the path where the profile pic will be stored in the bucket
+            String path = Const.PROFILE_PIC_PATH+"/"+mUser.getUid()+"/"+Const.PROFILE_PIC_NAME;
+            try {
+                // open an input stream from the photo Uri and upload to the bucket
+                InputStream is = getContentResolver().openInputStream(mProfileUri);
+                AccessBucket.saveProfilePicture(path, is);
+
+                // add the storage path to data
+                data.put(Const.USER_PROFILE_PIC_KEY, path);
+
+            } catch (IOException e) {
+                Log.d(Const.TAG, Log.getStackTraceString(e));
+            }
+        }
 
         // add the user's data to the database
         Task<Void> addTask = AccessDB.addNewUser(mUser.getUid(), data);
@@ -280,13 +369,30 @@ public class RegisterActivity extends AppCompatActivity {
         data.put(Const.USER_BIRTHDAY_KEY, mBirthdayEditText.getText().toString());
         String gender;
         int checked = mInputGender.getCheckedRadioButtonId();
-        if (checked == R.id.edit_gender_female) gender = "Female";
-        else if (checked == R.id.edit_gender_male) gender = "Male";
-        else gender = "Other";
+        if (checked == R.id.edit_gender_female) gender = "f";
+        else if (checked == R.id.edit_gender_male) gender = "m";
+        else gender = "o";
         data.put(Const.USER_GENDER_KEY, gender);
         data.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
 
-        // add the new profile data to the database
+        // if they have set a profile pic
+        if (mProfileUri != null) {
+            // establish the path where the profile pic will be stored in the bucket
+            String path = Const.PROFILE_PIC_PATH+"/"+mUser.getUid()+"/"+Const.PROFILE_PIC_NAME;
+            try {
+                // open an input stream from the photo Uri and upload to the bucket
+                InputStream is = getContentResolver().openInputStream(mProfileUri);
+                AccessBucket.saveProfilePicture(path, is);
+
+                // add the storage path to data
+                data.put(Const.USER_PROFILE_PIC_KEY, path);
+
+            } catch (IOException e) {
+                Log.d(Const.TAG, Log.getStackTraceString(e));
+            }
+        }
+
+        // update the profile in the database
         Task<Void> updateTask = AccessDB.updateUserProfile(mUser.getUid(), data);
         updateTask.addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -310,7 +416,64 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * loadProfile()
+     * loads the profile info of a user
+     */
     private void loadProfile() {
         // load data if it exists
+        AccessDB.loadUserProfile(mUser.getUid())
+                .addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Map<String, Object>> task) {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            populateFields(task.getResult());
+                        }
+                    }
+                });
+    }
+
+    /**
+     * populateFields()
+     * helper method to fill in the widgets with the user's profile info
+     * @param data - the object containing all the user's profile data
+     */
+    private void populateFields(Map<String, Object> data) {
+        if (data == null) return;
+
+        // set the profile pic
+        String path = (String) data.get(Const.USER_PROFILE_PIC_KEY);
+        if (path != null && path.length() > 0) {
+            Glide.with(this)
+                    .load(FirebaseStorage.getInstance().getReference().child(path))
+                    .into(mProfileImageView);
+        }
+
+        // set the name
+        String name = (String) data.get(Const.USER_NAME_KEY);
+        if (name != null) mNameEditText.setText(name);
+
+        // set the affiliation
+        String aff = (String) data.get(Const.USER_AFFILIATION_KEY);
+        if (aff != null) mAffiliationEditText.setText(aff);
+
+        // set the birthday
+        String bDay = (String) data.get(Const.USER_BIRTHDAY_KEY);
+        if (bDay != null) mBirthdayEditText.setText(bDay);
+
+        // set the gender
+        String gender = (String) data.get(Const.USER_GENDER_KEY);
+        if (gender != null) {
+            switch (gender) {
+                case "f":
+                    mInputGender.check(R.id.edit_gender_female);
+                    break;
+                case "m":
+                    mInputGender.check(R.id.edit_gender_male);
+                    break;
+                default:
+                    mInputGender.check(R.id.edit_gender_other);
+            }
+        }
     }
 }

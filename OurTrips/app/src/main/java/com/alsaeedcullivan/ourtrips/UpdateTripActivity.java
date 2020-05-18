@@ -7,8 +7,6 @@ import android.os.Bundle;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
-
 // this is the activity where the user will be able to create, view and update trips
 public class UpdateTripActivity extends AppCompatActivity {
 
