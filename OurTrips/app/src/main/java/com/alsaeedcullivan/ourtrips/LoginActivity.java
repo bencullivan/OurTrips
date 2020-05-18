@@ -199,7 +199,11 @@ public class LoginActivity extends AppCompatActivity {
 
     // check if inputs match the records
     private boolean verifyCredentials(String email, String password) {
-        //mAuth.verifyEmailandPasswordMatchRecords()
+        // TODO: check if data matches records & user is verified
+//        if (mUser.isEmailVerified()) {
+//            if (email == mUser.getEmail() && password == mUser.getPassword()) return true;
+//        }
+//        else return false;
         return false;
     }
 }

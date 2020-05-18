@@ -103,10 +103,10 @@ public class RegisterActivity extends AppCompatActivity {
         mEmailEditText.setText(mUser.getEmail());
         mEmailEditText.setEnabled(false);
 
-        // get source activity & load accordingly
+        // get source activity & load profile is source: MainActivity
         mSourceExtra = getIntent().getStringExtra(Const.SOURCE_TAG);
         if (mSourceExtra != null) {
-            if (mSourceExtra.equalsIgnoreCase(MainActivity.TAG)) {// load profile
+            if (mSourceExtra.equalsIgnoreCase(MainActivity.TAG)) {
                 loadProfile();
             }
         }
@@ -226,7 +226,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     // handles Register & Update Profile clicks
-    private void onRegisterClicked() {
+    public void onRegisterClicked() {
         removeErrors();
 
         // get name, gender, email, affiliation & birthday
@@ -356,7 +356,8 @@ public class RegisterActivity extends AppCompatActivity {
 
     // handle permissions //
 
-    private void requestPermission() {
+    // public: accessed from CustomDialogFragment
+    public void requestPermission() {
         // request read/write permissions from user if not given
         if (!mPermission) {
             mChangePictureButton.setClickable(false);   // disable change picture button
@@ -377,12 +378,12 @@ public class RegisterActivity extends AppCompatActivity {
                         PackageManager.PERMISSION_GRANTED);
     }
 
-    // handle dialog fragments //
+    // handle dialog fragment //
 
-    private void createPermissionDialogFragment() {
-        // display permission dialog fragment
+    private void createImportantDialogFragment() {
+        // display dialog fragment
         DialogFragment dialog = CustomDialogFragment.newInstance(CustomDialogFragment
-                .GALLERY_PERMISSION_DIALOG_ID);
+                .PERMISSION_IMPORTANT_ID);
         dialog.show(getSupportFragmentManager(), Const.DIALOG_TAG);
     }
 
