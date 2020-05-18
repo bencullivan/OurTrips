@@ -21,10 +21,6 @@ import com.google.firebase.auth.FirebaseUser;
 // activity for email verification
 public class VerifyActivity extends AppCompatActivity {
 
-    // savedInstanceState keys
-    private static final String EMAIL_KEY = "email";
-    private static final String PASS_KEY = "pass";
-
     // text widgets
     private EditText mEmailText;
     private EditText mPasswordText;
@@ -32,32 +28,46 @@ public class VerifyActivity extends AppCompatActivity {
     private String mEmail = "";
     private String mPassword = "";
 
+    public String mEmailExtra;   // input email intent extra
+    public String mPasswordExtra;   // input password intent extra
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verify);
-        setTitle("Create Account");
+
+        // set-up activity title
+        setTitle(getString(R.string.title_activity_verify));
+
+        // enable back button
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // get references to the text widgets
         mEmailText = findViewById(R.id.verify_username);
         mPasswordText = findViewById(R.id.verify_password);
+
+        // extract input email & password, if entered in LoginActivity
+        processIntent();
     }
+
+    // handle lifecycle //
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(EMAIL_KEY, mEmail);
-        outState.putString(PASS_KEY, mPassword);
+        outState.putString(Const.USER_EMAIL_KEY, mEmail);
+        outState.putString(Const.USER_PASSWORD_KEY, mPassword);
     }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         // get the email and password if they have been saved
-        if (savedInstanceState.getString(EMAIL_KEY) != null)
-            mEmail = savedInstanceState.getString(EMAIL_KEY);
+        if (savedInstanceState.getString(Const.USER_EMAIL_KEY) != null)
+            mEmail = savedInstanceState.getString(Const.USER_EMAIL_KEY);
         else mEmail = "";
-        if (savedInstanceState.getString(PASS_KEY) != null)
-            mPassword = savedInstanceState.getString(PASS_KEY);
+        if (savedInstanceState.getString(Const.USER_PASSWORD_KEY) != null)
+            mPassword = savedInstanceState.getString(Const.USER_PASSWORD_KEY);
         else mPassword = "";
     }
 
@@ -85,6 +95,8 @@ public class VerifyActivity extends AppCompatActivity {
             }
         });
     }
+
+    // on click listener //
 
     /**
      * onVerifyClicked()
@@ -147,5 +159,13 @@ public class VerifyActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    private void processIntent() {
+        // get input email & password & load accordingly
+        mEmailExtra = getIntent().getStringExtra(Const.USER_EMAIL_KEY);
+        mPasswordExtra = getIntent().getStringExtra(Const.USER_PASSWORD_KEY);
+        if (mEmailExtra != null) mEmailText.setText(mEmailExtra);
+        if (mPasswordExtra != null) mPasswordText.setText(mEmailExtra);
     }
 }

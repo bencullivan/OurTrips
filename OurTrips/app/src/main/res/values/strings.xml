@@ -4,11 +4,20 @@
     <string name="title_activity_login">Sign In</string>
     <string name="title_activity_register">Sign Up</string>
     <string name="title_activity_Edit">Edit Profile</string>
+    <string name="title_activity_verify">Create Account</string>
     <!--    messages  -->
     <string name="invalid_username">Invalid username</string>
     <string name="invalid_password">Password must be > 5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="required_field">field is required</string>
+    <string name="required_gender">Gender is required</string>
+    <string name="email_not_valid">Email is not valid</string>
+    <string name="string_register_failure">We were not able to register your account. Are you sure you entered everything correctly?</string>
+    <string name="string_register_success">You have registered successfully!</string>
+    <string name="string_update_profile">Your profile has been updated!</string>
+    <string name="update_profile_fail">Your profile could not be updated. Check that you have filled all the required fields.</string>
+    <string name="toast_registered">Registered successfully!</string>
+    <string name="toast_profileUpdated">Profile updated successfully</string>
     <!--    prompts  -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -25,10 +34,5 @@
     <string name="prompt_register">Register</string>
     <string name="prompt_update">Update</string>
     <string name="verify_email_string">Verify Email</string>
-    <string name="email_not_valid">Email is not valid</string>
     <string name="profile_picture_string">Profile Picture</string>
-    <string name="string_register_failure">We were not able to register your account. Are you sure you entered everything correctly?</string>
-    <string name="string_register_success">You have registered successfully!</string>
-    <string name="string_update_profile">Your profile has been updated!</string>
-    <string name="update_profile_fail">Your profile could not be updated. Check that you have filled all the required fields.</string>
 </resources>

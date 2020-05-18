@@ -166,6 +166,8 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    // handle lifecycle //
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -192,6 +194,8 @@ public class LoginActivity extends AppCompatActivity {
         mUsernameEditText.setText(savedInstanceState.getString(Const.USER_ID_KEY));
         mPasswordEditText.setText(savedInstanceState.getString(Const.USER_PASSWORD_KEY));
     }
+
+    //  ******************************* private helper methods ******************************* //
 
     // check if inputs match the records
     private boolean verifyCredentials(String email, String password) {
