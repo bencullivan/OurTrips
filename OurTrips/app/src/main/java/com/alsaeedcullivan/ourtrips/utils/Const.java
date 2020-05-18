@@ -24,15 +24,15 @@ public class Const {
 
     // User keys
     public static final String USER_ID_KEY = "user_id";
-    public static final String USER_NAME_KEY = "user_name";
-    public static final String USER_EMAIL_KEY = "user_email";
-    public static final String USER_GENDER_KEY = "user_gender";
-    public static final String USER_AFFILIATION_KEY = "user_affiliation";
-    public static final String USER_BIRTHDAY_KEY = "user_birthday";
+    public static final String USER_NAME_KEY = "name";
+    public static final String USER_EMAIL_KEY = "email";
+    public static final String USER_GENDER_KEY = "gender";
+    public static final String USER_AFFILIATION_KEY = "affiliation";
+    public static final String USER_BIRTHDAY_KEY = "birthday";
     public static final String FRIEND_ID_KEY = "friend_user_id";
-    public static final String DATE_LIST_KEY = "date_list";
-    public static final String USER_PASSWORD_KEY = "user_password";
-    public static final String USER_PROFILE_PIC_KEY = "user_profile_pic_uri";
+    public static final String DATE_LIST_KEY = "dates";
+    public static final String USER_PASSWORD_KEY = "password";
+    public static final String USER_PROFILE_PIC_KEY = "profile_pic_path";
 
     // User sub-collections
     public static final String USER_FRIENDS_COLLECTION = "user_friends";
@@ -40,9 +40,12 @@ public class Const {
 
     // Trip keys
     public static final String TRIP_ID_KEY = "trip_id";
-    public static final String TRIP_TITLE_KEY = "trip_title";
-    public static final String TRIP_USERS_LIST_KEY = "users_list";
-    public static final String TRIP_COMMENTS_LIST_KEY = "comments_list";
+    public static final String TRIP_TITLE_KEY = "title";
+    public static final String TRIP_LOCATION_KEY = "locations";
+    public static final String TRIP_DATES_KEY = "dates";
+    public static final String TRIP_TRIPPERS_KEY = "trippers";
+    public static final String TRIP_COMMENTS_KEY = "comments";
+    public static final String TRIP_PHOTO_PATHS_KEY = "photos";
 
     // Cloud function names
     public static final String FUNC_MATCH_DATES = "matchDates";
@@ -55,6 +58,7 @@ public class Const {
 
     // Cloud Storage paths
     public static final String PROFILE_PIC_PATH = "profile_pictures";
+    public static final String TRIP_PIC_PATH = "trip_pictures";
     public static final String PROFILE_PIC_NAME = "profile.jpg";
 
 }

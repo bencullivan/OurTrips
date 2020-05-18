@@ -1,5 +1,5 @@
 const functions = require('firebase-functions');
-const firebase_tools = require('firebase-tools');
+const tools = require('firebase-tools');
 const admin = require("firebase-admin");
 
 // initialize app
@@ -9,6 +9,8 @@ admin.initializeApp({
 
 // get a reference to firestore
 const db = admin.firestore();
+// get a reference to storage
+const bucket = admin.storage().bucket("gs://our-trips-74b79.appspot.com");
 
 /**
 * matchDates
@@ -87,29 +89,40 @@ let compareDates = (date1, date2) => {
  * @param {DocumentSnapshot} snap - a snapshot associated with the document that is being deleted
  */
 exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
-  .firestore.document('users/{user}').onDelete((snap) => {
+  .firestore.document("users/{user}").onDelete((snap) => {
     // get the id of the document that was deleted
     const id = snap.id;
 
+    // if there is data within the document (This should always be true)
+    if (snap.data() !== undefined) {
+      // get the path of the profile picture
+      const profilePath = snap.data().profile_pic_path;
+      // delete the profile picture from storage
+      if (profilePath !== undefined) bucket.file(profilePath).delete();
+    }
+
     // establish the paths of the sub-collections
-    const path1 = "users/"+id+"/user_friends";
-    const path2 = "users/"+id+"/user_trips";
+    const userFriendsPath = "users/"+id+"/user_friends";
+    const userTripsPath = "users/"+id+"/user_trips";
 
     // remove this user from the friends list of all their friends
-    db.collection(path1).get()
+    db.collection(userFriendsPath).get()
       .then(snapshot => {
         snapshot.forEach(friend => {
-          db.collection("users").doc(friend.id).collection("user_friends").doc(id).delete();
+          db.collection("users")
+            .doc(friend.id)
+            .collection("user_friends")
+            .doc(id)
+            .delete();
         });
         return snapshot;
       })
       .catch(err => {
-        console.log("error removing from friends", err);
+        console.log("Error removing from friends: " + err);
       })
 
-    
     // delete the trips sub-collection
-    firebase_tools.firestore.delete(path2, {
+    tools.firestore.delete(userTripsPath, {
         project: process.env.GCLOUD_PROJECT,
         recursive: true,
         yes: true,
@@ -117,7 +130,7 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
       })
       .then(() => {
         return {
-          path: path2 
+          path: userTripsPath
         };
       })
       .catch(err => {
@@ -125,7 +138,7 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
       });
 
     // delete the friends sub-collection
-    firebase_tools.firestore.delete(path1, {
+    tools.firestore.delete(userFriendsPath, {
         project: process.env.GCLOUD_PROJECT,
         recursive: true,
         yes: true,
@@ -133,12 +146,111 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
       })
       .then(() => {
         return {
-          path: path1 
+          path: userFriendsPath 
         };
       })
       .catch(err => {
         console.log(err);
       });
+    
+    return 1;
+});
 
+
+/**
+ * onTripDeleted
+ * triggered when the document associated with a trip is deleted,
+ * this function deletes all of the photos from the trips photo album from the 
+ * cloud storage bucket. It also removes this trip from each trippers' list of 
+ * trips. It also deletes the trippers, comments, and photos sub-collections
+ * @author Ben Cullivan
+ * @param {DocumentSnapshot} snap - a snapshot associated with the document that is being deleted
+ */
+exports.onTripDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
+  .firestore.document("trips/{trip}").onDelete((snap) => {
+    // get the id of the document that was deleted
+    const id = snap.id;
+
+    // establish the paths of the sub-collections
+    const commentsPath = "trips/"+id+"/comments";
+    const trippersPath = "trips/"+id+"/trippers";
+    const photosPath = "trips/"+id+"/photos";
+
+    // delete all of the photos from the storage bucket
+    db.collection(photosPath).get()
+      .then(snapshot => {
+        snapshot.forEach(photo => {
+          bucket.file(photo.id).delete();
+        });
+        return snapshot;
+      })
+      .catch(err => {
+        console.log("Error removing photos: " + err);
+      });
+
+    // delete this trip from each trippers' list of trips
+    db.collection(trippersPath).get()
+      .then(snapshot => {
+        snapshot.forEach(user => {
+          db.collection("users")
+            .doc(user.id)
+            .collection("user_trips")
+            .doc(id)
+            .delete();
+        });
+        return snapshot;
+      })
+      .catch(err => {
+        console.log("Error removing trip from users: " + err);
+      });
+    
+    // delete the comments sub-collection
+    tools.firestore.delete(commentsPath, {
+      project: process.env.GCLOUD_PROJECT,
+      recursive: true,
+      yes: true,
+      token: functions.config().fb.token
+    })
+    .then(() => {
+      return {
+        path: commentsPath
+      };
+    })
+    .catch(err => {
+      console.log(err);
+    });
+
+    // delete the photos sub-collection
+    tools.firestore.delete(photosPath, {
+      project: process.env.GCLOUD_PROJECT,
+      recursive: true,
+      yes: true,
+      token: functions.config().fb.token
+    })
+    .then(() => {
+      return {
+        path: photosPath
+      };
+    })
+    .catch(err => {
+      console.log(err);
+    });
+
+    // delete the trippers sub-collection
+    tools.firestore.delete(trippersPath, {
+      project: process.env.GCLOUD_PROJECT,
+      recursive: true,
+      yes: true,
+      token: functions.config().fb.token
+    })
+    .then(() => {
+      return {
+        path: trippersPath
+      };
+    })
+    .catch(err => {
+      console.log(err);
+    });
+    
     return 1;
 });

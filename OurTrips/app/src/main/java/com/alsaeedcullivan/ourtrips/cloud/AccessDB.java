@@ -160,7 +160,8 @@ public class AccessDB {
      * NOTE: ** This function only deletes the document associated with a user
      *         it does NOT delete the user_friends or user_trips sub collections
      *         it also does NOT delete this user from the friends lists of their friends.
-     *         These three actions are performed by the onUserDeleted Cloud Function
+     *         Finally, it also does NOT delete a user's profile photo from the storage bucket.
+     *         These four actions are performed by the onUserDeleted Cloud Function
      *         (see index.js) **
      */
     public static Task<Void> deleteUser(String userId) {
@@ -198,9 +199,18 @@ public class AccessDB {
     /**
      * deleteTrip()
      * deletes a trip from the database
+     * NOTE: ** This function only deletes the document associated with a trip.
+     *          It does NOT delete the trippers or photos or comments sub collections.
+     *          It also does NOT remove the trips's photo album from the storage bucket.
+     *          Finally, it does not delete the trip from the user_trips sub collection of
+     *          all the users that went on the trip.
+     *          These actions are performed by the onTripDeleted cloud function (see index.js)
      */
-    public void deleteTrip() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+    public Task<Void> deleteTrip(String tripId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .delete();
     }
 
     // GETTERS TO RETRIEVE DATA FROM THE DB

@@ -8,22 +8,15 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
-import com.alsaeedcullivan.ourtrips.cloud.CloudFunctions;
-import com.alsaeedcullivan.ourtrips.models.Trip;
-import com.alsaeedcullivan.ourtrips.models.User;
 import com.alsaeedcullivan.ourtrips.utils.Const;
-import com.alsaeedcullivan.ourtrips.utils.TestVars;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.functions.HttpsCallableResult;
+
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +101,7 @@ public class UserFirebaseTests {
     @Test
     public void deleteUserTest() {
 
-        Task<Void> task = AccessDB.deleteUser("test_user_id_1");
+        Task<Void> task = AccessDB.deleteUser("mr63P9h6bWZhRYgHl3g0CZf1Cmk1");
 
         while (!task.isComplete()) { }
 
