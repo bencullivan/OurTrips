@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
@@ -35,6 +36,8 @@ public class VerifyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verify);
+
+        Log.d(Const.TAG, "onCreate: verify");
 
         // set-up activity title
         setTitle(getString(R.string.title_activity_verify));
@@ -75,6 +78,7 @@ public class VerifyActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        Log.d(Const.TAG, "onResume: verify ");
         // get the current user
         FirebaseAuth auth = FirebaseAuth.getInstance();
         final FirebaseUser user = auth.getCurrentUser();
@@ -166,6 +170,6 @@ public class VerifyActivity extends AppCompatActivity {
         mEmailExtra = getIntent().getStringExtra(Const.USER_EMAIL_KEY);
         mPasswordExtra = getIntent().getStringExtra(Const.USER_PASSWORD_KEY);
         if (mEmailExtra != null) mEmailText.setText(mEmailExtra);
-        if (mPasswordExtra != null) mPasswordText.setText(mEmailExtra);
+        if (mPasswordExtra != null) mPasswordText.setText(mPasswordExtra);
     }
 }
