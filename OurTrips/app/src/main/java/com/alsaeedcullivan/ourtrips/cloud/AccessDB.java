@@ -10,15 +10,21 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
  * Class to handle interactions with the database
  */
 public class AccessDB {
+
+    //SETTERS TO UPDATE THE DB
 
     /**
      * addNewUser()
@@ -150,6 +156,8 @@ public class AccessDB {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
     }
 
+    // GETTERS TO RETRIEVE DATA FROM THE DB
+
     /**
      * getFriendsList()
      * gets the friends list of a user
@@ -164,17 +172,57 @@ public class AccessDB {
                 .continueWith(new Continuation<QuerySnapshot, List<String>>() {
                     @Override
                     public List<String> then(@NonNull Task<QuerySnapshot> task) {
-                        if (task.getResult() == null ||
-                                task.getResult().getDocuments().size() == 0)
+                        QuerySnapshot result = task.getResult();
+                        if (result == null || result.getDocuments().size() == 0)
                             return new ArrayList<>();
 
                         // extract and return the ids of the documents
-                        List<DocumentSnapshot> docList = task.getResult().getDocuments();
+                        List<DocumentSnapshot> docList = result.getDocuments();
                         List<String> friendIds = new ArrayList<>();
                         for (DocumentSnapshot doc : docList) {
                             friendIds.add(doc.getId());
                         }
                         return friendIds;
+                    }
+                });
+    }
+
+    public static Task<List<Date>> getUserDatesForCal(String userId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .get()
+                .continueWith(new Continuation<DocumentSnapshot, List<Date>>() {
+                    @Override
+                    public List<Date> then(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot result = task.getResult();
+                        if (result == null || !result.contains(Const.DATE_LIST_KEY) ||
+                            !(result.get(Const.DATE_LIST_KEY) instanceof List))
+                            return new ArrayList<>();
+
+                        // NOTE: if execution makes it past the above if statement this cast will
+                        // not throw an exception
+                        List<String> sDates = (List<String>) result.get(Const.DATE_LIST_KEY);
+                        List<Date> realDates = new ArrayList<>();
+
+                        if (sDates == null) return realDates;
+
+                        SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+                        try {
+                            Date today = format.parse(format.format(new Date()));
+
+                            // convert each string date into a date object
+                            // make sure that none of these dates are before today
+                            for (String date : sDates) {
+                                Date d = format.parse(date);
+                                if (d != null && d.compareTo(today) >= 0) {
+                                    realDates.add(d);
+                                }
+                            }
+                            return realDates;
+                        } catch (ParseException e) {
+                            return realDates;
+                        }
                     }
                 });
     }

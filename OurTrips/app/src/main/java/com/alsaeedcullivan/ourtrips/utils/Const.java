@@ -45,9 +45,7 @@ public class Const {
     public static final String TRIP_COMMENTS_LIST_KEY = "comments_list";
 
     // Cloud function names
-    public static final String FUNC_RECURSIVE_DELETE = "recursiveDelete";
     public static final String FUNC_MATCH_DATES = "matchDates";
-    public static final String FUNC_REMOVE_FROM_FRIENDS = "removeFromFriends";
 
     // Cloud Function Keys
     public static final String LIST_1_KEY = "list1";
