@@ -1,10 +1,13 @@
 package com.alsaeedcullivan.ourtrips.cloud;
 
+import android.util.Log;
+
 import com.alsaeedcullivan.ourtrips.utils.Const;
 
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -50,6 +53,50 @@ public class AccessDB {
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .update(data);
+    }
+
+    /**
+     * setUserDatesFromCal()
+     * updates a users list of dates in the cloud FireStore database
+     * @param userId - the id of the user
+     * @param dates - a list of Date objects, these will be converted to Strings in the desired
+     *              format on a background thread before they are added to the database
+     */
+    public static void setUserDatesFromCal(String userId, List<Date> dates) {
+        // convert the parameters to final constants
+        final List<Date> dDates = dates;
+        final String id = userId;
+        Log.d(Const.TAG, "setUserDatesFromCal: " + Thread.currentThread().getId());
+
+        // run the conversion from dates to strings on a background thread
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(Const.TAG, "run: " + Thread.currentThread().getId());
+
+                // convert the list of dates to a list of strings in the desired format
+                SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+                List<String> sDates = new ArrayList<>();
+                for (Date date : dDates) {
+                    sDates.add(format.format(date));
+                }
+
+                if (sDates.size() > 0) {
+                    // add the list of dates to the database
+                    FirebaseFirestore.getInstance()
+                            .collection(Const.USERS_COLLECTION)
+                            .document(id)
+                            .update(Const.DATE_LIST_KEY, sDates)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) Log.d(Const.TAG, "onComplete: successfully added date list");
+                                    else Log.d(Const.TAG, "onComplete: fuck this shit im out");
+                                }
+                            });
+                }
+            }
+        });
     }
 
     /**
@@ -187,6 +234,13 @@ public class AccessDB {
                 });
     }
 
+    /**
+     * getUserDatesForCal()
+     * gets the list of dates the user is available, updates them to make sure that none of them are
+     * before the current day, converts them to Date objects that can be displayed by the
+     * CalendarView in CalendarActivity
+     * @param userId - the id of the user
+     */
     public static Task<List<Date>> getUserDatesForCal(String userId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)

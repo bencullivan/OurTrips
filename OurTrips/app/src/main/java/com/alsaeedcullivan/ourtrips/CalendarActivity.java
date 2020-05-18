@@ -4,8 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
+import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,6 +32,11 @@ public class CalendarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
 
+        // set the title and the back button
+        setTitle("Calendar");
+        if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // get a reference to the calendar view
         mCalView = findViewById(R.id.calendar_view);
 
         // get the current user
@@ -55,5 +64,42 @@ public class CalendarActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.calendar_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.cal_save_button:
+                onSaveClicked();
+                return true;
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * onSaveClicked()
+     * adds the dates the user has selected to the database when the user clicks "save" in the
+     * options menu
+     */
+    private void onSaveClicked() {
+        // get the list of dates that were selected
+        mDateList = mCalView.getSelectedDates();
+
+        // check to make sure there is a user that has has added dates
+        if (mUser != null && mDateList != null && mDateList.size() > 0) {
+            Log.d(Const.TAG, "onSaveClicked: " + Thread.currentThread().getId());
+            // update the user's available dates
+            AccessDB.setUserDatesFromCal(mUser.getUid(), mDateList);
+        }
+
     }
 }
