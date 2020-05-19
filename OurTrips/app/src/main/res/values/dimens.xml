@@ -8,4 +8,5 @@
     <dimen name="top_vertical_margin">32dp</dimen>
     <dimen name="img_side_dp">120dp</dimen>
     <dimen name="padding_dp">18dp</dimen>
+    <dimen name="header_sp">32sp</dimen>
 </resources>

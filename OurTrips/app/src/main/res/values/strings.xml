@@ -8,6 +8,7 @@
     <string name="title_activity_trip">Trip</string>
     <string name="title_activity_main">Trips</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_calendar">Calendar</string>
     <!--    messages  -->
     <string name="invalid_username">Invalid username</string>
     <string name="invalid_password">Password must be > 5 characters</string>
@@ -22,13 +23,13 @@
     <string name="toast_registered">Registered successfully!</string>
     <string name="toast_profileUpdated">Profile updated successfully</string>
     <string name="message_important_access">the Requested Permission is necessary for the app to run properly</string>
+    <string name="trip_cal_select">Select your availability Dates</string>
     <!--    prompts  -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_up">Sign up</string>
-    <string name="action_sign_in">Sign in</string>
-    <string name="welcome">"Welcome !"</string>
-    <string name="change_pic_text">Change picture</string>
+    <string name="action_sign_up">Sign Up</string>
+    <string name="action_sign_in">Sign In</string>
+    <string name="change_pic_text">Change Picture</string>
     <string name="name_text">Name</string>
     <string name="female_text">Female</string>
     <string name="male_text">Male</string>
@@ -47,21 +48,11 @@
     <string name="prompt_trippers">Trippers</string>
     <string name="settings_text">Settings</string>
     <string name="edit_profile_text">"Edit Profile "</string>
-
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <string name="trip_cal_select">Select dates where you are available to go on a trip!</string>
-    <string name="cal_save">save</string>
+    <string name="cal_save">Save</string>
+    <string name="header_app_settings">App Settings</string>
+    <string name="header_account_settings">Account Settings</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="prompt_data_collect">Posting your data anonymously</string>
+    <string name="privacy">Privacy</string>
+    <string name="update_dates_text">Update Dates</string>
 </resources>

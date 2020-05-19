@@ -39,11 +39,11 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
 
-        //TODO: uncomment this
-//        // if there is a verified user logged in, go straight to main activity
-//        if (mUser != null && mUser.isEmailVerified()) {
-//            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-//        }
+
+        // if there is a verified user logged in, go straight to main activity
+        if (mUser != null && mUser.isEmailVerified()) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        }
 
         setContentView(R.layout.activity_login);
 
@@ -185,8 +185,8 @@ public class LoginActivity extends AppCompatActivity {
         String inputEmail = mUsernameEditText.getText().toString();
         String inputPassword = mPasswordEditText.getText().toString();
         // save input email & password
-        if (!inputEmail.equals("")) outState.putString(Const.USER_ID_KEY,inputEmail);
-        if (!inputPassword.equals("")) outState.putString(Const.USER_PASSWORD_KEY,inputPassword);
+        if (!inputEmail.equals("")) outState.putString(Const.USER_ID_KEY, inputEmail);
+        if (!inputPassword.equals("")) outState.putString(Const.USER_PASSWORD_KEY, inputPassword);
     }
 
     @Override

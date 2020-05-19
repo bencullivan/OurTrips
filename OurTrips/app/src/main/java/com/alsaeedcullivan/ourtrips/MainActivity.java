@@ -34,6 +34,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.update_dates:
+                // proceed to calendar activity
+                Intent datesIntent = new Intent(MainActivity.this, CalendarActivity.class);
+                datesIntent.putExtra(Const.SOURCE_TAG, TAG);
+                startActivity(datesIntent);
+                break;
             case R.id.settings:
                 // proceed to settings activity
                 Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
@@ -42,9 +48,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.update_profile:
                 // proceed to register activity
-                Intent EditIntent = new Intent(MainActivity.this, RegisterActivity.class);
-                EditIntent.putExtra(Const.SOURCE_TAG, TAG);
-                startActivity(EditIntent);
+                Intent editIntent = new Intent(MainActivity.this, RegisterActivity.class);
+                editIntent.putExtra(Const.SOURCE_TAG, TAG);
+                startActivity(editIntent);
                 break;
         }
         return super.onOptionsItemSelected(item);

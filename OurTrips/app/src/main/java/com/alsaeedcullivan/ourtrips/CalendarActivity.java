@@ -33,7 +33,7 @@ public class CalendarActivity extends AppCompatActivity {
         setContentView(R.layout.activity_calendar);
 
         // set the title and the back button
-        setTitle("Calendar");
+        setTitle(getString(R.string.title_activity_calendar));
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // get a reference to the calendar view

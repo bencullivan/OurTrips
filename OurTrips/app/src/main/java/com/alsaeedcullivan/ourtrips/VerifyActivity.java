@@ -133,29 +133,29 @@ public class VerifyActivity extends AppCompatActivity {
                             if (auth.getCurrentUser() != null)
                                 auth.getCurrentUser().sendEmailVerification()
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        // inform the user that an email has been sent
-                                        Toast t = Toast.makeText(VerifyActivity.this,
-                                                "A verification email has been sent to " +
-                                                        mEmail, Toast.LENGTH_SHORT);
-                                        t.setGravity(Gravity.TOP |
-                                                Gravity.CENTER_HORIZONTAL, 0, 0);
-                                        t.show();
-                                    } else {
-                                        // inform the user that an email was not sent
-                                        Toast t = Toast.makeText(VerifyActivity.this,
-                                                "We were not able to send a verification email" +
-                                                        " to " + mEmail + ", are you sure this is " +
-                                                        "your correct email address?",
-                                                        Toast.LENGTH_SHORT);
-                                        t.setGravity(Gravity.TOP |
-                                                Gravity.CENTER_HORIZONTAL, 0, 0);
-                                        t.show();
-                                    }
-                                }
-                            });
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    // inform the user that an email has been sent
+                                                    Toast t = Toast.makeText(VerifyActivity.this,
+                                                            "A verification email has been sent to " +
+                                                                    mEmail, Toast.LENGTH_SHORT);
+                                                    t.setGravity(Gravity.TOP |
+                                                            Gravity.CENTER_HORIZONTAL, 0, 0);
+                                                    t.show();
+                                                } else {
+                                                    // inform the user that an email was not sent
+                                                    Toast t = Toast.makeText(VerifyActivity.this,
+                                                            "We were not able to send a verification email" +
+                                                                    " to " + mEmail + ", are you sure this is " +
+                                                                    "your correct email address?",
+                                                            Toast.LENGTH_SHORT);
+                                                    t.setGravity(Gravity.TOP |
+                                                            Gravity.CENTER_HORIZONTAL, 0, 0);
+                                                    t.show();
+                                                }
+                                            }
+                                        });
                         } else {
                             // inform the user that the email was not valid
                             mEmailText.setError(getString(R.string.email_not_valid));

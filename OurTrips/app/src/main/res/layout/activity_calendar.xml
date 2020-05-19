@@ -10,15 +10,22 @@
         android:id="@+id/calendar_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
+        android:shadowColor="@color/colorSecondary"
         android:text="@string/trip_cal_select"
-        android:textSize="25sp"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="@dimen/header_sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.squareup.timessquare.CalendarPickerView
         android:id="@+id/calendar_view"
-        app:layout_constraintTop_toBottomOf="@+id/calendar_text"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/calendar_text"
+        app:tsquare_dayTextColor="@color/colorSecondaryDark"
+        app:tsquare_dividerColor="@color/colorPrimary"
+        app:tsquare_headerTextColor="@color/colorPrimaryDark"
+        app:tsquare_titleTextColor="@color/colorSecondary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
