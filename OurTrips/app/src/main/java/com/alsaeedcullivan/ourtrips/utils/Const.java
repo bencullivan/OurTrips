@@ -41,11 +41,14 @@ public class Const {
     // Trip keys
     public static final String TRIP_ID_KEY = "trip_id";
     public static final String TRIP_TITLE_KEY = "title";
-    public static final String TRIP_LOCATION_KEY = "locations";
+    public static final String TRIP_LOCATIONS_KEY = "locations";
     public static final String TRIP_DATES_KEY = "dates";
-    public static final String TRIP_TRIPPERS_KEY = "trippers";
-    public static final String TRIP_COMMENTS_KEY = "comments";
-    public static final String TRIP_PHOTO_PATHS_KEY = "photos";
+    public static final String TRIP_TRIPPERS_COLLECTION = "trippers";
+    public static final String TRIP_TRIPPER_KEY = "tripper";
+    public static final String TRIP_COMMENTS_COLLECTION = "comments";
+    public static final String TRIP_COMMENT_KEY = "comment";
+    public static final String TRIP_PHOTO_PATHS_COLLECTION = "photos";
+    public static final String TRIP_PHOTO_KEY = "photo";
 
     // Cloud function names
     public static final String FUNC_MATCH_DATES = "matchDates";

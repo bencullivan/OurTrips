@@ -426,7 +426,7 @@ public class RegisterActivity extends AppCompatActivity {
             try {
                 // open an input stream from the photo Uri and upload to the bucket
                 InputStream is = getContentResolver().openInputStream(mProfileUri);
-                AccessBucket.saveProfilePicture(path, is);
+                AccessBucket.uploadPicture(path, is);
 
                 // add the storage path to data
                 data.put(Const.USER_PROFILE_PIC_KEY, path);
@@ -488,7 +488,7 @@ public class RegisterActivity extends AppCompatActivity {
             try {
                 // open an input stream from the photo Uri and upload to the bucket
                 InputStream is = getContentResolver().openInputStream(mProfileUri);
-                AccessBucket.saveProfilePicture(path, is);
+                AccessBucket.uploadPicture(path, is);
 
                 // add the storage path to data
                 data.put(Const.USER_PROFILE_PIC_KEY, path);

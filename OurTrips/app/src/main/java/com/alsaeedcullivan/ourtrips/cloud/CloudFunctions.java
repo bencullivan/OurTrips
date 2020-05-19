@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class to handle calls to the HTTPS onCall cloud functions
+ * Class of static methods to handle calls to the HTTPS onCall cloud functions
  */
 public class CloudFunctions {
 
@@ -24,6 +24,8 @@ public class CloudFunctions {
      * matchDates()
      * this calls the matchDates cloud function (see index.js) which takes two user Ids and
      * determines which dates both users are available
+     * @param list1 - the list of dates that the first user is available
+     * @param list2 - the list of dates that the second user is available
      */
     public static Task<List<String>> matchDates(List<String> list1, List<String> list2) {
         // create a data object to hold the user ids
@@ -40,8 +42,9 @@ public class CloudFunctions {
                                 !(task.getResult().getData() instanceof List)) {
                             return new ArrayList<>();
                         }
-                        //NOTE:
-                        // the data will always be a list of strings, ignore the "unchecked cast"
+
+                        // NOTE: if execution made it past the above if statement this cast
+                        // will not throw an exception
                         List<String> datesList = (List<String>) task.getResult().getData();
                         Log.d(Const.TAG, "then: " + datesList);
                         return datesList;

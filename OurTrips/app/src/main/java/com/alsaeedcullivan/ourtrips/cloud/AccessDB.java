@@ -9,10 +9,12 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,7 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Class to handle interactions with the database
+ * Class of static methods to handle interactions with the FireStore database
  */
 public class AccessDB {
 
@@ -46,6 +48,8 @@ public class AccessDB {
     /**
      * updateUserProfile()
      * updates the profile of a user
+     * @param userId - the id of the user
+     * @param data - the profile data to be added
      */
     public static Task<Void> updateUserProfile(String userId, Map<String, Object> data) {
         // update the user's profile info
@@ -100,27 +104,10 @@ public class AccessDB {
     }
 
     /**
-     * loadUserProfile()
-     * loads the profile info of a user
-     */
-    public static Task<Map<String, Object>> loadUserProfile(String userId) {
-        return FirebaseFirestore.getInstance()
-                .collection(Const.USERS_COLLECTION)
-                .document(userId)
-                .get()
-                .continueWith(new Continuation<DocumentSnapshot, Map<String, Object>>() {
-                    @Override
-                    public Map<String, Object> then(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.getResult() != null) {
-                            return task.getResult().getData();
-                        } else return new HashMap<>();
-                    }
-                });
-    }
-
-    /**
      * addUserFriend()
      * adds a new friend to the current user's friends sub-collection
+     * @param userId - the id of the user
+     * @param friendId - the id of the friend
      */
     public static Task<Void> addUserFriend(String userId, String friendId) {
         // map to contain the friend id
@@ -139,6 +126,8 @@ public class AccessDB {
     /**
      * addUserTrip()
      * adds a new trip to the current user's trips sub-collection
+     * @param userId - the id of the user
+     * @param tripId - the id of the trip
      */
     public static Task<Void> addUserTrip(String userId, String tripId) {
         // map to contain the document data
@@ -163,6 +152,7 @@ public class AccessDB {
      *         Finally, it also does NOT delete a user's profile photo from the storage bucket.
      *         These four actions are performed by the onUserDeleted Cloud Function
      *         (see index.js) **
+     * @param userId - the id of the user
      */
     public static Task<Void> deleteUser(String userId) {
         return FirebaseFirestore.getInstance()
@@ -174,8 +164,9 @@ public class AccessDB {
     /**
      * addTrip()
      * adds a new trip to the database
+     * @param data - a map of the data and fields to be added
      */
-    public static Task<Void> addTrip(String tripId, Map<String, Object> data) {
+    public static Task<String> addTrip(Map<String, Object> data) {
 //        // map to contain the trip data
 //        HashMap<String, Object> data = new HashMap<>();
 //
@@ -188,12 +179,91 @@ public class AccessDB {
         // add the trip to the database
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
+                .add(data)
+                .continueWith(new Continuation<DocumentReference, String>() {
+                    @Override
+                    public String then(@NonNull Task<DocumentReference> task) {
+                        DocumentReference doc = task.getResult();
+                        if (doc != null) return doc.getId();
+                        else return "";
+                    }
+                });
+    }
+
+    /**
+     * updateTrip()
+     * updates the non-sub-collection fields of a trip in the db
+     * @param tripId - the id of the trip
+     * @param data - a map containing the data and fields to be updated
+     */
+    public static Task<Void> updateTrip(String tripId, Map<String, Object> data) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
+                .update(data);
+    }
+
+    /**
+     * addTripper()
+     * adds a tripper to the trippers sub-collection of a trip
+     * @param tripId - the id of the trip
+     * @param tripperId - the id of the tripper to be added
+     */
+    public static void addTripper(String tripId, String tripperId) {
+        // add the tripper id to a map
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.TRIP_TRIPPER_KEY, tripperId);
+        // add a document to the trippers sub-collection of this trip
+        FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .collection(Const.TRIP_TRIPPERS_COLLECTION)
+                .document(tripperId)
                 .set(data);
     }
 
-    public void updateTrip() {
+    /**
+     * addTripComment()
+     * adds a comment to the comments sub-collection of a trip
+     * @param tripId - the id of the trip
+     * @param comment - the comment to be added
+     * @param docId - the id of the document that will hold the comment
+     */
+    public static void addTripComment(String tripId, String comment, String docId) {
+        // add the comment to a map
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.TRIP_COMMENT_KEY, comment);
+        // add a document to the comments sub-collection of this trip
+        FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .collection(Const.TRIP_COMMENTS_COLLECTION)
+                .document(docId)
+                .set(data);
+    }
 
+    /**
+     * addTripPhoto()
+     * adds a photo to storage and adds its path to the photo paths sub collection of this trip
+     * @param tripId - the id of the trip
+     * @param path - the path where the photo will be stored in the photo bucket
+     * @param is - the input stream that will be used to upload the photo to the storage bucket
+     */
+    public static void addTripPhoto(String tripId, String path, InputStream is) {
+        // upload the picture to storage
+        AccessBucket.uploadPicture(path, is);
+
+        // create a map containing the path of the photo
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.TRIP_PHOTO_KEY, path);
+
+        // add the picture path to the photo paths sub-collection of this trip
+        FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .collection(Const.TRIP_PHOTO_PATHS_COLLECTION)
+                .document(path)
+                .set(data);
     }
 
     /**
@@ -205,8 +275,9 @@ public class AccessDB {
      *          Finally, it does not delete the trip from the user_trips sub collection of
      *          all the users that went on the trip.
      *          These actions are performed by the onTripDeleted cloud function (see index.js)
+     * @param tripId - the id of the trip
      */
-    public Task<Void> deleteTrip(String tripId) {
+    public static Task<Void> deleteTrip(String tripId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
@@ -216,8 +287,29 @@ public class AccessDB {
     // GETTERS TO RETRIEVE DATA FROM THE DB
 
     /**
+     * loadUserProfile()
+     * loads the profile info of a user
+     * @param userId - the id of the user
+     */
+    public static Task<Map<String, Object>> loadUserProfile(String userId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .get()
+                .continueWith(new Continuation<DocumentSnapshot, Map<String, Object>>() {
+                    @Override
+                    public Map<String, Object> then(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.getResult() != null) {
+                            return task.getResult().getData();
+                        } else return new HashMap<>();
+                    }
+                });
+    }
+
+    /**
      * getFriendsList()
      * gets the friends list of a user
+     * @param userId - the id of the user
      */
     public static Task<List<String>> getFriendsList(String userId) {
         // get a list of the friends ids of a user
@@ -287,6 +379,30 @@ public class AccessDB {
                         } catch (ParseException e) {
                             return realDates;
                         }
+                    }
+                });
+    }
+
+    /**
+     * getUserDatesForMatch()
+     * retrieves the list of the dates the user is available
+     * @param userId - the id of the user
+     */
+    public static Task<List<String>> getUserDatesForMatch(String userId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .get()
+                .continueWith(new Continuation<DocumentSnapshot, List<String>>() {
+                    @Override
+                    public List<String> then(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot result = task.getResult();
+                        if (result == null || !result.contains(Const.DATE_LIST_KEY)
+                            || result.get(Const.DATE_LIST_KEY) == null) return new ArrayList<>();
+
+                        // NOTE: if execution makes it past the above if statement
+                        // this cast will not throw an exception
+                        return (List<String>) result.get(Const.DATE_LIST_KEY);
                     }
                 });
     }
