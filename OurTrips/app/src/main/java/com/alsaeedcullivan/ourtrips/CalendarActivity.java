@@ -4,12 +4,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
-import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,10 +22,20 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This library uses the CalendarPickerView from the Times Square open source library.
+ * We claim no rights over the library or its content and have not altered it in any way.
+ * We are simply implementing it to use its CalendarPickerView.
+ * The Times Square library is licenced under the Apache License, Version 2.0
+ * The library can be found on github at https://github.com/square/android-times-square
+ */
 public class CalendarActivity extends AppCompatActivity {
 
     FirebaseUser mUser;
+    TextView mHeader;
     CalendarPickerView mCalView;
+    ProgressBar mSpinner;
+    TextView mLoading;
     List<Date> mDateList = new ArrayList<>();
 
     @Override
@@ -36,12 +47,26 @@ public class CalendarActivity extends AppCompatActivity {
         setTitle(getString(R.string.title_activity_calendar));
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // get a reference to the calendar view
+        // get a references to the widgets
+        mHeader = findViewById(R.id.calendar_text);
         mCalView = findViewById(R.id.calendar_view);
+        mSpinner = findViewById(R.id.spinner);
+        mLoading = findViewById(R.id.loading_text);
+
+        // set initial visibility
+        mHeader.setVisibility(View.GONE);
+        mCalView.setVisibility(View.GONE);
+        mSpinner.setVisibility(View.VISIBLE);
+        mLoading.setVisibility(View.VISIBLE);
+
+        // set up the CalendarPickerView
+        Calendar nextYear = Calendar.getInstance();
+        nextYear.add(Calendar.YEAR, 1);
+        Date today = new Date();
+        mCalView.init(today, nextYear.getTime()).inMode(CalendarPickerView.SelectionMode.MULTIPLE);
 
         // get the current user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
-
         if (mUser != null) {
             // get the list of dates the user is available
             Task<List<Date>> datesTask = AccessDB.getUserDatesForCal(mUser.getUid());
@@ -49,17 +74,17 @@ public class CalendarActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<List<Date>> task) {
                     if (task.isSuccessful()) {
-                        // highlight the cells corresponding to the available dates
+                        // get the list of dates that were retrieved from the database
                         mDateList = task.getResult();
-                        if (mDateList != null) {
-                            // set up the CalendarPickerView
-                            Calendar nextYear = Calendar.getInstance();
-                            nextYear.add(Calendar.YEAR, 1);
-                            Date today = new Date();
-                            mCalView.init(today, nextYear.getTime())
-                                    .withSelectedDates(mDateList)
-                                    .inMode(CalendarPickerView.SelectionMode.MULTIPLE);
+
+                        // if there is a list of dates that the user has already selected,
+                        // then display them
+                        if (mDateList != null && mDateList.size() > 0) {
+                            for (Date date : mDateList) mCalView.selectDate(date);
                         }
+
+                        // make the calendar visible
+                        makeCalAppear();
                     }
                 }
             });
@@ -95,11 +120,23 @@ public class CalendarActivity extends AppCompatActivity {
         mDateList = mCalView.getSelectedDates();
 
         // check to make sure there is a user that has has added dates
-        if (mUser != null && mDateList != null && mDateList.size() > 0) {
-            Log.d(Const.TAG, "onSaveClicked: " + Thread.currentThread().getId());
+        if (mUser != null && mDateList != null) {
             // update the user's available dates
             AccessDB.setUserDatesFromCal(mUser.getUid(), mDateList);
         }
 
+        // finish the activity
+        finish();
+    }
+
+    /**
+     * makeCalAppear()
+     * makes the calendar visible and the progress bar invisible
+     */
+    private void makeCalAppear() {
+        mLoading.setVisibility(View.GONE);
+        mSpinner.setVisibility(View.GONE);
+        mHeader.setVisibility(View.VISIBLE);
+        mCalView.setVisibility(View.VISIBLE);
     }
 }

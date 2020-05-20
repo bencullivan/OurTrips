@@ -53,7 +53,7 @@ exports.matchDates = functions.https.onCall((data) => {
  * @param {string} date2 
  * @returns -1 if date1 < date2, 0 if date1 == date2, 1 if date1 > date2
  */
-let compareDates = (date1, date2) => {
+function compareDates(date1, date2) {
     // get lists of the components of each date mm-dd-YYYY
     // they will always be of length 3
     let date1nums = date1.split("-");
@@ -97,6 +97,7 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
     if (snap.data() !== undefined) {
       // get the path of the profile picture
       const profilePath = snap.data().profile_pic_path;
+      console.log(profilePath);
       // delete the profile picture from storage
       if (profilePath !== undefined) bucket.file(profilePath).delete();
     }
@@ -119,7 +120,7 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
       })
       .catch(err => {
         console.log("Error removing from friends: " + err);
-      })
+      });
 
     // delete the trips sub-collection
     tools.firestore.delete(userTripsPath, {

@@ -11,9 +11,11 @@ public class Const {
     public static final String DIALOG_TAG = "dialog";
 
     // intent keys
-    public static final String REGISTER_KEY = "RegisterActivity";
-    public static final String VERIFY_KEY = "VerifyActivity";
-    public static final String MAIN_KEY = "MainActivity";
+    public static final String REGISTER_TAG = "RegisterActivity";
+    public static final String VERIFY_TAG = "VerifyActivity";
+    public static final String MAIN_TAG = "MainActivity";
+    public static final String LOGIN_TAG = "LoginActivity";
+    public static final String SETTINGS_TAG = "SettingsActivity";
 
     // codes
     public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;

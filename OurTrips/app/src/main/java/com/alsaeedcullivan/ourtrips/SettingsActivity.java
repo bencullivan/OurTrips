@@ -20,8 +20,6 @@ import java.util.Objects;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    public static final String TAG = "SettingsActivity";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +66,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                     // send user back to login
                     requireContext().startActivity(new Intent(getActivity(),
-                            LoginActivity.class).putExtra(Const.SOURCE_TAG, SettingsActivity.TAG));
+                            LoginActivity.class).putExtra(Const.SOURCE_TAG, Const.SETTINGS_TAG));
                     // finish this activity and others in stack -> user logged out
                     requireActivity().finishAffinity();
                     return false;

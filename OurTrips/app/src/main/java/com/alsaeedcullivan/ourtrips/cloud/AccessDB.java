@@ -70,37 +70,26 @@ public class AccessDB {
         // convert the parameters to final constants
         final List<Date> dDates = dates;
         final String id = userId;
-        Log.d(Const.TAG, "setUserDatesFromCal: " + Thread.currentThread().getId());
 
         // run the conversion from dates to strings on a background thread
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.d(Const.TAG, "run: " + Thread.currentThread().getId());
-
                 // convert the list of dates to a list of strings in the desired format
-                SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+                SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy",
+                        Locale.getDefault());
                 List<String> sDates = new ArrayList<>();
                 for (Date date : dDates) {
                     sDates.add(format.format(date));
                 }
 
-                if (sDates.size() > 0) {
-                    // add the list of dates to the database
-                    FirebaseFirestore.getInstance()
-                            .collection(Const.USERS_COLLECTION)
-                            .document(id)
-                            .update(Const.DATE_LIST_KEY, sDates)
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) Log.d(Const.TAG, "onComplete: successfully added date list");
-                                    else Log.d(Const.TAG, "onComplete: fuck this shit im out");
-                                }
-                            });
-                }
+                // add the list of dates to the database
+                FirebaseFirestore.getInstance()
+                        .collection(Const.USERS_COLLECTION)
+                        .document(id)
+                        .update(Const.DATE_LIST_KEY, sDates);
             }
-        });
+        }).start();
     }
 
     /**

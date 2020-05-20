@@ -22,8 +22,6 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
 
-    public static final String TAG = "LoginInActivity";
-
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
 
@@ -158,7 +156,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 // proceed to RegisterActivity
                 Intent intent = new Intent(LoginActivity.this, VerifyActivity.class);
-                intent.putExtra(Const.SOURCE_TAG, TAG);
+                intent.putExtra(Const.SOURCE_TAG, Const.LOGIN_TAG);
                 // add email to intent
                 intent.putExtra(Const.USER_EMAIL_KEY, mUsernameEditText.getText().toString());
                 // add password to intent

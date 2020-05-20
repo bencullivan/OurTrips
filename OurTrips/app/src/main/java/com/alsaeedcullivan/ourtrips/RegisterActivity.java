@@ -106,7 +106,7 @@ public class RegisterActivity extends AppCompatActivity {
         // get source activity & load profile is source: MainActivity
         mSourceExtra = getIntent().getStringExtra(Const.SOURCE_TAG);
         if (mSourceExtra != null) {
-            if (mSourceExtra.equalsIgnoreCase(MainActivity.TAG)) {
+            if (mSourceExtra.equalsIgnoreCase(Const.MAIN_TAG)) {
                 loadProfile();
             }
         }
@@ -178,7 +178,7 @@ public class RegisterActivity extends AppCompatActivity {
         // enable back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         // check source activity & set-up title & visible menu button accordingly
-        if (mSourceExtra != null && mSourceExtra.equals(Const.VERIFY_KEY)) {
+        if (mSourceExtra != null && mSourceExtra.equals(Const.VERIFY_TAG)) {
             menu.findItem(R.id.register_button).setVisible(true);
             menu.findItem(R.id.update_button).setVisible(false);
             // set up activity title
@@ -187,7 +187,7 @@ public class RegisterActivity extends AppCompatActivity {
             mUserToastMessage = getString(R.string.toast_registered);
             // user has not previously registered
             mRegistered = false;
-        } else if (mSourceExtra != null && mSourceExtra.equals(MainActivity.TAG)) {
+        } else if (mSourceExtra != null && mSourceExtra.equals(Const.MAIN_TAG)) {
             menu.findItem(R.id.register_button).setVisible(false);
             menu.findItem(R.id.update_button).setVisible(true);
             // set up activity title
@@ -450,7 +450,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                     // send the user to MainActivity
                     Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                    intent.putExtra(Const.MAIN_KEY, Const.REGISTER_KEY);
+                    intent.putExtra(Const.MAIN_TAG, Const.REGISTER_TAG);
                     startActivity(intent);
                     finish();
                 } else {

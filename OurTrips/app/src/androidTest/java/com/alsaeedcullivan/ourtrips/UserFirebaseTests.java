@@ -7,16 +7,21 @@ import androidx.annotation.NonNull;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.alsaeedcullivan.ourtrips.cloud.AccessBucket;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,10 +106,31 @@ public class UserFirebaseTests {
     @Test
     public void deleteUserTest() {
 
-        Task<Void> task = AccessDB.deleteUser("mr63P9h6bWZhRYgHl3g0CZf1Cmk1");
+        Task<Void> task = AccessDB.deleteUser("cFnEWhp1axaB6Rn9AMIzxeemIMk1");
 
         while (!task.isComplete()) { }
 
         Log.d(Const.TAG, "deleteUserTest: complete");
+    }
+
+    @Test
+    public void addDateObject() throws ParseException {
+        Map<String, Object> data = new HashMap<>();
+        SimpleDateFormat f = new SimpleDateFormat("MM-dd-yyyy");
+        Date d = f.parse("05-20-2020");
+        data.put("date", d);
+        Log.d(Const.TAG, "addDateObject: " + d);
+        Task<Void> task = AccessDB.addNewUser("date_test", data);
+        task.addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) Log.d(Const.TAG, "onComplete: success");
+                else Log.d(Const.TAG, "onComplete: fail");
+            }
+        });
+
+        while (!task.isComplete()) { }
+
+
     }
 }

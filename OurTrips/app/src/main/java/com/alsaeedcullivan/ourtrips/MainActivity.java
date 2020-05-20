@@ -12,8 +12,6 @@ import com.alsaeedcullivan.ourtrips.utils.Const;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String TAG = "MainActivity";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,19 +35,19 @@ public class MainActivity extends AppCompatActivity {
             case R.id.update_dates:
                 // proceed to calendar activity
                 Intent datesIntent = new Intent(MainActivity.this, CalendarActivity.class);
-                datesIntent.putExtra(Const.SOURCE_TAG, TAG);
+                datesIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
                 startActivity(datesIntent);
                 break;
             case R.id.settings:
                 // proceed to settings activity
                 Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
-                settingsIntent.putExtra(Const.SOURCE_TAG, TAG);
+                settingsIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
                 startActivity(settingsIntent);
                 break;
             case R.id.update_profile:
                 // proceed to register activity
                 Intent editIntent = new Intent(MainActivity.this, RegisterActivity.class);
-                editIntent.putExtra(Const.SOURCE_TAG, TAG);
+                editIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
                 startActivity(editIntent);
                 break;
         }
