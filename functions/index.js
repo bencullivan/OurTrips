@@ -97,7 +97,6 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
     if (snap.data() !== undefined) {
       // get the path of the profile picture
       const profilePath = snap.data().profile_pic_path;
-      console.log(profilePath);
       // delete the profile picture from storage
       if (profilePath !== undefined) bucket.file(profilePath).delete();
     }
