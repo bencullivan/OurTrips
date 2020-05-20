@@ -79,8 +79,12 @@ public class CalendarActivity extends AppCompatActivity {
 
                         // if there is a list of dates that the user has already selected,
                         // then display them
+                        // select the dates in reverse order so that the view focuses on the one
+                        // that is soonest
                         if (mDateList != null && mDateList.size() > 0) {
-                            for (Date date : mDateList) mCalView.selectDate(date);
+                            for (int i = mDateList.size() - 1; i >= 0; i--) {
+                                mCalView.selectDate(mDateList.get(i));
+                            }
                         }
 
                         // make the calendar visible
