@@ -169,6 +169,10 @@ public class VerifyActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * processIntent()
+     * Retrieves email and password info from an intent
+     */
     private void processIntent() {
         // get input email & password & load accordingly
         mEmailExtra = getIntent().getStringExtra(Const.USER_EMAIL_KEY);

@@ -35,6 +35,7 @@ public class Const {
     public static final String DATE_LIST_KEY = "dates";
     public static final String USER_PASSWORD_KEY = "password";
     public static final String USER_PROFILE_PIC_KEY = "profile_pic_path";
+    public static final String USER_TOKEN_KEY = "token";
 
     // User sub-collections
     public static final String USER_FRIENDS_COLLECTION = "user_friends";
@@ -51,9 +52,18 @@ public class Const {
     public static final String TRIP_COMMENT_KEY = "comment";
     public static final String TRIP_PHOTO_PATHS_COLLECTION = "photos";
     public static final String TRIP_PHOTO_KEY = "photo";
+    public static final String TRIP_TOPIC_KEY = "topic";
+    public static final String TRIP_COLL_UPDATE_TYPE_KEY = "type";
+    public static final String TRIP_NOTIFY_KEY = "notification";
 
     // Cloud function names
     public static final String FUNC_MATCH_DATES = "matchDates";
+    public static final String FUNC_SUBSCRIBE_TOPICS = "subscribeToTopics";
+    public static final String FUNC_UNSUBSCRIBE_TOPICS = "unsubscribeFromTopics";
+    public static final String FUNC_SUBSCRIBE_TOPIC = "subscribeToTopic";
+    public static final String FUNC_UNSUBSCRIBE_TOPIC = "unsubscribeFromTopic";
+    public static final String FUNC_COLLECTION_UPDATED = "collectionUpdated";
+    public static final String FUNC_TRIP_INFO_UPDATED = "tripInfoUpdated";
 
     // Cloud Function Keys
     public static final String LIST_1_KEY = "list1";

@@ -14,8 +14,8 @@ public class AccessBucket {
     /**
      * uploadPicture()
      * uploads a picture to the storage bucket
-     * @param path - the path where the photo will be stored in the storage bucket
-     * @param is - the input stream that will be used to upload the photo to the bucket
+     * @param path the path where the photo will be stored in the storage bucket
+     * @param is the input stream that will be used to upload the photo to the bucket
      */
     public static void uploadPicture(String path, InputStream is) {
         FirebaseStorage.getInstance().getReference().child(path).putStream(is);
@@ -24,8 +24,8 @@ public class AccessBucket {
     /**
      * uploadVideo()
      * uploads a video to the cloud storage bucket
-     * @param path - the path where the video will be stored in the storage bucket
-     * @param vidUri - the Uri of the video that will be uploaded
+     * @param path the path where the video will be stored in the storage bucket
+     * @param vidUri the Uri of the video that will be uploaded
      */
     public static void uploadVideo(String path, Uri vidUri) {
         FirebaseStorage.getInstance().getReference().child(path).putFile(vidUri);
@@ -34,7 +34,7 @@ public class AccessBucket {
     /**
      * deleteFromStorage()
      * deletes a file from the storage bucket
-     * @param path - the path of the file that will be deleted
+     * @param path the path of the file that will be deleted
      */
     public static void deleteFromStorage(String path) {
         FirebaseStorage.getInstance().getReference().child(path).delete();

@@ -180,8 +180,8 @@ public class CalendarActivity extends AppCompatActivity {
      * Converts a List of Date objects to an array of longs.
      * This will be used in conjunction with onSavedInstanceState because a Date object cannot
      * be added to a Bundle
-     * @param dates - the List of Dates
-     * @return - an array of longs corresponding to the time of each date
+     * @param dates the List of Dates
+     * @return an array of longs corresponding to the time of each date
      */
     private long[] toLongs(List<Date> dates) {
         long[] times = new long[dates.size()];

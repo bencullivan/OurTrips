@@ -1,6 +1,6 @@
 const functions = require('firebase-functions');
 const tools = require('firebase-tools');
-const admin = require("firebase-admin");
+const admin = require('firebase-admin');
 
 // initialize app
 admin.initializeApp({
@@ -10,7 +10,10 @@ admin.initializeApp({
 // get a reference to firestore
 const db = admin.firestore();
 // get a reference to storage
-const bucket = admin.storage().bucket("gs://our-trips-74b79.appspot.com");
+const bucket = admin.storage().bucket('gs://our-trips-74b79.appspot.com');
+
+
+// MATCHING ALGORITHM
 
 /**
 * matchDates
@@ -56,8 +59,8 @@ exports.matchDates = functions.https.onCall((data) => {
 function compareDates(date1, date2) {
     // get lists of the components of each date mm-dd-YYYY
     // they will always be of length 3
-    let date1nums = date1.split("-");
-    let date2nums = date2.split("-");
+    let date1nums = date1.split('-');
+    let date2nums = date2.split('-');
 
     // convert the strings to ints
     for (let i = 0; i < 3; i++) {
@@ -80,6 +83,175 @@ function compareDates(date1, date2) {
 }
 
 
+// FIREBASE CLOUD MESSAGING 
+
+///**
+//  * collectionUpdated
+//  * sends a message informing the users that a trip sub-collection has been updated, lets them know 
+//  * which one was updated
+//  * @param {Object} data - a map containing info about what was added and what topic to send messages to
+//  */
+// exports.collectionUpdated = functions.https.onCall(data => {
+//   // object to hold the message data
+//   const msgData = {
+//     type: data.type, // data.type will either be 'photo' 'video' or 'tripper'
+//     notification: data.notification
+//   }
+
+//   // create a message object 
+//   const message = {
+//     data: msgData,
+//     topic: data.topic
+//   }
+
+//   // send the message to the topic
+//   admin.messaging().send(message)
+//     .then(response => {
+//       console.log('success: ' + response);
+//     })
+//     .catch(err => {
+//       console.log('fail: ' + err);
+//     });
+// });
+
+// /**
+//  * tripInfoUpdated
+//  * sends a message informing a user that a trip's info has been updated
+//  * @param {Object} data - a map containing info about where to send the 
+//  */
+// exports.tripInfoUpdated = functions.https.onCall(data => {
+//   //TODO: fill this with data
+//   const msgData = {}
+
+//   // create a message object
+//   const message = {
+//     data: msgData,
+//     topic: data.topic
+//   }
+
+//   // send the message to the topic 
+//   admin.messaging().send(message)
+//     .then(response => {
+//       console.log('success: ' + response);
+//     })
+//     .catch(err => {
+//       console.log('fail: ' + err);
+//     });
+// });
+
+
+// SUBSCRIPTION MANAGEMENT
+
+// /**
+//  * subscribeToTopics
+//  * subscribes a given user to the fcm topic for each trip they are a part of
+//  * @param {Object} data - a map containing the user id and their new token
+//  */
+// exports.subscribeToTopics = functions.https.onCall(data => {
+//   // get the new token
+//   const token = data.token;
+//   // get the user id
+//   const id = data.user_id;
+
+//   // the path to the user trips sub-collection
+//   const userTripsPath = 'users/'+id+'/user_trips';
+
+//   // retrieve the list of trips that the user is a part of 
+//   db.collection(userTripsPath).get()
+//     .then(snapshot => {
+//       snapshot.forEach(trip => {
+//         // subscribe the user to the topic for each trip they are a part of 
+
+//         //TODO: add conditional?
+
+//         admin.messaging().subscribeToTopic(token, trip.id);
+//       });
+//       return snapshot;
+//     })
+//     .catch(err => {
+//       console.log('Error subscribing user to topics ' + err);
+//     });
+// });
+
+// /**
+//  * unsubscribeFromTopics
+//  * unsubscribes the user from all of the topics they were subscribed to
+//  * @param {Object} data - a map containing the old token and the userId
+//  */
+// exports.unsubscribeFromTopics = functions.https.onCall(data => {
+//   // get the old token
+//   const token = data.token;
+//   // get the user id
+//   const id = data.user_id;
+
+//   // the path to the user trips sub-collection
+//   const userTripsPath = 'users/'+id+'/user_trips';
+
+//   // retrieve the list of trips that the user is a part of 
+//   db.collection(userTripsPath).get()
+//     .then(snapshot => {
+//       snapshot.forEach(trip => {
+//         // unsubscribe the user from the topic for each trip they are a part of 
+
+//         //TODO: add conditional?
+
+//         admin.messaging().unsubscribeFromTopic(token, trip.id);
+//       });
+//       return snapshot;
+//     })
+//     .catch(err => {
+//       console.log('Error unsubscribing user from topics ' + err);
+//     });
+// });
+
+// /**
+//  * subscribeToTopic
+//  * subscribes a user to a single topic
+//  * @param {Object} data - a map containing the user id and the topic 
+//  */
+// exports.subscribeToTopic = functions.https.onCall(data => {
+//   // get the id of the user
+//   const id = data.user_id;
+//   // get the topic to be subscribed to
+//   const topic = data.topic;
+
+//   // get the token of the user
+//   db.doc('users/'+id).get() 
+//     .then(doc => {
+//       // subscribe the user to the topic
+//       admin.messaging().subscribeToTopic(doc.get('token'), topic);
+//       return doc;
+//     })
+//     .catch(err => {
+//       console.log('Error subscribing user to topic ' + err);
+//     });
+// });
+
+// /**
+//  * unsubscribeFromTopic
+//  * unsubscribes a user from a single topic 
+//  * @param {Object} data - a map containing the userId and topic 
+//  */
+// exports.unsubscribeFromTopic = functions.https.onCall(data => {
+//   // get the id of the user
+//   const id = data.user_id;
+//   // get the topic to be subscribed to
+//   const topic = data.topic; 
+
+//   // get the token of the user
+//   db.doc('users/'+id).get()
+//     .then(doc => {
+//       // unsubscribe the user from the topic 
+//       admin.messaging().unsubscribeFromTopic(doc.get('token'), topic);
+//     })
+//     .catch(err => {
+//       console.log('Error unsubscribing user from topic ' + err);
+//     });
+// });
+
+
+// DELETION 
+
 /**
  * onUserDeleted
  * triggered when the document associated with a user is deleted,
@@ -89,7 +261,7 @@ function compareDates(date1, date2) {
  * @param {DocumentSnapshot} snap - a snapshot associated with the document that is being deleted
  */
 exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
-  .firestore.document("users/{user}").onDelete((snap) => {
+  .firestore.document('users/{user}').onDelete((snap) => {
     // get the id of the document that was deleted
     const id = snap.id;
 
@@ -102,23 +274,23 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
     }
 
     // establish the paths of the sub-collections
-    const userFriendsPath = "users/"+id+"/user_friends";
-    const userTripsPath = "users/"+id+"/user_trips";
+    const userFriendsPath = 'users/'+id+'/user_friends';
+    const userTripsPath = 'users/'+id+'/user_trips';
 
     // remove this user from the friends list of all their friends
     db.collection(userFriendsPath).get()
       .then(snapshot => {
         snapshot.forEach(friend => {
-          db.collection("users")
+          db.collection('users')
             .doc(friend.id)
-            .collection("user_friends")
+            .collection('user_friends')
             .doc(id)
             .delete();
         });
         return snapshot;
       })
       .catch(err => {
-        console.log("Error removing from friends: " + err);
+        console.log('Error removing from friends: ' + err);
       });
 
     // delete the trips sub-collection
@@ -167,14 +339,14 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
  * @param {DocumentSnapshot} snap - a snapshot associated with the document that is being deleted
  */
 exports.onTripDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
-  .firestore.document("trips/{trip}").onDelete((snap) => {
+  .firestore.document('trips/{trip}').onDelete((snap) => {
     // get the id of the document that was deleted
     const id = snap.id;
 
     // establish the paths of the sub-collections
-    const commentsPath = "trips/"+id+"/comments";
-    const trippersPath = "trips/"+id+"/trippers";
-    const photosPath = "trips/"+id+"/photos";
+    const commentsPath = 'trips/'+id+'/comments';
+    const trippersPath = 'trips/'+id+'/trippers';
+    const photosPath = 'trips/'+id+'/photos';
 
     // delete all of the photos from the storage bucket
     db.collection(photosPath).get()
@@ -185,23 +357,23 @@ exports.onTripDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
         return snapshot;
       })
       .catch(err => {
-        console.log("Error removing photos: " + err);
+        console.log('Error removing photos: ' + err);
       });
 
     // delete this trip from each trippers' list of trips
     db.collection(trippersPath).get()
       .then(snapshot => {
         snapshot.forEach(user => {
-          db.collection("users")
+          db.collection('users')
             .doc(user.id)
-            .collection("user_trips")
+            .collection('user_trips')
             .doc(id)
             .delete();
         });
         return snapshot;
       })
       .catch(err => {
-        console.log("Error removing trip from users: " + err);
+        console.log('Error removing trip from users: ' + err);
       });
     
     // delete the comments sub-collection

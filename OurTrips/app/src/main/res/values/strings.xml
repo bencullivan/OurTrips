@@ -55,5 +55,6 @@
     <string name="prompt_data_collect">Posting your data anonymously</string>
     <string name="privacy">Privacy</string>
     <string name="update_dates_text">Update Dates</string>
-    <string name="loading_your_dates">Loading your dates...</string>
+    <string name="loading_your_dates">Loading your dates…</string>
+    <string name="fcm_notification_channel">firebase_notify</string>
 </resources>

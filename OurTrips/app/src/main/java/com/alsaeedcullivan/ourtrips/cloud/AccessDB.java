@@ -48,8 +48,8 @@ public class AccessDB {
     /**
      * updateUserProfile()
      * updates the profile of a user
-     * @param userId - the id of the user
-     * @param data - the profile data to be added
+     * @param userId the id of the user
+     * @param data the profile data to be added
      */
     public static Task<Void> updateUserProfile(String userId, Map<String, Object> data) {
         // update the user's profile info
@@ -62,8 +62,8 @@ public class AccessDB {
     /**
      * setUserDatesFromCal()
      * updates a users list of dates in the cloud FireStore database
-     * @param userId - the id of the user
-     * @param dates - a list of Date objects, these will be converted to Strings in the desired
+     * @param userId the id of the user
+     * @param dates a list of Date objects, these will be converted to Strings in the desired
      *              format on a background thread before they are added to the database
      */
     public static void setUserDatesFromCal(String userId, List<Date> dates) {
@@ -95,8 +95,8 @@ public class AccessDB {
     /**
      * addUserFriend()
      * adds a new friend to the current user's friends sub-collection
-     * @param userId - the id of the user
-     * @param friendId - the id of the friend
+     * @param userId the id of the user
+     * @param friendId the id of the friend
      */
     public static Task<Void> addUserFriend(String userId, String friendId) {
         // map to contain the friend id
@@ -115,8 +115,8 @@ public class AccessDB {
     /**
      * addUserTrip()
      * adds a new trip to the current user's trips sub-collection
-     * @param userId - the id of the user
-     * @param tripId - the id of the trip
+     * @param userId the id of the user
+     * @param tripId the id of the trip
      */
     public static Task<Void> addUserTrip(String userId, String tripId) {
         // map to contain the document data
@@ -133,6 +133,20 @@ public class AccessDB {
     }
 
     /**
+     * addUserToken()
+     * adds a token that will be used for FCM to a user's entry in FireStore
+     * @param userId the id of the user
+     * @param token the token that will be used to send them messages
+     */
+    public static Task<Void> addUserToken(String userId, String token) {
+        // add the token to the given user's document in the db
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .update(Const.USER_TOKEN_KEY, token);
+    }
+
+    /**
      * deleteUser()
      * deletes a user from the database
      * NOTE: ** This function only deletes the document associated with a user
@@ -141,7 +155,7 @@ public class AccessDB {
      *         Finally, it also does NOT delete a user's profile photo from the storage bucket.
      *         These four actions are performed by the onUserDeleted Cloud Function
      *         (see index.js) **
-     * @param userId - the id of the user
+     * @param userId the id of the user
      */
     public static Task<Void> deleteUser(String userId) {
         return FirebaseFirestore.getInstance()
@@ -153,7 +167,7 @@ public class AccessDB {
     /**
      * addTrip()
      * adds a new trip to the database
-     * @param data - a map of the data and fields to be added
+     * @param data a map of the data and fields to be added
      */
     public static Task<String> addTrip(Map<String, Object> data) {
 //        // map to contain the trip data
@@ -182,8 +196,8 @@ public class AccessDB {
     /**
      * updateTrip()
      * updates the non-sub-collection fields of a trip in the db
-     * @param tripId - the id of the trip
-     * @param data - a map containing the data and fields to be updated
+     * @param tripId the id of the trip
+     * @param data a map containing the data and fields to be updated
      */
     public static Task<Void> updateTrip(String tripId, Map<String, Object> data) {
         return FirebaseFirestore.getInstance()
@@ -195,8 +209,8 @@ public class AccessDB {
     /**
      * addTripper()
      * adds a tripper to the trippers sub-collection of a trip
-     * @param tripId - the id of the trip
-     * @param tripperId - the id of the tripper to be added
+     * @param tripId the id of the trip
+     * @param tripperId the id of the tripper to be added
      */
     public static void addTripper(String tripId, String tripperId) {
         // add the tripper id to a map
@@ -214,9 +228,9 @@ public class AccessDB {
     /**
      * addTripComment()
      * adds a comment to the comments sub-collection of a trip
-     * @param tripId - the id of the trip
-     * @param comment - the comment to be added
-     * @param docId - the id of the document that will hold the comment
+     * @param tripId the id of the trip
+     * @param comment the comment to be added
+     * @param docId the id of the document that will hold the comment
      */
     public static void addTripComment(String tripId, String comment, String docId) {
         // add the comment to a map
@@ -234,9 +248,9 @@ public class AccessDB {
     /**
      * addTripPhoto()
      * adds a photo to storage and adds its path to the photo paths sub collection of this trip
-     * @param tripId - the id of the trip
-     * @param path - the path where the photo will be stored in the photo bucket
-     * @param is - the input stream that will be used to upload the photo to the storage bucket
+     * @param tripId the id of the trip
+     * @param path the path where the photo will be stored in the photo bucket
+     * @param is the input stream that will be used to upload the photo to the storage bucket
      */
     public static void addTripPhoto(String tripId, String path, InputStream is) {
         // upload the picture to storage
@@ -264,7 +278,7 @@ public class AccessDB {
      *          Finally, it does not delete the trip from the user_trips sub collection of
      *          all the users that went on the trip.
      *          These actions are performed by the onTripDeleted cloud function (see index.js)
-     * @param tripId - the id of the trip
+     * @param tripId the id of the trip
      */
     public static Task<Void> deleteTrip(String tripId) {
         return FirebaseFirestore.getInstance()
@@ -278,7 +292,7 @@ public class AccessDB {
     /**
      * loadUserProfile()
      * loads the profile info of a user
-     * @param userId - the id of the user
+     * @param userId the id of the user
      */
     public static Task<Map<String, Object>> loadUserProfile(String userId) {
         return FirebaseFirestore.getInstance()
@@ -296,9 +310,31 @@ public class AccessDB {
     }
 
     /**
+     * getUserToken()
+     * gets the token of a particular user
+     * @param userId the id of the user
+     */
+    public static Task<String> getUserToken(String userId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .get()
+                .continueWith(new Continuation<DocumentSnapshot, String>() {
+                    @Override
+                    public String then(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot result = task.getResult();
+                        if (result != null && result.contains(Const.USER_TOKEN_KEY)) {
+                            return (String) result.get(Const.USER_TOKEN_KEY);
+                        }
+                        return "";
+                    }
+                });
+    }
+
+    /**
      * getFriendsList()
      * gets the friends list of a user
-     * @param userId - the id of the user
+     * @param userId the id of the user
      */
     public static Task<List<String>> getFriendsList(String userId) {
         // get a list of the friends ids of a user
@@ -330,7 +366,7 @@ public class AccessDB {
      * gets the list of dates the user is available, updates them to make sure that none of them are
      * before the current day, converts them to Date objects that can be displayed by the
      * CalendarView in CalendarActivity
-     * @param userId - the id of the user
+     * @param userId the id of the user
      */
     public static Task<List<Date>> getUserDatesForCal(String userId) {
         return FirebaseFirestore.getInstance()
@@ -375,7 +411,7 @@ public class AccessDB {
     /**
      * getUserDatesForMatch()
      * retrieves the list of the dates the user is available
-     * @param userId - the id of the user
+     * @param userId the id of the user
      */
     public static Task<List<String>> getUserDatesForMatch(String userId) {
         return FirebaseFirestore.getInstance()

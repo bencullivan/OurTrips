@@ -542,8 +542,7 @@ public class RegisterActivity extends AppCompatActivity {
     /**
      * populateFields()
      * helper method to fill in the widgets with the user's profile info
-     *
-     * @param data - the object containing all the user's profile data
+     * @param data the object containing all the user's profile data
      */
     private void populateFields(Map<String, Object> data) {
         if (data == null) return;

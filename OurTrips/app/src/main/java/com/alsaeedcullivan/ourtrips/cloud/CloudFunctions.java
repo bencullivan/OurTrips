@@ -20,12 +20,15 @@ import java.util.Map;
  */
 public class CloudFunctions {
 
+
+    // DATE MATCHING ALGORITHM
+
     /**
      * matchDates()
      * this calls the matchDates cloud function (see index.js) which takes two user Ids and
      * determines which dates both users are available
-     * @param list1 - the list of dates that the first user is available
-     * @param list2 - the list of dates that the second user is available
+     * @param list1 the list of dates that the first user is available
+     * @param list2 the list of dates that the second user is available
      */
     public static Task<List<String>> matchDates(List<String> list1, List<String> list2) {
         // create a data object to hold the user ids
@@ -50,6 +53,117 @@ public class CloudFunctions {
                         return datesList;
                     }
                 });
+    }
+
+
+    // FIREBASE CLOUD MESSAGING
+
+    /**
+     * collectionUpdated()
+     * called when a user updates a sub-collection of a trip
+     * sends a cloud message to all other trippers informing them that the trip has been updated
+     * @param topic the topic of the trip
+     * @param type the sub-collection that was updated
+     * @param notification the notification that will be sent out
+     */
+    public static void collectionUpdated(String topic, String type, String notification) {
+        // create a map to hold the data
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.TRIP_TOPIC_KEY, topic);
+        data.put(Const.TRIP_COLL_UPDATE_TYPE_KEY, type);
+        data.put(Const.TRIP_NOTIFY_KEY, notification);
+
+        // call the cloud function
+        FirebaseFunctions.getInstance().getHttpsCallable(Const.FUNC_COLLECTION_UPDATED)
+                .call(data);
+    }
+
+    /**
+     * tripInfoUpdated()
+     * sends a cloud message to all trippers that the trip's info has been updated
+     * @param topic the topic of the trip
+     * @param other not sure yet
+     */
+    public static void tripInfoUpdated(String topic, String other) {
+        //TODO: determine what will get passed in
+
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.TRIP_TOPIC_KEY, topic);
+
+        // call the cloud function
+        FirebaseFunctions.getInstance().getHttpsCallable(Const.FUNC_TRIP_INFO_UPDATED)
+                .call(data);
+    }
+
+    
+    // SUBSCRIPTION MANAGEMENT
+
+    /**
+     * subscribeToTopics()
+     * subscribes a user to all the topics associated with their trips
+     * @param userId the id of the user
+     * @param token the new token
+     */
+    public static void subscribeToTopics(String userId, String token) {
+        // create a map to hold the data
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.USER_ID_KEY, userId);
+        data.put(Const.USER_TOKEN_KEY, token);
+
+        // call the cloud function
+        FirebaseFunctions.getInstance().getHttpsCallable(Const.FUNC_SUBSCRIBE_TOPICS)
+                .call(data);
+    }
+
+    /**
+     * unsubscribeFromTopics()
+     * Unsubscribe a user from all their topics
+     * @param userId the id of the user
+     * @param token the old token
+     */
+    public static void unsubscribeFromTopics(String userId, String token) {
+        // create a map to hold the data
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.USER_ID_KEY, userId);
+        data.put(Const.USER_TOKEN_KEY, token);
+
+        // call the cloud function
+        FirebaseFunctions.getInstance().getHttpsCallable(Const.FUNC_UNSUBSCRIBE_TOPICS)
+                .call(data);
+    }
+
+    /**
+     * subscribeToTopic()
+     * subscribes a user to a single topic
+     * @param userId the id of the user
+     * @param token the token corresponding to the topic they want to be subscribed to
+     */
+    public static void subscribeToTopic(String userId, String token) {
+        // create a map to hold the data
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.USER_ID_KEY, userId);
+        data.put(Const.USER_TOKEN_KEY, token);
+
+        // call the cloud function
+        FirebaseFunctions.getInstance().getHttpsCallable(Const.FUNC_SUBSCRIBE_TOPIC)
+                .call(data);
+    }
+
+    /**
+     * unsubscribeFromTopic()
+     * Unsubscribe a user from a single topic
+     * @param userId the id of the user
+     * @param token the token corresponding to the topic they want to be unsubscribed from
+     */
+    public static void unsubscribeFromTopic(String userId, String token) {
+        // create a map to hold the data
+        Map<String, Object> data = new HashMap<>();
+        data.put(Const.USER_ID_KEY, userId);
+        data.put(Const.USER_TOKEN_KEY, token);
+
+        // call the cloud function
+        FirebaseFunctions.getInstance().getHttpsCallable(Const.FUNC_UNSUBSCRIBE_TOPIC)
+                .call(data);
     }
 
 }
