@@ -420,3 +420,80 @@ exports.onTripDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
     
     return 1;
 });
+
+
+// HANDLE CASES WHERE USERS MUST BE ACCESSED BY EMAIL
+// THIS CAN NOT BE EASILY DONE CLIENT SIDE
+
+/**
+ * sendFriendRequest
+ * sends a friend request from one user to another
+ * @param {Object} data - a map containing the emails of the users
+ */
+exports.sendFriendRequest = functions.https.onCall(data => {
+  // get the emails
+  const userEmail = data.user_email;
+  const friendEmail = data.friend_email;
+
+  // add the request to the other person's db
+  admin.auth().getUserByEmail(friendEmail)
+    .then(rec => {
+      const id = rec.uid;
+      db.collection('users')
+        .doc(id)
+        .collection('friend_requests')
+        .doc(userEmail)
+        .set({
+          user: userEmail
+        });
+      return rec;
+    })
+    .catch(err => {
+      console.log('Error sending friend request', err);
+    });
+});
+
+/**
+ * acceptFriendRequest
+ * accepts a friend request and updates both users in the database
+ * @param {Object} data - a map containing the id of the user that is accepting 
+ * and the email of the user that sent the request
+ */
+exports.acceptFriendRequest = functions.https.onCall(data => {
+  // get the id of this user and the email of the user that sent the request
+  const id = data.user_id;
+  const friendEmail = data.friend_email;
+
+  // add each user to the other users database collectio of friends
+  admin.auth().getUserByEmail(friendEmail)
+    .then(rec => {
+      const fId = rec.uid;
+
+      // add the users to each other's friends sub-collection
+      db.collection('users')
+        .doc(fId)
+        .collection('user_friends')
+        .doc(id)
+        .set({
+          friend_user_id: id
+        });
+      db.collection('users')
+        .doc(id)
+        .collection('user_friends')
+        .doc(fId)
+        .set({
+          friend_user_id: fId
+        });
+      // delete friend request
+      db.collection('users')
+      .doc(id)
+      .collection('friend_requests')
+      .doc(friendEmal)
+      .delete();
+
+      return rec;
+    })
+    .catch(err => {
+      console.log('Error adding friends', err);
+    })
+});

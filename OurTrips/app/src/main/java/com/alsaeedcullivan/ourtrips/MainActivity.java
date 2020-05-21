@@ -40,6 +40,12 @@ public class MainActivity extends AppCompatActivity {
                 datesIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
                 startActivity(datesIntent);
                 break;
+            case R.id.friends:
+                // proceed to FriendActivity
+                Intent friendIntent = new Intent(MainActivity.this, FriendActivity.class);
+                friendIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
+                startActivity(friendIntent);
+                break;
             case R.id.settings:
                 // proceed to settings activity
                 Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);

@@ -362,6 +362,38 @@ public class AccessDB {
     }
 
     /**
+     * getFriendRequests()
+     * gets a list of the emails of the users that sent this user a friend request
+     * @param userId the id of the user
+     */
+    public static Task<List<String>> getFriendRequests(String userId) {
+        // get a list of the friend requests of a user
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .collection(Const.USER_F_REQUESTS_COLLECTION)
+                .get()
+                .continueWith(new Continuation<QuerySnapshot, List<String>>() {
+                    @Override
+                    public List<String> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                        QuerySnapshot result = task.getResult();
+                        if (result == null || result.getDocuments().size() == 0)
+                            return new ArrayList<>();
+
+                        // extract and return the ids of the documents
+                        // this will be a list of emails of the users that sent the
+                        // requests
+                        List<DocumentSnapshot> docList = result.getDocuments();
+                        List<String> emails = new ArrayList<>();
+                        for (DocumentSnapshot doc : docList) {
+                            emails.add(doc.getId());
+                        }
+                        return emails;
+                    }
+                });
+    }
+
+    /**
      * getUserDatesForCal()
      * gets the list of dates the user is available, updates them to make sure that none of them are
      * before the current day, converts them to Date objects that can be displayed by the

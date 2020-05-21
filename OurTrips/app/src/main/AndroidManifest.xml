@@ -12,25 +12,29 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-<!--        THIS SERVICE IS FOR CLOUD MESSAGING, I WILL UPDATE IT AS I WORK ON IMPLEMENTING MESSAGING-->
+        <activity android:name=".FriendActivity"></activity>
+        <!-- THIS SERVICE IS FOR CLOUD MESSAGING, I WILL UPDATE IT AS I WORK ON IMPLEMENTING MESSAGING -->
         <service
             android:name=".cloud.MessageService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
-<!--                TODO: set a notification icon for cloud messages (use the app icon when it is made)
-                    <meta-data-->
-<!--                android:name="com.google.firebase.messaging.default_notification_icon"-->
-<!--                android:resource="@drawable/ic_stat_ic_notification" />-->
+            <!--
+                    TODO: set a notification icon for cloud messages (use the app icon when it is made)
+                    <meta-data
+            -->
+            <!-- android:name="com.google.firebase.messaging.default_notification_icon" -->
+            <!-- android:resource="@drawable/ic_stat_ic_notification" /> -->
             <meta-data
                 android:name="com.google.firebase.messaging.default_notification_color"
                 android:resource="@color/colorPrimary" />
-<!--            TODO: more meta data? -->
+            <!-- TODO: more meta data? -->
             <meta-data
                 android:name="com.google.firebase.messaging.default_notification_channel_id"
                 android:value="@string/fcm_notification_channel" />
         </service>
+
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />

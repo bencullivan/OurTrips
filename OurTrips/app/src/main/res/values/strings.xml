@@ -57,4 +57,6 @@
     <string name="update_dates_text">Update Dates</string>
     <string name="loading_your_dates">Loading your dates…</string>
     <string name="fcm_notification_channel">firebase_notify</string>
+    <string name="string_send_request">create request</string>
+    <string name="find_friends">Find Friends</string>
 </resources>
