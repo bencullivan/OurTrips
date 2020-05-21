@@ -484,11 +484,11 @@ exports.acceptFriendRequest = functions.https.onCall(data => {
         .set({
           friend_user_id: fId
         });
-      // delete friend request
+      // delete the friend request
       db.collection('users')
       .doc(id)
       .collection('friend_requests')
-      .doc(friendEmal)
+      .doc(friendEmail)
       .delete();
 
       return rec;

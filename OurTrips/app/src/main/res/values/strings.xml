@@ -59,4 +59,5 @@
     <string name="fcm_notification_channel">firebase_notify</string>
     <string name="string_send_request">create request</string>
     <string name="find_friends">Find Friends</string>
+    <string name="pending_requests">Pending requests...</string>
 </resources>

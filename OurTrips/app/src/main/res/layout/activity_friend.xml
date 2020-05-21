@@ -4,10 +4,20 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- TODO: Omar please fix this, I suck at UI, it currently looks
+            kinda shitty, i just made it so I could test friend requests-->
+
+    <TextView
+        android:id="@+id/friend_text"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pending_requests"/>
+
     <ListView
         android:id="@+id/request_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@+id/friend_text"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

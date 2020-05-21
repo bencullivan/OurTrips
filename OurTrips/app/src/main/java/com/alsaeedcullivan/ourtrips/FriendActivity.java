@@ -131,6 +131,9 @@ public class FriendActivity extends AppCompatActivity {
         // get the current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
+
+        Log.d(Const.TAG, "sendRequest: " + email);
+        Log.d(Const.TAG, "sendRequest: " + user.getEmail());
         // if there is a user, send the friend request
         CloudFunctions.sendFriendRequest(user.getEmail(), email);
     }
