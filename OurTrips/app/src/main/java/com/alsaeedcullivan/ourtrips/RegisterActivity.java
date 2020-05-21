@@ -234,7 +234,7 @@ public class RegisterActivity extends AppCompatActivity {
         int inputGender = -1;
         if (mMaleRadioButton.isChecked()) inputGender = 1;
         else if (mFemaleRadioButton.isChecked()) inputGender = 0;
-        else inputGender = 2;
+        else if (mOtherRadioButton.isChecked()) inputGender = 2;
 
         // issues -> false --> NOT save & inform user
         boolean goodProfile = true;
@@ -406,9 +406,9 @@ public class RegisterActivity extends AppCompatActivity {
         data.put(Const.USER_BIRTHDAY_KEY, mBirthdayEditText.getText().toString());
         String gender;
         int checked = mInputGender.getCheckedRadioButtonId();
-        if (checked == R.id.edit_gender_female) gender = "Female";
-        else if (checked == R.id.edit_gender_male) gender = "Male";
-        else gender = "Other";
+        if (checked == R.id.edit_gender_female) gender = "f";
+        else if (checked == R.id.edit_gender_male) gender = "m";
+        else gender = "o";
         data.put(Const.USER_GENDER_KEY, gender);
         data.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
         data.put(Const.DATE_LIST_KEY, new ArrayList<String>());
