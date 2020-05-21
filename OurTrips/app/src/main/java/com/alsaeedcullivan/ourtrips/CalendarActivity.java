@@ -50,7 +50,7 @@ public class CalendarActivity extends AppCompatActivity {
         setTitle(getString(R.string.title_activity_calendar));
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // get a references to the widgets
+        // get references to the widgets
         mHeader = findViewById(R.id.calendar_text);
         mCalView = findViewById(R.id.calendar_view);
         mSpinner = findViewById(R.id.spinner);
@@ -72,9 +72,14 @@ public class CalendarActivity extends AppCompatActivity {
         mCalView.init(today, nextYear.getTime()).inMode(CalendarPickerView.SelectionMode.MULTIPLE);
         mCalView.setOnDateSelectedListener(new CalendarPickerView.OnDateSelectedListener() {
             @Override
-            public void onDateSelected(Date date) { mRecent = date; }
+            public void onDateSelected(Date date) {
+                mRecent = date;
+            }
+
             @Override
-            public void onDateUnselected(Date date) { mRecent = date; }
+            public void onDateUnselected(Date date) {
+                mRecent = date;
+            }
         });
 
         // if there was already a list of selected dates, no need to load from the database
@@ -180,6 +185,7 @@ public class CalendarActivity extends AppCompatActivity {
      * Converts a List of Date objects to an array of longs.
      * This will be used in conjunction with onSavedInstanceState because a Date object cannot
      * be added to a Bundle
+     *
      * @param dates the List of Dates
      * @return an array of longs corresponding to the time of each date
      */

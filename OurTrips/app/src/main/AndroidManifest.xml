@@ -9,10 +9,10 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/our_trips_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".FriendActivity"></activity>
+        <activity android:name=".FriendActivity" />
         <!-- THIS SERVICE IS FOR CLOUD MESSAGING, I WILL UPDATE IT AS I WORK ON IMPLEMENTING MESSAGING -->
         <service
             android:name=".cloud.MessageService"
@@ -20,12 +20,9 @@
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
-            <!--
-                    TODO: set a notification icon for cloud messages (use the app icon when it is made)
                     <meta-data
-            -->
-            <!-- android:name="com.google.firebase.messaging.default_notification_icon" -->
-            <!-- android:resource="@drawable/ic_stat_ic_notification" /> -->
+             android:name="com.google.firebase.messaging.default_notification_icon"
+             android:resource="@mipmap/our_trips_logo" />
             <meta-data
                 android:name="com.google.firebase.messaging.default_notification_color"
                 android:resource="@color/colorPrimary" />

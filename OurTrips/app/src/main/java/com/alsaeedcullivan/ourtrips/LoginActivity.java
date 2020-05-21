@@ -161,7 +161,8 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * signIn
      * attempts to sign in a user with a given email and password
-     * @param email the input email
+     *
+     * @param email    the input email
      * @param password the input password
      */
     private void signIn(String email, String password) {

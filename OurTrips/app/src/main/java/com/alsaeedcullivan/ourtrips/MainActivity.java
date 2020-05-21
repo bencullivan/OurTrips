@@ -13,13 +13,12 @@ import com.alsaeedcullivan.ourtrips.utils.Const;
 public class MainActivity extends AppCompatActivity {
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // set-up title
+        // set title
         setTitle(R.string.title_activity_main);
     }
 

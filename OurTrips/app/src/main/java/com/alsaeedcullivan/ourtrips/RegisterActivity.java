@@ -191,7 +191,7 @@ public class RegisterActivity extends AppCompatActivity {
             menu.findItem(R.id.register_button).setVisible(false);
             menu.findItem(R.id.update_button).setVisible(true);
             // set up activity title
-            setTitle(getString(R.string.title_activity_Edit));
+            setTitle(getString(R.string.title_activity_edit));
             // disable editing email
             mEmailEditText.setEnabled(false);
             // prepare toast message: update profile
@@ -542,6 +542,7 @@ public class RegisterActivity extends AppCompatActivity {
     /**
      * populateFields()
      * helper method to fill in the widgets with the user's profile info
+     *
      * @param data the object containing all the user's profile data
      */
     private void populateFields(Map<String, Object> data) {

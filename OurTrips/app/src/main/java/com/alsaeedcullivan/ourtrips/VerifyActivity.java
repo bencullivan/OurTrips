@@ -142,7 +142,7 @@ public class VerifyActivity extends AppCompatActivity {
                                                             "A verification email has been sent to " +
                                                                     mEmail, Toast.LENGTH_SHORT);
                                                     t.setGravity(Gravity.TOP |
-                                                            Gravity.CENTER_HORIZONTAL, 0,
+                                                                    Gravity.CENTER_HORIZONTAL, 0,
                                                             0);
                                                     t.show();
                                                 } else {
@@ -154,7 +154,7 @@ public class VerifyActivity extends AppCompatActivity {
                                                                     "your correct email address?",
                                                             Toast.LENGTH_SHORT);
                                                     t.setGravity(Gravity.TOP |
-                                                            Gravity.CENTER_HORIZONTAL, 0,
+                                                                    Gravity.CENTER_HORIZONTAL, 0,
                                                             0);
                                                     t.show();
                                                 }

@@ -73,7 +73,7 @@ public class CustomDialogFragment extends DialogFragment {
         return new AlertDialog.Builder(getActivity()).create();
     }
 
-    // camera permission is important
+    // permission is important
     private AlertDialog createImportantDialog() {
         // create alert dialog
         AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));

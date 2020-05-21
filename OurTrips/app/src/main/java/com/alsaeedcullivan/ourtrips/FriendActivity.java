@@ -40,8 +40,10 @@ public class FriendActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend);
+
+        // set title and back button
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        setTitle("Find Friends");
+        setTitle(getString(R.string.title_activity_findFriends));
 
         // get the user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -125,6 +127,7 @@ public class FriendActivity extends AppCompatActivity {
     /**
      * sendRequest()
      * called when a user presses "send"
+     *
      * @param email the email of the person they are sending the request to
      */
     public void sendRequest(String email) {
@@ -141,6 +144,7 @@ public class FriendActivity extends AppCompatActivity {
     /**
      * acceptRequest()
      * called when a user accepts a friend request
+     *
      * @param email the email of the new friend
      */
     public void acceptRequest(String email) {
@@ -156,6 +160,7 @@ public class FriendActivity extends AppCompatActivity {
     /**
      * declineRequest()
      * declines a friend request
+     *
      * @param email the email of the person that sent the request
      */
     public void declineRequest(String email) {
@@ -170,6 +175,7 @@ public class FriendActivity extends AppCompatActivity {
     /**
      * removeRequest()
      * removes a request from the list view
+     *
      * @param position the position of the request that will be removed
      */
     public void removeRequest(int position) {
