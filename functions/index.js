@@ -83,171 +83,165 @@ function compareDates(date1, date2) {
 }
 
 
-// FIREBASE CLOUD MESSAGING 
+// // FIREBASE CLOUD MESSAGING 
 
-///**
-//  * collectionUpdated
-//  * sends a message informing the users that a trip sub-collection has been updated, lets them know 
-//  * which one was updated
-//  * @param {Object} data - a map containing info about what was added and what topic to send messages to
-//  */
-// exports.collectionUpdated = functions.https.onCall(data => {
-//   // object to hold the message data
-//   const msgData = {
-//     type: data.type, // data.type will either be 'photo' 'video' or 'tripper'
-//     notification: data.notification
-//   }
+/**
+ * collectionUpdated
+ * sends a message informing the users that a trip sub-collection has been updated, lets them know 
+ * which one was updated
+ * @param {Object} data - a map containing info about what was added and what topic to send messages to
+ */
+exports.collectionUpdated = functions.https.onCall(data => {
+  // object to hold the message data
+  const msgData = {
+    type: data.type, // data.type will either be 'photo' 'video' or 'tripper'
+    notification: data.notification
+  }
 
-//   // create a message object 
-//   const message = {
-//     data: msgData,
-//     topic: data.topic
-//   }
+  // create a message object 
+  const message = {
+    data: msgData,
+    topic: data.topic
+  }
 
-//   // send the message to the topic
-//   admin.messaging().send(message)
-//     .then(response => {
-//       console.log('success: ' + response);
-//     })
-//     .catch(err => {
-//       console.log('fail: ' + err);
-//     });
-// });
+  console.log(message);
 
-// /**
-//  * tripInfoUpdated
-//  * sends a message informing a user that a trip's info has been updated
-//  * @param {Object} data - a map containing info about where to send the 
-//  */
-// exports.tripInfoUpdated = functions.https.onCall(data => {
-//   //TODO: fill this with data
-//   const msgData = {}
+  // send the message to the topic
+  admin.messaging().send(message);
+});
 
-//   // create a message object
-//   const message = {
-//     data: msgData,
-//     topic: data.topic
-//   }
+/**
+ * tripInfoUpdated
+ * sends a message informing a user that a trip's info has been updated
+ * @param {Object} data - a map containing info about where to send the 
+ */
+exports.tripInfoUpdated = functions.https.onCall(data => {
+  // object to hold the message data
+  const msgData = {
+    type: "info"
+  }
 
-//   // send the message to the topic 
-//   admin.messaging().send(message)
-//     .then(response => {
-//       console.log('success: ' + response);
-//     })
-//     .catch(err => {
-//       console.log('fail: ' + err);
-//     });
-// });
+  // create a message object
+  const message = {
+    data: msgData,
+    topic: data.topic
+  }
+
+  // send the message to the topic 
+  admin.messaging().send(message);
+});
 
 
 // SUBSCRIPTION MANAGEMENT
+// TODO: debug subscription shit, potentially handle it client side????
 
-// /**
-//  * subscribeToTopics
-//  * subscribes a given user to the fcm topic for each trip they are a part of
-//  * @param {Object} data - a map containing the user id and their new token
-//  */
-// exports.subscribeToTopics = functions.https.onCall(data => {
-//   // get the new token
-//   const token = data.token;
-//   // get the user id
-//   const id = data.user_id;
+/**
+ * subscribeToTopics
+ * subscribes a given user to the fcm topic for each trip they are a part of
+ * @param {Object} data - a map containing the user id and their new token
+ */
+exports.subscribeToTopics = functions.https.onCall(data => {
+  // get the new token
+  const token = data.token;
+  // get the user id
+  const id = data.user_id;
 
-//   // the path to the user trips sub-collection
-//   const userTripsPath = 'users/'+id+'/user_trips';
+  // the path to the user trips sub-collection
+  const userTripsPath = 'users/'+id+'/user_trips';
 
-//   // retrieve the list of trips that the user is a part of 
-//   db.collection(userTripsPath).get()
-//     .then(snapshot => {
-//       snapshot.forEach(trip => {
-//         // subscribe the user to the topic for each trip they are a part of 
+  // retrieve the list of trips that the user is a part of 
+  db.collection(userTripsPath).get()
+    .then(snapshot => {
+      snapshot.forEach(trip => {
+        // subscribe the user to the topic for each trip they are a part of 
 
-//         //TODO: add conditional?
+        //TODO: add conditional?
 
-//         admin.messaging().subscribeToTopic(token, trip.id);
-//       });
-//       return snapshot;
-//     })
-//     .catch(err => {
-//       console.log('Error subscribing user to topics ' + err);
-//     });
-// });
+        admin.messaging().subscribeToTopic(token, trip.id);
+      });
+      return snapshot;
+    })
+    .catch(err => {
+      console.log('Error subscribing user to topics ' + err);
+    });
+});
 
-// /**
-//  * unsubscribeFromTopics
-//  * unsubscribes the user from all of the topics they were subscribed to
-//  * @param {Object} data - a map containing the old token and the userId
-//  */
-// exports.unsubscribeFromTopics = functions.https.onCall(data => {
-//   // get the old token
-//   const token = data.token;
-//   // get the user id
-//   const id = data.user_id;
+ /**
+ * unsubscribeFromTopics
+ * unsubscribes the user from all of the topics they were subscribed to
+ * @param {Object} data - a map containing the old token and the userId
+ */
+exports.unsubscribeFromTopics = functions.https.onCall(data => {
+  // get the old token
+  const token = data.token;
+  // get the user id
+  const id = data.user_id;
 
-//   // the path to the user trips sub-collection
-//   const userTripsPath = 'users/'+id+'/user_trips';
+  // the path to the user trips sub-collection
+  const userTripsPath = 'users/'+id+'/user_trips';
 
-//   // retrieve the list of trips that the user is a part of 
-//   db.collection(userTripsPath).get()
-//     .then(snapshot => {
-//       snapshot.forEach(trip => {
-//         // unsubscribe the user from the topic for each trip they are a part of 
+  // retrieve the list of trips that the user is a part of 
+  db.collection(userTripsPath).get()
+    .then(snapshot => {
+      snapshot.forEach(trip => {
+        // unsubscribe the user from the topic for each trip they are a part of 
 
-//         //TODO: add conditional?
+        //TODO: add conditional?
 
-//         admin.messaging().unsubscribeFromTopic(token, trip.id);
-//       });
-//       return snapshot;
-//     })
-//     .catch(err => {
-//       console.log('Error unsubscribing user from topics ' + err);
-//     });
-// });
+        admin.messaging().unsubscribeFromTopic(token, trip.id);
+      });
+      return snapshot;
+    })
+    .catch(err => {
+      console.log('Error unsubscribing user from topics ' + err);
+    });
+});
 
-// /**
-//  * subscribeToTopic
-//  * subscribes a user to a single topic
-//  * @param {Object} data - a map containing the user id and the topic 
-//  */
-// exports.subscribeToTopic = functions.https.onCall(data => {
-//   // get the id of the user
-//   const id = data.user_id;
-//   // get the topic to be subscribed to
-//   const topic = data.topic;
+/**
+ * subscribeToTopic
+ * subscribes a user to a single topic
+ * @param {Object} data - a map containing the user id and the topic 
+ */
+exports.subscribeToTopic = functions.https.onCall(data => {
+  // get the id of the user
+  const id = data.user_id;
+  // get the topic to be subscribed to
+  const topic = data.topic;
 
-//   // get the token of the user
-//   db.doc('users/'+id).get() 
-//     .then(doc => {
-//       // subscribe the user to the topic
-//       admin.messaging().subscribeToTopic(doc.get('token'), topic);
-//       return doc;
-//     })
-//     .catch(err => {
-//       console.log('Error subscribing user to topic ' + err);
-//     });
-// });
+  // get the token of the user
+  db.doc('users/'+id).get() 
+    .then(doc => {
+      // subscribe the user to the topic
+      admin.messaging().subscribeToTopic(doc.get('token'), topic);
+      return doc;
+    })
+    .catch(err => {
+      console.log('Error subscribing user to topic ' + err);
+    });
+});
 
-// /**
-//  * unsubscribeFromTopic
-//  * unsubscribes a user from a single topic 
-//  * @param {Object} data - a map containing the userId and topic 
-//  */
-// exports.unsubscribeFromTopic = functions.https.onCall(data => {
-//   // get the id of the user
-//   const id = data.user_id;
-//   // get the topic to be subscribed to
-//   const topic = data.topic; 
+/**
+ * unsubscribeFromTopic
+ * unsubscribes a user from a single topic 
+ * @param {Object} data - a map containing the userId and topic 
+ */
+exports.unsubscribeFromTopic = functions.https.onCall(data => {
+  // get the id of the user
+  const id = data.user_id;
+  // get the topic to be subscribed to
+  const topic = data.topic; 
 
-//   // get the token of the user
-//   db.doc('users/'+id).get()
-//     .then(doc => {
-//       // unsubscribe the user from the topic 
-//       admin.messaging().unsubscribeFromTopic(doc.get('token'), topic);
-//     })
-//     .catch(err => {
-//       console.log('Error unsubscribing user from topic ' + err);
-//     });
-// });
+  // get the token of the user
+  db.doc('users/'+id).get()
+    .then(doc => {
+      // unsubscribe the user from the topic 
+      admin.messaging().unsubscribeFromTopic(doc.get('token'), topic);
+      return doc;
+    })
+    .catch(err => {
+      console.log('Error unsubscribing user from topic ' + err);
+    });
+});
 
 
 // DELETION 

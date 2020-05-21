@@ -13,6 +13,9 @@ import com.alsaeedcullivan.ourtrips.utils.TestVars;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.functions.HttpsCallableResult;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingService;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +53,40 @@ public class CloudFunctionTests {
         Log.d(Const.TAG, "matchDatesTest: " + testTask.getResult());
 
         Log.d(Const.TAG, "matchDatesTest: complete");
+    }
+
+    @Test
+    public void topicTest() {
+
+        String user = "Z0oThyxHsIhuJe3bLVmX2Nynh973";
+        String topic = "test_topic_blah";
+
+        Task<Void> task = FirebaseMessaging.getInstance().subscribeToTopic("test_topic");
+
+        //String token = FirebaseInstanceId.getInstance().getToken();
+
+        //Log.d(Const.TAG, "topicTest: " + token);
+        //Task <HttpsCallableResult> task = CloudFunctions.subscribeToTopic(user, topic);
+
+        while (!task.isComplete()) { }
+
+        Log.d(Const.TAG, "topicTest: done");
+    }
+
+    @Test
+    public void updateTest() {
+
+        String topic = "test_topic_wtf";
+        String type = "test";
+        String notification = "fuck";
+
+        Task<HttpsCallableResult> task = CloudFunctions.collectionUpdated(topic, type, notification);
+
+        while (!task.isComplete()) { }
+
+        Log.d(Const.TAG, "updateTest: done");
+        Log.d(Const.TAG, "updateTest: ajdsnadsfjnaps;dnsd");
+
     }
 
 }

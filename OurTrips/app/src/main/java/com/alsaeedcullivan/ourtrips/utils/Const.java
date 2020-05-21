@@ -55,6 +55,7 @@ public class Const {
     public static final String TRIP_TOPIC_KEY = "topic";
     public static final String TRIP_COLL_UPDATE_TYPE_KEY = "type";
     public static final String TRIP_NOTIFY_KEY = "notification";
+    public static final String TRIP_INFO_KEY = "info";
 
     // Cloud function names
     public static final String FUNC_MATCH_DATES = "matchDates";

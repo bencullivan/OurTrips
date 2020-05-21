@@ -1,6 +1,7 @@
 package com.alsaeedcullivan.ourtrips.cloud;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -11,6 +12,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import java.util.Map;
 
 public class MessageService extends FirebaseMessagingService {
 
@@ -55,8 +58,28 @@ public class MessageService extends FirebaseMessagingService {
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
+        // get the data from the message
+        Map<String, String> data = remoteMessage.getData();
+        // determine what the type of message is
+        String type = data.get(Const.TRIP_COLL_UPDATE_TYPE_KEY);
+        if (type == null) return;
 
-        // TODO: determine how to respond based on the properties of remoteMessage
+        // respond according to the type of message
+        switch(type) {
+            case Const.TRIP_PHOTO_KEY:
+                Log.d(Const.TAG, "onMessageReceived: photo");
+                break;
+            case Const.TRIP_COMMENT_KEY:
+                Log.d(Const.TAG, "onMessageReceived: comment");
+                break;
+            case Const.TRIP_TRIPPER_KEY:
+                Log.d(Const.TAG, "onMessageReceived: tripper");
+                break;
+            case Const.TRIP_INFO_KEY:
+                Log.d(Const.TAG, "onMessageReceived: info");
+                break;
+            //TODO: replace info case with specific cases for the different fields of a trip
+        }
     }
 
     @Override
