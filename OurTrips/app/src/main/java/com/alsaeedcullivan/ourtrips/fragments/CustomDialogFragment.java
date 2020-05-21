@@ -12,8 +12,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.alsaeedcullivan.ourtrips.FriendActivity;
+import com.alsaeedcullivan.ourtrips.MatchActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.RegisterActivity;
+import com.alsaeedcullivan.ourtrips.models.UserSummary;
 
 /**
  * custom implementation of DialogFragment
@@ -25,6 +27,7 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int PERMISSION_IMPORTANT_ID = 0;
     public static final int FRIEND_ID = 1;
     public static final int ACCEPT_ID = 2;
+    public static final int MATCH_ID = 3;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -67,6 +70,8 @@ public class CustomDialogFragment extends DialogFragment {
                 return createFriendDialog();
             case ACCEPT_ID:
                 return createAcceptDialog();
+            case MATCH_ID:
+                return createMatchDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -156,6 +161,38 @@ public class CustomDialogFragment extends DialogFragment {
                 }
             }
         });
+        return dialog.create();
+    }
+
+    // allows the user to match dates with a friend
+    private AlertDialog createMatchDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        // set the title
+        dialog.setTitle("Find Match");
+
+        if (getActivity() != null) {
+            MatchActivity activity = (MatchActivity) getActivity();
+            UserSummary friend = activity.getFriend();
+            // set the message
+            dialog.setMessage("Find out which dates you and " + friend.getName() + " are both " +
+                    "available to go on a trip.");
+            // set the buttons
+            dialog.setPositiveButton("Match", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (getActivity() != null) {
+                        ((MatchActivity) getActivity()).onMatchClicked();
+                        dismiss();
+                    }
+                }
+            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dismiss();
+                }
+            });
+        }
         return dialog.create();
     }
 }

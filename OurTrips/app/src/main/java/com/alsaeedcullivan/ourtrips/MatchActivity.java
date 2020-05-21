@@ -23,7 +23,7 @@ import java.util.List;
 
 public class MatchActivity extends AppCompatActivity {
 
-    List<Date> mDates;
+    List<Date> mUserDates;
     List<UserSummary> mFriends;
     FirebaseUser mUser;
     ListView mListView;
@@ -61,7 +61,7 @@ public class MatchActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<List<Date>> task) {
                     if (task.isSuccessful()) {
-                        mDates = task.getResult();
+                        mUserDates = task.getResult();
                     } else {
                         // TODO:
                         // could not load dates
@@ -72,12 +72,21 @@ public class MatchActivity extends AppCompatActivity {
     }
 
     /**
+     * onMatchClicked()
+     * called from a dialog when a user clicks "match"
+     */
+    public void onMatchClicked() {
+        if (mSelected == null) return;
+        match(mUserDates, mSelected.getUserId());
+    }
+
+    /**
      * match()
      * called when a user selects one of their friends and clicks "match"
      * @param userDates the dates that this user is available
      * @param friendId the id of the friend that they selected
      */
-    public void match(List<Date> userDates, String friendId) {
+    private void match(List<Date> userDates, String friendId) {
         // perform a match to see which dates you are both available
         AccessDB.matchDates(userDates, friendId).addOnCompleteListener(new OnCompleteListener<long[]>() {
             @Override
@@ -106,5 +115,11 @@ public class MatchActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    // getters
+
+    public UserSummary getFriend() {
+        return mSelected;
     }
 }
