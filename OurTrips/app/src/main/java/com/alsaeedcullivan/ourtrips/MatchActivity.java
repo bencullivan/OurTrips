@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.Gravity;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -17,6 +16,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Date;
 import java.util.List;
@@ -24,6 +24,7 @@ import java.util.List;
 public class MatchActivity extends AppCompatActivity {
 
     List<Date> mDates;
+    List<UserSummary> mFriends;
     FirebaseUser mUser;
     ListView mListView;
     UserSummary mSelected;
@@ -42,6 +43,32 @@ public class MatchActivity extends AppCompatActivity {
         // get a reference to the ListView
         mListView = findViewById(R.id.match_list);
 
+        if (mUser != null) {
+            // load this user's list of friends
+            AccessDB.getFriendsList(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                @Override
+                public void onComplete(@NonNull Task<List<UserSummary>> task) {
+                    if (task.isSuccessful()) {
+                        mFriends = task.getResult();
+                    } else {
+                        // TODO:
+                        // could not load
+                    }
+                }
+            });
+            // load this user's dates from the db
+            AccessDB.getUserDatesForCal(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<List<Date>>() {
+                @Override
+                public void onComplete(@NonNull Task<List<Date>> task) {
+                    if (task.isSuccessful()) {
+                        mDates = task.getResult();
+                    } else {
+                        // TODO:
+                        // could not load dates
+                    }
+                }
+            });
+        }
     }
 
     /**

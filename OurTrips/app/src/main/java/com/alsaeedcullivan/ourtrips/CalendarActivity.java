@@ -3,6 +3,7 @@ package com.alsaeedcullivan.ourtrips;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
+import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,14 +34,18 @@ public class CalendarActivity extends AppCompatActivity {
 
     // savedInstanceState keys
     public static final String DATE_LIST_KEY = "date_list_key";
+    public static final String MATCHED_KEY = "matched_dates";
+    public static final String SOURCE_KEY = "source";
     public static final String RECENT = "recent";
 
-    FirebaseUser mUser;
-    TextView mHeader;
-    CalendarPickerView mCalView;
-    ProgressBar mSpinner;
-    TextView mLoading;
-    Date mRecent;
+    private FirebaseUser mUser;
+    private TextView mHeader;
+    private CalendarPickerView mCalView;
+    private ProgressBar mSpinner;
+    private TextView mLoading;
+    private Date mRecent;
+    private String mSource;
+    private long[] mMatched;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,8 +88,54 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
 
-        // if there was already a list of selected dates, no need to load from the database
-        if (savedInstanceState != null && savedInstanceState.getLongArray(DATE_LIST_KEY) != null) {
+        // get the source
+        Intent intent = getIntent();
+        if (savedInstanceState != null && savedInstanceState.getString(SOURCE_KEY) != null) {
+            mSource = savedInstanceState.getString(SOURCE_KEY);
+        } else mSource = intent.getStringExtra(Const.SOURCE_TAG);
+
+
+        // SET UP THE CALENDAR
+
+        // MATCH MODE
+        if (mSource != null && mSource.equals(Const.MATCH_TAG) && savedInstanceState != null &&
+                savedInstanceState.getLongArray(MATCHED_KEY) != null) {
+            mMatched = savedInstanceState.getLongArray(MATCHED_KEY);
+            if (mMatched != null && mMatched.length > 0) {
+                // select all of the matched dates
+                for (int i = mMatched.length - 1; i >= 0; i--) {
+                    mCalView.selectDate(new Date(mMatched[i]));
+                }
+                // make sure the dates can not be selected
+                mCalView.setDateSelectableFilter(new CalendarPickerView.DateSelectableFilter() {
+                    @Override
+                    public boolean isDateSelectable(Date date) {
+                        return false;
+                    }
+                });
+                makeCalAppear();
+            }
+        }
+        else if (mSource != null && mSource.equals(Const.MATCH_TAG)) {
+            mMatched = intent.getLongArrayExtra(Const.MATCH_ARR_TAG);
+            if (mMatched != null && mMatched.length > 0) {
+                // select all of the matched dates
+                for (int i = mMatched.length - 1; i >= 0; i--) {
+                    mCalView.selectDate(new Date(mMatched[i]));
+                }
+                // make sure the dates can not be selected
+                mCalView.setDateSelectableFilter(new CalendarPickerView.DateSelectableFilter() {
+                    @Override
+                    public boolean isDateSelectable(Date date) {
+                        return false;
+                    }
+                });
+                makeCalAppear();
+            }
+        }
+        // SELECT MODE
+        // if there was already a list of selected dates in select mode no need to load from the database
+        else if (savedInstanceState != null && savedInstanceState.getLongArray(DATE_LIST_KEY) != null) {
             long[] times = savedInstanceState.getLongArray(DATE_LIST_KEY);
             if (times != null) {
                 // select the dates that were saved in savedInstanceState
@@ -98,8 +150,9 @@ public class CalendarActivity extends AppCompatActivity {
                 // show the calendar
                 makeCalAppear();
             }
-        } else if (mUser != null) {
-            // get the list of dates the user is available
+        }
+        // get the list of dates from the db that the user is available
+        else if (mUser != null) {
             Task<List<Date>> datesTask = AccessDB.getUserDatesForCal(mUser.getUid());
             datesTask.addOnCompleteListener(new OnCompleteListener<List<Date>>() {
                 @Override
@@ -146,10 +199,11 @@ public class CalendarActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putLongArray(DATE_LIST_KEY, toLongs(mCalView.getSelectedDates()));
-        if (mRecent != null) {
-            outState.putLong(RECENT, mRecent.getTime());
-        }
+        if (mMatched != null) outState.putLongArray(MATCHED_KEY, mMatched);
+        else outState.putLongArray(DATE_LIST_KEY, toLongs(mCalView.getSelectedDates()));
+
+        if (mRecent != null) outState.putLong(RECENT, mRecent.getTime());
+        if (mSource != null) outState.putString(SOURCE_KEY, mSource);
     }
 
     /**

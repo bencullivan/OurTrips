@@ -3,6 +3,8 @@ package com.alsaeedcullivan.ourtrips.cloud;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.alsaeedcullivan.ourtrips.models.User;
+import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 
 import androidx.annotation.NonNull;
@@ -353,27 +355,31 @@ public class AccessDB {
      * gets the friends list of a user
      * @param userId the id of the user
      */
-    public static Task<List<String>> getFriendsList(String userId) {
+    public static Task<List<UserSummary>> getFriendsList(String userId) {
         // get a list of the friends ids of a user
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_FRIENDS_COLLECTION)
                 .get()
-                .continueWith(new Continuation<QuerySnapshot, List<String>>() {
+                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
                     @Override
-                    public List<String> then(@NonNull Task<QuerySnapshot> task) {
+                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) {
                         QuerySnapshot result = task.getResult();
                         if (result == null || result.getDocuments().size() == 0)
                             return new ArrayList<>();
 
                         // extract and return the ids of the documents
                         List<DocumentSnapshot> docList = result.getDocuments();
-                        List<String> friendIds = new ArrayList<>();
+                        List<UserSummary> friends = new ArrayList<>();
                         for (DocumentSnapshot doc : docList) {
-                            friendIds.add(doc.getId());
+                            UserSummary u = new UserSummary();
+                            u.setUserId(doc.getId());
+                            u.setEmail((String)doc.get(Const.USER_EMAIL_KEY));
+                            u.setName((String)doc.get(Const.USER_NAME_KEY));
+                            friends.add(u);
                         }
-                        return friendIds;
+                        return friends;
                     }
                 });
     }
@@ -512,10 +518,14 @@ public class AccessDB {
      * @param userEmail the email of this user
      * @param friendEmail the email of the person they are sending the request to
      */
-    public static void sendFriendRequest(String userEmail, String friendEmail) {
-        final String email = userEmail;
+    public static void sendFriendRequest(String userId, String userEmail, String userName, String friendEmail) {
+        final String id = userId;
+        // store this user's summary data in a map
         final Map<String, Object> data = new HashMap<>();
-        data.put(Const.USER_EMAIL_KEY, email);
+        data.put(Const.FRIEND_ID_KEY, userId);
+        data.put(Const.USER_EMAIL_KEY, userEmail);
+        data.put(Const.USER_NAME_KEY, userName);
+        // get the friend from the db based on the email that was passed in
         final FirebaseFirestore store = FirebaseFirestore.getInstance();
         store.collection(Const.USERS_COLLECTION)
                 .whereEqualTo(Const.USER_EMAIL_KEY, friendEmail)
@@ -530,7 +540,7 @@ public class AccessDB {
                             store.collection(Const.USERS_COLLECTION)
                                     .document(friendId)
                                     .collection(Const.USER_F_REQUESTS_COLLECTION)
-                                    .document(email)
+                                    .document(id)
                                     .set(data);
                         }
                         return q;
@@ -542,76 +552,47 @@ public class AccessDB {
      * acceptFriendRequest()
      * allows a user to accept a friend request and updates the db accordingly
      * @param userId the id of this user
+     * @param userEmail the email of this user
+     * @param userName the name of this user
+     * @param friendId the id of the user that sent the friend request
      * @param friendEmail the email of the user that sent the request
+     * @param friendName the name of the user that sent the request
      */
-    public static void acceptFriendRequest(String userId, String userEmail, String userName, String friendEmail) {
-        final String id = userId;
-        final String fEmail = friendEmail;
+    public static void acceptFriendRequest(String userId, String userEmail, String userName,
+                                           String friendId, String friendEmail, String friendName) {
         // add user data to a map
-        final Map<String, Object> thisMap = new HashMap<>();
-        thisMap.put(Const.FRIEND_ID_KEY, id);
-        thisMap.put(Const.USER_NAME_KEY, userName);
+        Map<String, Object> thisMap = new HashMap<>();
+        thisMap.put(Const.FRIEND_ID_KEY, userId);
         thisMap.put(Const.USER_EMAIL_KEY, userEmail);
+        thisMap.put(Const.USER_NAME_KEY, userName);
+
+        // add friend data to a map
+        Map<String, Object> otherMap = new HashMap<>();
+        otherMap.put(Const.FRIEND_ID_KEY, friendId);
+        otherMap.put(Const.USER_EMAIL_KEY, friendEmail);
+        otherMap.put(Const.USER_NAME_KEY, friendName);
 
         // get a reference to the db
-        final FirebaseFirestore store = FirebaseFirestore.getInstance();
-        store.collection(Const.USERS_COLLECTION)
-                .whereEqualTo(Const.USER_EMAIL_KEY, friendEmail)
-                .get()
-                .continueWith(new Continuation<QuerySnapshot, Object>() {
-                    @Override
-                    public Object then(@NonNull Task<QuerySnapshot> task) {
-                        QuerySnapshot q = task.getResult();
-                        if (q != null && q.size() > 0) {
-                            DocumentSnapshot doc = q.getDocuments().get(0);
-                            // get the id of the friend
-                            String friendId = doc.getId();
-                            String friendName = (String) doc.get(Const.USER_NAME_KEY);
-                            // add friend data to a map
-                            Map<String, Object> otherMap = new HashMap<>();
-                            otherMap.put(Const.FRIEND_ID_KEY, friendId);
-                            otherMap.put(Const.USER_NAME_KEY, friendName);
-                            otherMap.put(Const.USER_EMAIL_KEY, fEmail);
+        FirebaseFirestore store = FirebaseFirestore.getInstance();
 
-                            // delete the friend request
-                            store.collection(Const.USERS_COLLECTION)
-                                    .document(id)
-                                    .collection(Const.USER_F_REQUESTS_COLLECTION)
-                                    .document(fEmail)
-                                    .delete()
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            Log.d(Const.TAG, "onSuccess: yay delete req");
-                                        }
-                                    });
-                            // add each user to the other user's friends sub-collection
-                            store.collection(Const.USERS_COLLECTION)
-                                    .document(friendId)
-                                    .collection(Const.USER_FRIENDS_COLLECTION)
-                                    .document(id)
-                                    .set(thisMap)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            Log.d(Const.TAG, "onSuccess: added to friend sub");
-                                        }
-                                    });
-                            store.collection(Const.USERS_COLLECTION)
-                                    .document(id)
-                                    .collection(Const.USER_FRIENDS_COLLECTION)
-                                    .document(friendId)
-                                    .set(otherMap)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            Log.d(Const.TAG, "onSuccess: added to this user sub");
-                                        }
-                                    });
-                        }
-                        return q;
-                    }
-                });
+        // delete the friend request
+        store.collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .collection(Const.USER_F_REQUESTS_COLLECTION)
+                .document(friendId)
+                .delete();
+
+        // add each user to the friends sub-collection of the other user
+        store.collection(Const.USERS_COLLECTION)
+                .document(friendId)
+                .collection(Const.USER_FRIENDS_COLLECTION)
+                .document(userId)
+                .set(thisMap);
+        store.collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .collection(Const.USER_FRIENDS_COLLECTION)
+                .document(friendId)
+                .set(otherMap);
     }
 
 

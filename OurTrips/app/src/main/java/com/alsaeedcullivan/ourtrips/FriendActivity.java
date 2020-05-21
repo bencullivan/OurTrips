@@ -165,27 +165,27 @@ public class FriendActivity extends AppCompatActivity {
         Log.d(Const.TAG, "sendRequest: " + email);
         Log.d(Const.TAG, "sendRequest: " + user.getEmail());
         // if there is a user, send the friend request
-        AccessDB.sendFriendRequest(user.getEmail(), email);
+        AccessDB.sendFriendRequest(user.getUid(), user.getEmail(), mName, email);
     }
 
     /**
      * acceptRequest()
      * called when a user accepts a friend request
      *
-     * @param email the email of the new friend
+     * @param friendId the email of the new friend
      */
-    public void acceptRequest(String email) {
+    public void acceptRequest(String friendId) {
         // get the current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
 
-        Log.d(Const.TAG, "acceptRequest: " + email);
+        Log.d(Const.TAG, "acceptRequest: " + friendId);
         Log.d(Const.TAG, "acceptRequest: " + mName);
         if (mName == null) {
             return;
         }
         // if there is a user, accept the friend request
-        AccessDB.acceptFriendRequest(user.getUid(), user.getEmail(), mName, email);
+        //AccessDB.acceptFriendRequest(user.getUid(), user.getEmail(), mName, friendId);
     }
 
     /**
