@@ -39,7 +39,7 @@
     <string name="prompt_birthday">Birthday</string>
     <string name="prompt_register">Register</string>
     <string name="prompt_update">Update</string>
-    <string name="verify_email_string">Verify Email</string>
+    <string name="verify_email_string">Verify Email / Register Account</string>
     <string name="profile_picture_string">Profile Picture</string>
     <string name="prompt_grantAccess">Grant Access</string>
     <string name="prompt_dismiss">Dismiss</string>
@@ -61,4 +61,7 @@
     <string name="string_send_request">create request</string>
     <string name="find_friends">Find Friends</string>
     <string name="pending_requests">Pending requests…</string>
+    <string name="preferences">profile_prefs</string>
+    <string name="not_registered">Your email is verified but you have not registered, please click Sign Up to create an account</string>
+    <string name="need_to_verify">You have not verified your email address, please click Sign Up to verifiy</string>
 </resources>

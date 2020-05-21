@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.preference.PreferenceGroup;
+import androidx.preference.PreferenceManager;
 
 import android.Manifest;
 import android.content.Intent;
@@ -28,10 +30,12 @@ import com.alsaeedcullivan.ourtrips.cloud.AccessBucket;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.utils.Const;
+import com.alsaeedcullivan.ourtrips.utils.SharedPreference;
 import com.alsaeedcullivan.ourtrips.utils.Utilities;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
@@ -125,11 +129,6 @@ public class RegisterActivity extends AppCompatActivity {
         updatePermission();
         // get the user that is signed in or null if there is no user signed in
         mUser = mAuth.getCurrentUser();
-
-        if (mUser != null && mUser.isEmailVerified()) {
-            // they are logged in and verified, send them to main activity
-            Toast.makeText(this, "got to main", Toast.LENGTH_SHORT).show();
-        }
     }
 
     @Override
@@ -291,9 +290,6 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT);
             message.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
             message.show();
-
-            // return to LoginActivity || MainActivity
-            finish();
         }
     }
 
@@ -442,6 +438,9 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
+                    // set the user as registered
+                    new SharedPreference(getApplicationContext()).setRegistered(true);
+
                     // Inform the user that they were registered successfully
                     Toast t = Toast.makeText(RegisterActivity.this,
                             R.string.string_register_success, Toast.LENGTH_SHORT);

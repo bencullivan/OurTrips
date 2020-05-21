@@ -16,12 +16,17 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.utils.Const;
+import com.alsaeedcullivan.ourtrips.utils.SharedPreference;
 import com.alsaeedcullivan.ourtrips.utils.Utilities;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -40,8 +45,9 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
 
-        // if there is a verified user logged in, go straight to main activity
-        if (mUser != null && mUser.isEmailVerified()) {
+        // if there is a verified registered user logged in, go straight to main activity
+        if (mUser != null && mUser.isEmailVerified() && new SharedPreference(this).getRegistered()) {
+            // check to see if they have registered
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
         }
 
@@ -105,6 +111,13 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 // valid entries //
+
+                // show progress bar & hide buttons
+                mProgressBar.setVisibility(View.VISIBLE);
+                signInButton.setVisibility(View.GONE);
+                signUpButton.setVisibility(View.GONE);
+
+                // attempt to sign in
                 signIn(inputEmail, inputPassword);
             }
         });
@@ -166,52 +179,126 @@ public class LoginActivity extends AppCompatActivity {
      * @param password the input password
      */
     private void signIn(String email, String password) {
+        // attempt to sign in with the given email and password
         FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // show progress bar & hide buttons
-                            mProgressBar.setVisibility(View.VISIBLE);
-                            signInButton.setVisibility(View.GONE);
-                            signUpButton.setVisibility(View.GONE);
+                            // get the user
+                            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                            if (user == null || !user.isEmailVerified()) {
+                                //TODO insert logic here
 
-                            // let progress bar spin to emulate network query
-                            new Handler().postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    // proceed to main activity
-                                    startActivity(new Intent(LoginActivity.this,
-                                            MainActivity.class));
-                                }
-                            }, 1000 + (int) (Math.random() * 1000));    // delay 1+ sec
-                            // after delay, proceed to main activity
+                                // tell the user that the email has not been verified
+                                Toast t = Toast.makeText(LoginActivity.this,
+                                        R.string.need_to_verify, Toast.LENGTH_LONG);
+                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                        0, 0);
+                                t.show();
+                                // sign the user out
+                                FirebaseAuth.getInstance().signOut();
+                                return;
+                            }
+                            // check to see if the user is registered
+                            FirebaseFirestore.getInstance()
+                                    .collection(Const.USERS_COLLECTION)
+                                    .document(user.getUid())
+                                    .get()
+                                    .continueWith(new Continuation<DocumentSnapshot, Object>() {
+                                        @Override
+                                        public Object then(@NonNull Task<DocumentSnapshot> task) {
+                                            DocumentSnapshot doc = task.getResult();
+                                            if (doc != null && doc.exists()) {
+                                                // save that this user is registered
+                                                new SharedPreference(getApplicationContext())
+                                                        .setRegistered(true);
+
+                                                // the user can proceed to main activity
+                                                startActivity(new Intent(
+                                                        LoginActivity.this,
+                                                        MainActivity.class));
+
+                                                // hide the progress bar
+                                                hideBar();
+                                                // finish the activity
+                                                finish();
+                                            } else {
+                                                // tell the user that they have not registered
+                                                Toast t = Toast.makeText(LoginActivity.this,
+                                                        R.string.not_registered, Toast.LENGTH_LONG);
+                                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                                        0, 0);
+                                                t.show();
+
+                                                // set that they have not registered
+                                                new SharedPreference(getApplicationContext())
+                                                        .setRegistered(false);
+                                                // sign the user out
+                                                FirebaseAuth.getInstance().signOut();
+
+                                                // hide the progress bar
+                                                hideBar();
+                                            }
+                                            return doc;
+                                        }
+                                    });
                         } else {
-                            // show progress bar & hide buttons
-                            mProgressBar.setVisibility(View.VISIBLE);
-                            signInButton.setVisibility(View.GONE);
-                            signUpButton.setVisibility(View.GONE);
+                            // there is no account with this name
 
-                            // let progress bar spin to emulate network query
-                            new Handler().postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    // inform user they are wrong
-                                    Toast message = Toast.makeText(LoginActivity.this,
-                                            R.string.login_failed, Toast.LENGTH_SHORT);
-                                    message.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                                            0, 0);
-                                    message.show();
+                            // inform user they are wrong
+                            Toast message = Toast.makeText(LoginActivity.this,
+                                    R.string.login_failed, Toast.LENGTH_SHORT);
+                            message.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                    0, 0);
+                            message.show();
 
-                                    // hide progress bar & show buttons
-                                    mProgressBar.setVisibility(View.GONE);
-                                    signInButton.setVisibility(View.VISIBLE);
-                                    signUpButton.setVisibility(View.VISIBLE);
-                                }
-                            }, 1000 + (int) (Math.random() * 1000));    // delay 1+ sec
-                            // after delay, toast user
+                            // hide the progress bar
+                            hideBar();
                         }
                     }
                 });
     }
+
+    /**
+     * hideBar()
+     * helper method that hides the progress bar
+     */
+    private void hideBar() {
+        // hide progress bar & show buttons
+        mProgressBar.setVisibility(View.GONE);
+        signInButton.setVisibility(View.VISIBLE);
+        signUpButton.setVisibility(View.VISIBLE);
+    }
 }
+
+//                            // show progress bar & hide buttons
+//                            mProgressBar.setVisibility(View.VISIBLE);
+//                            signInButton.setVisibility(View.GONE);
+//                            signUpButton.setVisibility(View.GONE);
+//
+//                            // let progress bar spin to emulate network query
+//                            new Handler().postDelayed(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    // proceed to main activity
+//                                    startActivity(new Intent(LoginActivity.this,
+//                                            MainActivity.class));
+//                                }
+//                            }, 1000 + (int) (Math.random() * 1000));    // delay 1+ sec
+//                            // after delay, proceed to main activity
+
+
+//                            // show progress bar & hide buttons
+//                            mProgressBar.setVisibility(View.VISIBLE);
+//                            signInButton.setVisibility(View.GONE);
+//                            signUpButton.setVisibility(View.GONE);
+//
+//                            // let progress bar spin to emulate network query
+//                            new Handler().postDelayed(new Runnable() {
+//                                @Override
+//                                public void run() {
+//
+//                                }
+//                            }, 1000 + (int) (Math.random() * 1000));    // delay 1+ sec
+//                            // after delay, toast user

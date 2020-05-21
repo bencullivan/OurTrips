@@ -12,7 +12,11 @@
         android:roundIcon="@mipmap/our_trips_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".FriendActivity" />
+        <activity android:name=".FriendActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.alsaeedcullivan.ourtrips.MainActivity" />
+        </activity>
         <!-- THIS SERVICE IS FOR CLOUD MESSAGING, I WILL UPDATE IT AS I WORK ON IMPLEMENTING MESSAGING -->
         <service
             android:name=".cloud.MessageService"

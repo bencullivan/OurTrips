@@ -44,6 +44,11 @@ public class Const {
     public static final String USER_TRIPS_COLLECTION = "user_trips";
     public static final String USER_F_REQUESTS_COLLECTION = "friend_requests";
 
+    // User properties
+    public static final String REGISTER_PROPERTY = "registered";
+    public static final String REGISTER_FALSE = "f";
+    public static final String REGISTER_TRUE = "t";
+
     // Trip keys
     public static final String TRIP_ID_KEY = "trip_id";
     public static final String TRIP_TITLE_KEY = "title";

@@ -96,13 +96,9 @@ public class FriendActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.send_request_button:
-                requestDialog();
-                return true;
-            case android.R.id.home:
-                finish();
-                return true;
+        if (item.getItemId() == R.id.send_request_button) {
+            requestDialog();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

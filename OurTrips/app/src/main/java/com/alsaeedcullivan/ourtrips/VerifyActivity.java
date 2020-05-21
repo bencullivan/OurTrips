@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.utils.Const;
+import com.alsaeedcullivan.ourtrips.utils.SharedPreference;
 import com.alsaeedcullivan.ourtrips.utils.Utilities;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -120,53 +121,70 @@ public class VerifyActivity extends AppCompatActivity {
             return;
         }
 
+
         // get a reference to the FirebaseAuth
         final FirebaseAuth auth = FirebaseAuth.getInstance();
 
-        // create a new user with the input credentials
-        auth.createUserWithEmailAndPassword(mEmail, mPassword).addOnCompleteListener(this,
-                new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // send a verification email to the user
-                            if (auth.getCurrentUser() != null)
-                                auth.getCurrentUser().sendEmailVerification()
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                if (task.isSuccessful()) {
-                                                    // inform the user that an email has been sent
-                                                    Toast t = Toast.makeText(
-                                                            VerifyActivity.this,
-                                                            "A verification email has been sent to " +
-                                                                    mEmail, Toast.LENGTH_SHORT);
-                                                    t.setGravity(Gravity.TOP |
-                                                                    Gravity.CENTER_HORIZONTAL, 0,
-                                                            0);
-                                                    t.show();
-                                                } else {
-                                                    // inform the user that an email was not sent
-                                                    Toast t = Toast.makeText(
-                                                            VerifyActivity.this,
-                                                            "We were not able to send a verification email" +
-                                                                    " to " + mEmail + ", are you sure this is " +
-                                                                    "your correct email address?",
-                                                            Toast.LENGTH_SHORT);
-                                                    t.setGravity(Gravity.TOP |
-                                                                    Gravity.CENTER_HORIZONTAL, 0,
-                                                            0);
-                                                    t.show();
+        // try to sign the user in, if there is no account, create one
+        auth.signInWithEmailAndPassword(mEmail, mPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    // allow them to proceed to register activity
+                    Intent intent = new Intent(VerifyActivity.this, RegisterActivity.class);
+                    intent.putExtra(Const.SOURCE_TAG, Const.VERIFY_TAG);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    // create a new user with the input credentials
+                    auth.createUserWithEmailAndPassword(mEmail, mPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                // send a verification email to the user
+                                if (auth.getCurrentUser() != null)
+                                    auth.getCurrentUser().sendEmailVerification()
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        // set that the user has not registered
+                                                        new SharedPreference(getApplicationContext())
+                                                                .setRegistered(false);
+
+                                                        // inform the user that an email has been sent
+                                                        Toast t = Toast.makeText(
+                                                                VerifyActivity.this,
+                                                                "A verification email has been sent to " +
+                                                                        mEmail, Toast.LENGTH_SHORT);
+                                                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                                                0, 0);
+                                                        t.show();
+                                                    } else {
+                                                        // inform the user that an email was not sent
+                                                        Toast t = Toast.makeText(
+                                                                VerifyActivity.this,
+                                                                "We were not able to send a verification email" +
+                                                                        " to " + mEmail + ", are you sure this is " +
+                                                                        "your correct email address?",
+                                                                        Toast.LENGTH_SHORT);
+                                                        t.setGravity(Gravity.TOP |
+                                                                Gravity.CENTER_HORIZONTAL, 0,
+                                                                0);
+                                                        t.show();
+                                                    }
                                                 }
-                                            }
-                                        });
-                        } else {
-                            // inform the user that the email was not valid
-                            mEmailText.setError(getString(R.string.email_not_valid));
-                            mEmailText.requestFocus();
-                        }
-                    }
-                });
+                                            });
+                                    } else {
+                                        // inform the user that the email was not valid
+                                        mEmailText.setError(getString(R.string.email_not_valid));
+                                        mEmailText.requestFocus();
+                                    }
+                                }
+                            });
+                }
+            }
+        });
     }
 
     /**
