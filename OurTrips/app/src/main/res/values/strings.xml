@@ -69,4 +69,8 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_fragment_summary">Trip Summary</string>
+    <string name="title_fragment_plan">Plans</string>
+    <string name="title_fragment_media">Shared Media</string>
+    <string name="title_fragment_trippers">Trippers</string>
 </resources>

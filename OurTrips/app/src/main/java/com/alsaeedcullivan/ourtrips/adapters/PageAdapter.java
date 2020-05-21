@@ -9,9 +9,9 @@ import com.alsaeedcullivan.ourtrips.fragments.MediaFragment;
 import com.alsaeedcullivan.ourtrips.fragments.PlanFragment;
 import com.alsaeedcullivan.ourtrips.fragments.SummaryFragment;
 import com.alsaeedcullivan.ourtrips.fragments.TrippersFragment;
-import com.alsaeedcullivan.ourtrips.models.TripSummary;
 
 public class PageAdapter extends FragmentPagerAdapter {
+
     public PageAdapter(@NonNull FragmentManager fm, int behavior) {
         super(fm, behavior);
     }

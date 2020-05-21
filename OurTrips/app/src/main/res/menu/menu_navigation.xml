@@ -3,19 +3,19 @@
 
     <item
         android:id="@+id/summary"
-        android:title="@string/prompt_summary"
-        android:icon="@drawable/ic_launcher_background"/>
+        android:icon="@drawable/ic_launcher_background"
+        android:title="@string/prompt_summary" />
     <item
         android:id="@+id/plan"
-        android:title="@string/prompt_plan"
-        android:icon="@drawable/ic_launcher_background"/>
+        android:icon="@drawable/ic_launcher_background"
+        android:title="@string/prompt_plan" />
     <item
         android:id="@+id/media"
-        android:title="@string/prompt_media"
-        android:icon="@drawable/ic_launcher_background"/>
+        android:icon="@drawable/ic_launcher_background"
+        android:title="@string/prompt_media" />
     <item
         android:id="@+id/trippers"
-        android:title="@string/prompt_trippers"
-        android:icon="@drawable/ic_launcher_background"/>
+        android:icon="@drawable/ic_launcher_background"
+        android:title="@string/prompt_trippers" />
 
 </menu>
