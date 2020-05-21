@@ -151,6 +151,7 @@ public class CustomDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (getActivity() != null) {
+                    ((FriendActivity) getActivity()).declineRequest(email);
                     ((FriendActivity) getActivity()).removeRequest(position);
                 }
             }

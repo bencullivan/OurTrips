@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -144,6 +145,19 @@ public class AccessDB {
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .update(Const.USER_TOKEN_KEY, token);
+    }
+
+    /**
+     * deleteRequest()
+     * deletes a friend request from the db
+     */
+    public static void deleteRequest(String userId, String email) {
+        FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .collection(Const.USER_F_REQUESTS_COLLECTION)
+                .document(email)
+                .delete();
     }
 
     /**

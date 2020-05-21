@@ -154,6 +154,20 @@ public class FriendActivity extends AppCompatActivity {
     }
 
     /**
+     * declineRequest()
+     * declines a friend request
+     * @param email the email of the person that sent the request
+     */
+    public void declineRequest(String email) {
+        // get the current user
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+
+        Log.d(Const.TAG, "declineRequest: " + email);
+        AccessDB.deleteRequest(user.getUid(), email);
+    }
+
+    /**
      * removeRequest()
      * removes a request from the list view
      * @param position the position of the request that will be removed
