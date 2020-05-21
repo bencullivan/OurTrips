@@ -10,10 +10,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
-import com.alsaeedcullivan.ourtrips.cloud.CloudFunctions;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -27,6 +29,7 @@ import java.util.List;
 public class FriendActivity extends AppCompatActivity {
 
     private static final String LIST_KEY = "requests";
+    private static final String NAME_KEY = "name";
 
     private FirebaseUser mUser;
     private ArrayAdapter<String> mAdapter;
@@ -34,6 +37,10 @@ public class FriendActivity extends AppCompatActivity {
     private ListView mListView;
     private int selectedIndex;
     private String selectedEmail;
+    private String mName = "";
+    private LinearLayout mFriendLayout;
+    private ProgressBar mSpinner;
+    private TextView mLoadingText;
 
 
     @Override
@@ -48,8 +55,17 @@ public class FriendActivity extends AppCompatActivity {
         // get the user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        // get a reference to the ListView
+        // get a reference to the widgets
         mListView = findViewById(R.id.request_list);
+        mSpinner = findViewById(R.id.friend_spinner);
+        mFriendLayout = findViewById(R.id.friend_linear);
+        mLoadingText = findViewById(R.id.friend_loading_text);
+
+        // set initial visibility
+        mFriendLayout.setVisibility(View.GONE);
+        mSpinner.setVisibility(View.VISIBLE);
+        mLoadingText.setVisibility(View.VISIBLE);
+
 
         //TODO: OMAR replace with custom adapter to make it look however you want
         // I am using a simple adapter only so that i can test my cloud functions
@@ -57,11 +73,14 @@ public class FriendActivity extends AppCompatActivity {
         // if there is a list in savedInstanceState, there is no need to load from the db
         if (savedInstanceState != null && savedInstanceState.getStringArrayList(LIST_KEY) != null) {
             mList = savedInstanceState.getStringArrayList(LIST_KEY);
+            mName = savedInstanceState.getString(NAME_KEY);
+            if (mName == null) mName = "";
             if (mList != null) {
                 // set the adapter to the list view with the saved list
                 mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mList);
                 mListView.setAdapter(mAdapter);
                 mListView.setOnItemClickListener(listListener());
+                makeListAppear();
             }
         } else if (mUser != null) {
             // instantiate the adapter
@@ -85,6 +104,16 @@ public class FriendActivity extends AppCompatActivity {
                     }
                 }
             });
+            // get the name of this user
+            Task<String> nameTask = AccessDB.getUserName(mUser.getUid());
+            nameTask.addOnCompleteListener(new OnCompleteListener<String>() {
+                @Override
+                public void onComplete(@NonNull Task<String> task) {
+                    if (task.isSuccessful()) mName = task.getResult();
+                    else mName = "";
+                    makeListAppear();
+                }
+            });
         }
     }
 
@@ -99,6 +128,9 @@ public class FriendActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.send_request_button) {
             requestDialog();
             return true;
+        } else if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -106,9 +138,8 @@ public class FriendActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mList != null && mList.size() > 0) {
-            outState.putStringArrayList(LIST_KEY, mList);
-        }
+        if (mList != null && mList.size() > 0) outState.putStringArrayList(LIST_KEY, mList);
+        if (mName != null) outState.putString(NAME_KEY, mName);
     }
 
     /**
@@ -134,7 +165,7 @@ public class FriendActivity extends AppCompatActivity {
         Log.d(Const.TAG, "sendRequest: " + email);
         Log.d(Const.TAG, "sendRequest: " + user.getEmail());
         // if there is a user, send the friend request
-        CloudFunctions.sendFriendRequest(user.getEmail(), email);
+        AccessDB.sendFriendRequest(user.getEmail(), email);
     }
 
     /**
@@ -149,14 +180,17 @@ public class FriendActivity extends AppCompatActivity {
         if (user == null) return;
 
         Log.d(Const.TAG, "acceptRequest: " + email);
+        Log.d(Const.TAG, "acceptRequest: " + mName);
+        if (mName == null) {
+            return;
+        }
         // if there is a user, accept the friend request
-        CloudFunctions.acceptFriendRequest(user.getUid(), email);
+        AccessDB.acceptFriendRequest(user.getUid(), user.getEmail(), mName, email);
     }
 
     /**
      * declineRequest()
      * declines a friend request
-     *
      * @param email the email of the person that sent the request
      */
     public void declineRequest(String email) {
@@ -193,6 +227,13 @@ public class FriendActivity extends AppCompatActivity {
                         .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
             }
         };
+    }
+
+    // makes the list view visible
+    private void makeListAppear() {
+        mSpinner.setVisibility(View.GONE);
+        mLoadingText.setVisibility(View.GONE);
+        mFriendLayout.setVisibility(View.VISIBLE);
     }
 
     // GETTERS

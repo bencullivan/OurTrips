@@ -5,8 +5,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
-import androidx.preference.PreferenceGroup;
-import androidx.preference.PreferenceManager;
 
 import android.Manifest;
 import android.content.Intent;

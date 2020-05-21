@@ -1,6 +1,7 @@
 package com.alsaeedcullivan.ourtrips.cloud;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.utils.Const;
 
@@ -8,12 +9,14 @@ import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.gson.internal.$Gson$Preconditions;
 
 import java.io.InputStream;
 import java.text.ParseException;
@@ -474,6 +477,200 @@ public class AccessDB {
                         // NOTE: if execution makes it past the above if statement
                         // this cast will not throw an exception
                         return (List<String>) result.get(Const.DATE_LIST_KEY);
+                    }
+                });
+    }
+
+    /**
+     * getUserName()
+     * gets the name of the current user
+     * @param userId the id of the current user
+     */
+    public static Task<String> getUserName(String userId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .get()
+                .continueWith(new Continuation<DocumentSnapshot, String>() {
+                    @Override
+                    public String then(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot doc = task.getResult();
+                        if (doc == null || !doc.contains(Const.USER_NAME_KEY) ||
+                                !(doc.get(Const.USER_NAME_KEY) instanceof String))
+                                        return "";
+                        return (String) doc.get(Const.USER_NAME_KEY);
+                    }
+                });
+    }
+
+
+    // HANDLE FRIEND REQUESTS
+
+    /**
+     * sendFriendRequest()
+     * sends a friend request from this user to another user
+     * @param userEmail the email of this user
+     * @param friendEmail the email of the person they are sending the request to
+     */
+    public static void sendFriendRequest(String userEmail, String friendEmail) {
+        final String email = userEmail;
+        final Map<String, Object> data = new HashMap<>();
+        data.put(Const.USER_EMAIL_KEY, email);
+        final FirebaseFirestore store = FirebaseFirestore.getInstance();
+        store.collection(Const.USERS_COLLECTION)
+                .whereEqualTo(Const.USER_EMAIL_KEY, friendEmail)
+                .get()
+                .continueWith(new Continuation<QuerySnapshot, Object>() {
+                    @Override
+                    public Object then(@NonNull Task<QuerySnapshot> task) {
+                        QuerySnapshot q = task.getResult();
+                        if (q != null && q.size() > 0) {
+                            DocumentSnapshot doc = q.getDocuments().get(0);
+                            String friendId = doc.getId();
+                            store.collection(Const.USERS_COLLECTION)
+                                    .document(friendId)
+                                    .collection(Const.USER_F_REQUESTS_COLLECTION)
+                                    .document(email)
+                                    .set(data);
+                        }
+                        return q;
+                    }
+                });
+    }
+
+    /**
+     * acceptFriendRequest()
+     * allows a user to accept a friend request and updates the db accordingly
+     * @param userId the id of this user
+     * @param friendEmail the email of the user that sent the request
+     */
+    public static void acceptFriendRequest(String userId, String userEmail, String userName, String friendEmail) {
+        final String id = userId;
+        final String fEmail = friendEmail;
+        // add user data to a map
+        final Map<String, Object> thisMap = new HashMap<>();
+        thisMap.put(Const.FRIEND_ID_KEY, id);
+        thisMap.put(Const.USER_NAME_KEY, userName);
+        thisMap.put(Const.USER_EMAIL_KEY, userEmail);
+
+        // get a reference to the db
+        final FirebaseFirestore store = FirebaseFirestore.getInstance();
+        store.collection(Const.USERS_COLLECTION)
+                .whereEqualTo(Const.USER_EMAIL_KEY, friendEmail)
+                .get()
+                .continueWith(new Continuation<QuerySnapshot, Object>() {
+                    @Override
+                    public Object then(@NonNull Task<QuerySnapshot> task) {
+                        QuerySnapshot q = task.getResult();
+                        if (q != null && q.size() > 0) {
+                            DocumentSnapshot doc = q.getDocuments().get(0);
+                            // get the id of the friend
+                            String friendId = doc.getId();
+                            String friendName = (String) doc.get(Const.USER_NAME_KEY);
+                            // add friend data to a map
+                            Map<String, Object> otherMap = new HashMap<>();
+                            otherMap.put(Const.FRIEND_ID_KEY, friendId);
+                            otherMap.put(Const.USER_NAME_KEY, friendName);
+                            otherMap.put(Const.USER_EMAIL_KEY, fEmail);
+
+                            // delete the friend request
+                            store.collection(Const.USERS_COLLECTION)
+                                    .document(id)
+                                    .collection(Const.USER_F_REQUESTS_COLLECTION)
+                                    .document(fEmail)
+                                    .delete()
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Log.d(Const.TAG, "onSuccess: yay delete req");
+                                        }
+                                    });
+                            // add each user to the other user's friends sub-collection
+                            store.collection(Const.USERS_COLLECTION)
+                                    .document(friendId)
+                                    .collection(Const.USER_FRIENDS_COLLECTION)
+                                    .document(id)
+                                    .set(thisMap)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Log.d(Const.TAG, "onSuccess: added to friend sub");
+                                        }
+                                    });
+                            store.collection(Const.USERS_COLLECTION)
+                                    .document(id)
+                                    .collection(Const.USER_FRIENDS_COLLECTION)
+                                    .document(friendId)
+                                    .set(otherMap)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Log.d(Const.TAG, "onSuccess: added to this user sub");
+                                        }
+                                    });
+                        }
+                        return q;
+                    }
+                });
+    }
+
+
+    // DATE MATCHING
+
+    /**
+     * matchDates()
+     * takes in the user's list of dates and the id of a friend they want to match with
+     * returns a list of dates that they are both available that can then be displayed by a calendar
+     * @param dates the dates this user is available
+     * @param friendId the id of the friend they want to match with
+     */
+    public static Task<long[]> matchDates(List<Date> dates, String friendId) {
+        final List<Date> userDates = dates;
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(friendId)
+                .get()
+                .continueWith(new Continuation<DocumentSnapshot, long[]>() {
+                    @Override
+                    public long[] then(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot doc = task.getResult();
+                        if (doc == null || !doc.contains(Const.DATE_LIST_KEY) ||
+                                !(doc.get(Const.DATE_LIST_KEY) instanceof List))
+                                        return new long[0];
+
+                        // if execution makes it this far, this cast will not throw an exception
+                        List<String> stringDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
+                        // list of Dates to store the converted friend dates
+                        List<Date> friendDates = new ArrayList<>();
+
+                        if (stringDates == null) return new long[0];
+                        SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+
+                        try {
+                            // convert the strings to dates
+                            for (String date : stringDates) {
+                                friendDates.add(format.parse(date));
+                            }
+                            // initialize a list to hold the matched dates
+                            List<Date> matched = new ArrayList<>();
+
+                            int a = 0;
+                            int b = 0;
+                            while (a < userDates.size() && b < friendDates.size()) {
+                                int result = userDates.get(a).compareTo(friendDates.get(b));
+                                if (result < 0) a++;
+                                else if (result > 0 ) b++;
+                                else matched.add(userDates.get(a));
+                                a++;
+                                b++;
+                            }
+                            // return an array of the times of the matched dates
+                            long[] out = new long[matched.size()];
+                            for (int i = 0; i < matched.size(); i++) out[i] = matched.get(i).getTime();
+                            return out;
+                        } catch (ParseException e) {
+                            return new long[0];
+                        }
                     }
                 });
     }

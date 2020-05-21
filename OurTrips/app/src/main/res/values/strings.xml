@@ -64,4 +64,6 @@
     <string name="preferences">profile_prefs</string>
     <string name="not_registered">Your email is verified but you have not registered, please click Sign Up to create an account</string>
     <string name="need_to_verify">You have not verified your email address, please click Sign Up to verifiy</string>
+    <string name="available_match">Click on a friend to find dates where you are both available</string>
+    <string name="loading_friend_requests">Loading friend requests</string>
 </resources>

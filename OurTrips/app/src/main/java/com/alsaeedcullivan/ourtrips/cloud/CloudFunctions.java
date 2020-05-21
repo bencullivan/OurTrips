@@ -165,41 +165,4 @@ public class CloudFunctions {
         return FirebaseFunctions.getInstance().getHttpsCallable(Const.FUNC_UNSUBSCRIBE_TOPIC)
                 .call(data);
     }
-
-
-    // FRIEND REQUESTS
-
-    /**
-     * sendFriendRequest()
-     * sends a friend request
-     * @param userEmail the email of the user sending the request
-     * @param friendEmail the email of the person receiving the request
-     */
-    public static void sendFriendRequest(String userEmail, String friendEmail) {
-        // create a map to hold the data
-        Map<String, Object> data = new HashMap<>();
-        data.put(Const.USER_REQ_EMAIL, userEmail);
-        data.put(Const.FRIEND_REQ_EMAIL, friendEmail);
-
-        Log.d(Const.TAG, "sendFriendRequest: " + data);
-        // call the cloud function
-        FirebaseFunctions.getInstance().getHttpsCallable(Const.FUNC_SEND_REQUEST).call(data);
-    }
-
-    /**
-     * acceptFriendRequest()
-     * accepts a friend request, updating the database accordingly
-     * @param userId - the id of the user accepting
-     * @param friendEmail - the email of the user that sent the request
-     */
-    public static void acceptFriendRequest(String userId, String friendEmail) {
-        // create a map to hold the data
-        Map<String, Object> data = new HashMap<>();
-        data.put(Const.USER_ID_KEY, userId);
-        data.put(Const.FRIEND_REQ_EMAIL, friendEmail);
-
-        // call the cloud function
-        FirebaseFunctions.getInstance().getHttpsCallable(Const.FUNC_ACCEPT_REQUEST).call(data);
-    }
-
 }

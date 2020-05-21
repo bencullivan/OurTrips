@@ -16,6 +16,8 @@ public class Const {
     public static final String MAIN_TAG = "MainActivity";
     public static final String LOGIN_TAG = "LoginActivity";
     public static final String SETTINGS_TAG = "SettingsActivity";
+    public static final String MATCH_TAG = "MatchActivity";
+    public static final String MATCH_ARR_TAG = "matched";
 
     // codes
     public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;
@@ -73,8 +75,6 @@ public class Const {
     public static final String FUNC_UNSUBSCRIBE_TOPIC = "unsubscribeFromTopic";
     public static final String FUNC_COLLECTION_UPDATED = "collectionUpdated";
     public static final String FUNC_TRIP_INFO_UPDATED = "tripInfoUpdated";
-    public static final String FUNC_SEND_REQUEST = "sendFriendRequest";
-    public static final String FUNC_ACCEPT_REQUEST = "acceptFriendRequest";
 
     // Cloud Function Keys
     public static final String LIST_1_KEY = "list1";

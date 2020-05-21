@@ -12,21 +12,22 @@
         android:roundIcon="@mipmap/our_trips_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".MatchActivity"></activity>
         <activity android:name=".FriendActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.alsaeedcullivan.ourtrips.MainActivity" />
-        </activity>
-        <!-- THIS SERVICE IS FOR CLOUD MESSAGING, I WILL UPDATE IT AS I WORK ON IMPLEMENTING MESSAGING -->
+        </activity> <!-- THIS SERVICE IS FOR CLOUD MESSAGING, I WILL UPDATE IT AS I WORK ON IMPLEMENTING MESSAGING -->
         <service
             android:name=".cloud.MessageService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
-                    <meta-data
-             android:name="com.google.firebase.messaging.default_notification_icon"
-             android:resource="@mipmap/our_trips_logo" />
+
+            <meta-data
+                android:name="com.google.firebase.messaging.default_notification_icon"
+                android:resource="@mipmap/our_trips_logo" />
             <meta-data
                 android:name="com.google.firebase.messaging.default_notification_color"
                 android:resource="@color/colorPrimary" />
