@@ -17,6 +17,9 @@ import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.alsaeedcullivan.ourtrips.utils.Utilities;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -36,7 +39,6 @@ public class LoginActivity extends AppCompatActivity {
         // determine whether there is a verified user that is logged in
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
-
 
         // if there is a verified user logged in, go straight to main activity
         if (mUser != null && mUser.isEmailVerified()) {
@@ -103,48 +105,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 // valid entries //
-
-                if (verifyCredentials(inputEmail, inputPassword)) {
-                    // show progress bar & hide buttons
-                    mProgressBar.setVisibility(View.VISIBLE);
-                    signInButton.setVisibility(View.GONE);
-                    signUpButton.setVisibility(View.GONE);
-
-                    // let progress bar spin to emulate network query
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            // proceed to main activity
-                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        }
-                    }, 1000 + (int) (Math.random() * 1000));    // delay 1+ sec
-                    // after delay, proceed to main activity
-                }
-                // input is valid but does not match the records
-                else {
-                    // show progress bar & hide buttons
-                    mProgressBar.setVisibility(View.VISIBLE);
-                    signInButton.setVisibility(View.GONE);
-                    signUpButton.setVisibility(View.GONE);
-
-                    // let progress bar spin to emulate network query
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            // inform user they are wrong
-                            Toast message = Toast.makeText(LoginActivity.this, R.string.login_failed,
-                                    Toast.LENGTH_SHORT);
-                            message.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            message.show();
-
-                            // hide progress bar & show buttons
-                            mProgressBar.setVisibility(View.GONE);
-                            signInButton.setVisibility(View.VISIBLE);
-                            signUpButton.setVisibility(View.VISIBLE);
-                        }
-                    }, 1000 + (int) (Math.random() * 1000));    // delay 1+ sec
-                    // after delay, toast user
-                }
+                signIn(inputEmail, inputPassword);
             }
         });
 
@@ -197,13 +158,59 @@ public class LoginActivity extends AppCompatActivity {
 
     //  ******************************* private helper methods ******************************* //
 
-    // check if inputs match the records
-    private boolean verifyCredentials(String email, String password) {
-        // TODO: check if data matches records & user is verified
-//        if (mUser.isEmailVerified()) {
-//            if (email == mUser.getEmail() && password == mUser.getPassword()) return true;
-//        }
-//        else return false;
-        return false;
+    /**
+     * signIn
+     * attempts to sign in a user with a given email and password
+     * @param email the input email
+     * @param password the input password
+     */
+    private void signIn(String email, String password) {
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // show progress bar & hide buttons
+                            mProgressBar.setVisibility(View.VISIBLE);
+                            signInButton.setVisibility(View.GONE);
+                            signUpButton.setVisibility(View.GONE);
+
+                            // let progress bar spin to emulate network query
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // proceed to main activity
+                                    startActivity(new Intent(LoginActivity.this,
+                                            MainActivity.class));
+                                }
+                            }, 1000 + (int) (Math.random() * 1000));    // delay 1+ sec
+                            // after delay, proceed to main activity
+                        } else {
+                            // show progress bar & hide buttons
+                            mProgressBar.setVisibility(View.VISIBLE);
+                            signInButton.setVisibility(View.GONE);
+                            signUpButton.setVisibility(View.GONE);
+
+                            // let progress bar spin to emulate network query
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // inform user they are wrong
+                                    Toast message = Toast.makeText(LoginActivity.this,
+                                            R.string.login_failed, Toast.LENGTH_SHORT);
+                                    message.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                            0, 0);
+                                    message.show();
+
+                                    // hide progress bar & show buttons
+                                    mProgressBar.setVisibility(View.GONE);
+                                    signInButton.setVisibility(View.VISIBLE);
+                                    signUpButton.setVisibility(View.VISIBLE);
+                                }
+                            }, 1000 + (int) (Math.random() * 1000));    // delay 1+ sec
+                            // after delay, toast user
+                        }
+                    }
+                });
     }
 }
