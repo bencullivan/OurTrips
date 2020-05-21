@@ -130,16 +130,16 @@ public class CustomDialogFragment extends DialogFragment {
         // set the title
         dialog.setTitle(REQUEST_TITLE);
 
-        final String email;
+        final UserSummary friend;
         final int position;
         // set the message
         if (getActivity() != null) {
             FriendActivity activity = (FriendActivity) getActivity();
-            email = activity.getSelectedEmail();
+            friend = activity.getSelectedFriend();
             position = activity.getSelectedIndex();
-            dialog.setMessage(email + " has sent you a friend request!");
+            dialog.setMessage(friend.getName() + " has sent you a friend request!");
         } else {
-            email = "";
+            friend = new UserSummary();
             position = 0;
             dialog.setMessage("You have received a friend request");
         }
@@ -148,7 +148,8 @@ public class CustomDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (getActivity() != null) {
-                    ((FriendActivity) getActivity()).acceptRequest(email);
+                    ((FriendActivity) getActivity()).acceptRequest(friend.getUserId(),
+                            friend.getEmail(), friend.getName());
                     ((FriendActivity) getActivity()).removeRequest(position);
                 }
             }
@@ -156,7 +157,7 @@ public class CustomDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (getActivity() != null) {
-                    ((FriendActivity) getActivity()).declineRequest(email);
+                    ((FriendActivity) getActivity()).declineRequest(friend.getUserId());
                     ((FriendActivity) getActivity()).removeRequest(position);
                 }
             }

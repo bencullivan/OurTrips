@@ -15,8 +15,11 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.alsaeedcullivan.ourtrips.adapters.FriendAdapter;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
+import com.alsaeedcullivan.ourtrips.models.User;
+import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -32,11 +35,11 @@ public class FriendActivity extends AppCompatActivity {
     private static final String NAME_KEY = "name";
 
     private FirebaseUser mUser;
-    private ArrayAdapter<String> mAdapter;
-    private ArrayList<String> mList;
+    private FriendAdapter mAdapter;
+    private ArrayList<UserSummary> mList;
     private ListView mListView;
     private int selectedIndex;
-    private String selectedEmail;
+    private UserSummary selectedFriend;
     private String mName = "";
     private LinearLayout mFriendLayout;
     private ProgressBar mSpinner;
@@ -72,29 +75,29 @@ public class FriendActivity extends AppCompatActivity {
 
         // if there is a list in savedInstanceState, there is no need to load from the db
         if (savedInstanceState != null && savedInstanceState.getStringArrayList(LIST_KEY) != null) {
-            mList = savedInstanceState.getStringArrayList(LIST_KEY);
+            mList = savedInstanceState.getParcelableArrayList(LIST_KEY);
             mName = savedInstanceState.getString(NAME_KEY);
             if (mName == null) mName = "";
             if (mList != null) {
                 // set the adapter to the list view with the saved list
-                mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mList);
+                mAdapter = new FriendAdapter(this, R.layout.activity_friend, mList);
                 mListView.setAdapter(mAdapter);
                 mListView.setOnItemClickListener(listListener());
                 makeListAppear();
             }
         } else if (mUser != null) {
             // instantiate the adapter
-            mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
+            mAdapter = new FriendAdapter(this, R.layout.activity_friend, new ArrayList<UserSummary>());
             // set the adapter to the ListView
             mListView.setAdapter(mAdapter);
             mListView.setOnItemClickListener(listListener());
             // get all the requests
-            Task<List<String>> emailTask = AccessDB.getFriendRequests(mUser.getUid());
-            emailTask.addOnCompleteListener(new OnCompleteListener<List<String>>() {
+            Task<List<UserSummary>> emailTask = AccessDB.getFriendRequests(mUser.getUid());
+            emailTask.addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
                 @Override
-                public void onComplete(@NonNull Task<List<String>> task) {
+                public void onComplete(@NonNull Task<List<UserSummary>> task) {
                     if (task.isSuccessful()) {
-                        mList = (ArrayList<String>) task.getResult();
+                        mList = (ArrayList<UserSummary>) task.getResult();
                         Log.d(Const.TAG, "onComplete: " + mList);
                         // add them to an adapter
                         if (mList != null) {
@@ -138,7 +141,7 @@ public class FriendActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mList != null && mList.size() > 0) outState.putStringArrayList(LIST_KEY, mList);
+        if (mList != null && mList.size() > 0) outState.putParcelableArrayList(LIST_KEY, mList);
         if (mName != null) outState.putString(NAME_KEY, mName);
     }
 
@@ -174,7 +177,7 @@ public class FriendActivity extends AppCompatActivity {
      *
      * @param friendId the email of the new friend
      */
-    public void acceptRequest(String friendId) {
+    public void acceptRequest(String friendId, String friendEmail, String friendName) {
         // get the current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
@@ -184,22 +187,22 @@ public class FriendActivity extends AppCompatActivity {
         if (mName == null) {
             return;
         }
-        // if there is a user, accept the friend request
-        //AccessDB.acceptFriendRequest(user.getUid(), user.getEmail(), mName, friendId);
+        // if there is a user, accept the friend requests
+        AccessDB.acceptFriendRequest(user.getUid(), user.getEmail(), mName, friendId, friendEmail, friendName);
     }
 
     /**
      * declineRequest()
      * declines a friend request
-     * @param email the email of the person that sent the request
+     * @param id the id of the person that sent the request
      */
-    public void declineRequest(String email) {
+    public void declineRequest(String id) {
         // get the current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
 
-        Log.d(Const.TAG, "declineRequest: " + email);
-        AccessDB.deleteRequest(user.getUid(), email);
+        Log.d(Const.TAG, "declineRequest: " + id);
+        AccessDB.deleteRequest(user.getUid(), id);
     }
 
     /**
@@ -222,7 +225,7 @@ public class FriendActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // save the data and display the dialog
                 selectedIndex = position;
-                selectedEmail = mList.get(position);
+                selectedFriend = mList.get(position);
                 CustomDialogFragment.newInstance(CustomDialogFragment.ACCEPT_ID)
                         .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
             }
@@ -242,7 +245,7 @@ public class FriendActivity extends AppCompatActivity {
         return selectedIndex;
     }
 
-    public String getSelectedEmail() {
-        return selectedEmail;
+    public UserSummary getSelectedFriend() {
+        return selectedFriend;
     }
 }

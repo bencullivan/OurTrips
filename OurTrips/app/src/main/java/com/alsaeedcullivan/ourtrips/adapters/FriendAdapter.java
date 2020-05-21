@@ -13,6 +13,8 @@ import androidx.annotation.Nullable;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -24,7 +26,7 @@ public class FriendAdapter extends ArrayAdapter<UserSummary> {
 
 
     public FriendAdapter(@NonNull Context context, int resource, ArrayList<UserSummary> items) {
-        super(context, resource);
+        super(context, resource, items);
         this.context = context;
         this.items = items;
     }
@@ -42,18 +44,19 @@ public class FriendAdapter extends ArrayAdapter<UserSummary> {
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = Objects.requireNonNull(inflater).inflate(R.layout.activity_friend, parent, false);
+            convertView = Objects.requireNonNull(inflater).inflate(R.layout.friend_item, parent, false);
         }
 
         // get reference to TextViews
-        TextView requests = convertView.findViewById(R.id.request_list);
+        TextView name = convertView.findViewById(R.id.friend_name);
+        TextView email = convertView.findViewById(R.id.friend_email);
 
         // fill TextView with appropriate data
         UserSummary user = items.get(position);
         // friend name
-
+        name.setText(user.getName());
         // friend email
-
+        email.setText(user.getEmail());
 
         // return view
         return convertView;

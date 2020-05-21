@@ -156,12 +156,12 @@ public class AccessDB {
      * deleteRequest()
      * deletes a friend request from the db
      */
-    public static void deleteRequest(String userId, String email) {
+    public static void deleteRequest(String userId, String friendId) {
         FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_F_REQUESTS_COLLECTION)
-                .document(email)
+                .document(friendId)
                 .delete();
     }
 
@@ -389,29 +389,31 @@ public class AccessDB {
      * gets a list of the emails of the users that sent this user a friend request
      * @param userId the id of the user
      */
-    public static Task<List<String>> getFriendRequests(String userId) {
+    public static Task<List<UserSummary>> getFriendRequests(String userId) {
         // get a list of the friend requests of a user
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_F_REQUESTS_COLLECTION)
                 .get()
-                .continueWith(new Continuation<QuerySnapshot, List<String>>() {
+                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
                     @Override
-                    public List<String> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) throws Exception {
                         QuerySnapshot result = task.getResult();
                         if (result == null || result.getDocuments().size() == 0)
                             return new ArrayList<>();
 
-                        // extract and return the ids of the documents
-                        // this will be a list of emails of the users that sent the
-                        // requests
+                        // extract and return a user summary for each document
                         List<DocumentSnapshot> docList = result.getDocuments();
-                        List<String> emails = new ArrayList<>();
+                        List<UserSummary> friends = new ArrayList<>();
                         for (DocumentSnapshot doc : docList) {
-                            emails.add(doc.getId());
+                            UserSummary u = new UserSummary();
+                            u.setUserId(doc.getId());
+                            u.setEmail((String)doc.get(Const.USER_EMAIL_KEY));
+                            u.setName((String)doc.get(Const.USER_NAME_KEY));
+                            friends.add(u);
                         }
-                        return emails;
+                        return friends;
                     }
                 });
     }
