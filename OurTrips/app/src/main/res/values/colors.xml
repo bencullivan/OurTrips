@@ -5,7 +5,4 @@
     <color name="colorAccent">#7D84B2</color>
     <color name="colorSecondary">#EAC8CA</color>
     <color name="colorSecondaryDark">#0D0630</color>
-
-    <!-- This is for CalendarActivity-->
-<!--    <color name="calendar_selected_day_bg">@color/colorAccent</color>-->
 </resources>

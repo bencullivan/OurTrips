@@ -197,6 +197,7 @@ public class FriendActivity extends AppCompatActivity {
     /**
      * declineRequest()
      * declines a friend request
+     *
      * @param id the id of the person that sent the request
      */
     public void declineRequest(String id) {

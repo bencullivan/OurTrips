@@ -248,8 +248,9 @@ public class MatchActivity extends AppCompatActivity {
     /**
      * match()
      * called when a user selects one of their friends and clicks "match"
+     *
      * @param userDates the dates that this user is available
-     * @param friendId the id of the friend that they selected
+     * @param friendId  the id of the friend that they selected
      */
     private void match(List<Date> userDates, String friendId) {
         // perform a match to see which dates you are both available

@@ -45,6 +45,7 @@ public class CalendarActivity extends AppCompatActivity {
     private ProgressBar mSpinner;
     private TextView mLoading;
     private Date mRecent;
+    private String mSource;
     private long[] mMatched;
 
     @Override
@@ -89,13 +90,16 @@ public class CalendarActivity extends AppCompatActivity {
 
         // get the source
         Intent intent = getIntent();
-        String source = intent.getStringExtra(Const.SOURCE_TAG);
+        if (savedInstanceState != null && savedInstanceState.getString(SOURCE_KEY) != null) {
+            mSource = savedInstanceState.getString(SOURCE_KEY);
+        } else mSource = intent.getStringExtra(Const.SOURCE_TAG);
+
 
 
         // SET UP THE CALENDAR
 
         // MATCH MODE
-        if (source != null && source.equals(Const.MATCH_TAG) && savedInstanceState != null &&
+        if (mSource != null && mSource.equals(Const.MATCH_TAG) && savedInstanceState != null &&
                 savedInstanceState.getLongArray(MATCHED_KEY) != null) {
             mMatched = savedInstanceState.getLongArray(MATCHED_KEY);
             if (mMatched != null && mMatched.length > 0) {
@@ -113,7 +117,7 @@ public class CalendarActivity extends AppCompatActivity {
                 makeCalAppear();
             }
         }
-        else if (source != null && source.equals(Const.MATCH_TAG)) {
+        else if (mSource != null && mSource.equals(Const.MATCH_TAG)) {
             mMatched = intent.getLongArrayExtra(Const.MATCH_ARR_TAG);
             if (mMatched != null && mMatched.length > 0) {
                 // select all of the matched dates
@@ -202,7 +206,9 @@ public class CalendarActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         if (mMatched != null) outState.putLongArray(MATCHED_KEY, mMatched);
         else outState.putLongArray(DATE_LIST_KEY, toLongs(mCalView.getSelectedDates()));
+
         if (mRecent != null) outState.putLong(RECENT, mRecent.getTime());
+
     }
 
     /**
