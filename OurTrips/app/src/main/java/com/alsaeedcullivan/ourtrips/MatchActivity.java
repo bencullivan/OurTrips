@@ -264,6 +264,7 @@ public class MatchActivity extends AppCompatActivity {
                         Intent intent = new Intent(MatchActivity.this, CalendarActivity.class);
                         intent.putExtra(Const.SOURCE_TAG, Const.MATCH_TAG);
                         intent.putExtra(Const.MATCH_ARR_TAG, matched);
+                        intent.putExtra(Const.SELECTED_FRIEND_TAG, mSelected);
                         startActivity(intent);
                     } else {
                         // the two users have no dates in common

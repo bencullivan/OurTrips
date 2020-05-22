@@ -12,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
+import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -21,6 +22,7 @@ import com.squareup.timessquare.CalendarPickerView;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -36,7 +38,8 @@ public class CalendarActivity extends AppCompatActivity {
     public static final String DATE_LIST_KEY = "date_list_key";
     public static final String MATCHED_KEY = "matched_dates";
     public static final String SOURCE_KEY = "source";
-    public static final String RECENT = "recent";
+    public static final String RECENT_KEY = "recent";
+    public static final String FRIEND_KEY = "friend";
 
     private FirebaseUser mUser;
     private TextView mHeader;
@@ -45,14 +48,16 @@ public class CalendarActivity extends AppCompatActivity {
     private TextView mLoading;
     private Date mRecent;
     private long[] mMatched;
+    private HashSet<Date> mSet;
+    private UserSummary mFriend;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
 
-        // set the title and the back button
-        setTitle(getString(R.string.title_activity_calendar));
+        // set the back button
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // get references to the widgets
@@ -95,35 +100,76 @@ public class CalendarActivity extends AppCompatActivity {
 
         // MATCH MODE
         if (source != null && source.equals(Const.MATCH_TAG) && savedInstanceState != null &&
-                savedInstanceState.getLongArray(MATCHED_KEY) != null) {
+                savedInstanceState.getLongArray(MATCHED_KEY) != null && savedInstanceState
+                .getParcelable(FRIEND_KEY) != null) {
+            setTitle("Select a date to set up a trip");
             mMatched = savedInstanceState.getLongArray(MATCHED_KEY);
+            mFriend = savedInstanceState.getParcelable(FRIEND_KEY);
+            mSet = new HashSet<>();
             if (mMatched != null && mMatched.length > 0) {
                 // select all of the matched dates
                 for (int i = mMatched.length - 1; i >= 0; i--) {
-                    mCalView.selectDate(new Date(mMatched[i]));
+                    Date d = new Date(mMatched[i]);
+                    mCalView.selectDate(d);
+                    mSet.add(d);
                 }
                 // make sure the dates can not be selected
                 mCalView.setDateSelectableFilter(new CalendarPickerView.DateSelectableFilter() {
                     @Override
                     public boolean isDateSelectable(Date date) {
-                        return false;
+                        return mSet.contains(date);
+                    }
+                });
+                mCalView.setOnDateSelectedListener(new CalendarPickerView.OnDateSelectedListener() {
+                    @Override
+                    public void onDateSelected(Date date) {}
+                    @Override
+                    public void onDateUnselected(Date date) {
+                        if (mSet.contains(date)) {
+                            // proceed to request trip activity
+                            Intent intent = new Intent(CalendarActivity.this,
+                                    RequestTripActivity.class);
+                            intent.putExtra(Const.SELECTED_DATE_TAG, date.getTime());
+                            intent.putExtra(Const.SELECTED_FRIEND_TAG, mFriend);
+                            startActivity(intent);
+                        }
                     }
                 });
                 makeCalAppear();
             }
         }
         else if (source != null && source.equals(Const.MATCH_TAG)) {
+            setTitle("Select a date to set up a trip");
             mMatched = intent.getLongArrayExtra(Const.MATCH_ARR_TAG);
+            mFriend = intent.getParcelableExtra(Const.SELECTED_FRIEND_TAG);
+            mSet = new HashSet<>();
             if (mMatched != null && mMatched.length > 0) {
                 // select all of the matched dates
                 for (int i = mMatched.length - 1; i >= 0; i--) {
-                    mCalView.selectDate(new Date(mMatched[i]));
+                    Date d = new Date(mMatched[i]);
+                    mCalView.selectDate(d);
+                    mSet.add(d);
                 }
                 // make sure the dates can not be selected
                 mCalView.setDateSelectableFilter(new CalendarPickerView.DateSelectableFilter() {
                     @Override
                     public boolean isDateSelectable(Date date) {
-                        return false;
+                        return mSet.contains(date);
+                    }
+                });
+                mCalView.setOnDateSelectedListener(new CalendarPickerView.OnDateSelectedListener() {
+                    @Override
+                    public void onDateSelected(Date date) {}
+                    @Override
+                    public void onDateUnselected(Date date) {
+                        if (mSet.contains(date)) {
+                            // proceed to request trip activity
+                            Intent intent = new Intent(CalendarActivity.this,
+                                    RequestTripActivity.class);
+                            intent.putExtra(Const.SELECTED_DATE_TAG, date.getTime());
+                            intent.putExtra(Const.SELECTED_FRIEND_TAG, mFriend);
+                            startActivity(intent);
+                        }
                     }
                 });
                 makeCalAppear();
@@ -132,6 +178,7 @@ public class CalendarActivity extends AppCompatActivity {
         // SELECT MODE
         // if there was already a list of selected dates in select mode no need to load from the database
         else if (savedInstanceState != null && savedInstanceState.getLongArray(DATE_LIST_KEY) != null) {
+            setTitle(getString(R.string.title_activity_calendar));
             long[] times = savedInstanceState.getLongArray(DATE_LIST_KEY);
             if (times != null) {
                 // select the dates that were saved in savedInstanceState
@@ -139,8 +186,8 @@ public class CalendarActivity extends AppCompatActivity {
                     mCalView.selectDate(new Date(times[i]));
                 }
                 // make sure it focuses in on the date they most recently pressed
-                if (savedInstanceState.getLong(RECENT) != 0) {
-                    mRecent = new Date(savedInstanceState.getLong(RECENT));
+                if (savedInstanceState.getLong(RECENT_KEY) != 0) {
+                    mRecent = new Date(savedInstanceState.getLong(RECENT_KEY));
                     mCalView.scrollToDate(mRecent);
                 }
                 // show the calendar
@@ -149,6 +196,7 @@ public class CalendarActivity extends AppCompatActivity {
         }
         // get the list of dates from the db that the user is available
         else if (mUser != null) {
+            setTitle(getString(R.string.title_activity_calendar));
             Task<List<Date>> datesTask = AccessDB.getUserDatesForCal(mUser.getUid());
             datesTask.addOnCompleteListener(new OnCompleteListener<List<Date>>() {
                 @Override
@@ -201,7 +249,8 @@ public class CalendarActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         if (mMatched != null) outState.putLongArray(MATCHED_KEY, mMatched);
         else outState.putLongArray(DATE_LIST_KEY, toLongs(mCalView.getSelectedDates()));
-        if (mRecent != null) outState.putLong(RECENT, mRecent.getTime());
+        if (mRecent != null) outState.putLong(RECENT_KEY, mRecent.getTime());
+        if (mFriend != null) outState.putParcelable(FRIEND_KEY, mFriend);
     }
 
     /**
