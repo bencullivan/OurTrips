@@ -89,7 +89,7 @@ public class CalendarActivity extends AppCompatActivity {
         // get the source
         Intent intent = getIntent();
         String source = intent.getStringExtra(Const.SOURCE_TAG);
-        
+
 
         // SET UP THE CALENDAR
 

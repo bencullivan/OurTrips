@@ -11,27 +11,24 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.alsaeedcullivan.ourtrips.R;
+import com.alsaeedcullivan.ourtrips.models.TripSummary;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
-public class FriendAdapter extends ArrayAdapter<UserSummary> {
+public class TSAdapter extends ArrayAdapter<TripSummary> {
 
-    private ArrayList<UserSummary> items;
+    private ArrayList<TripSummary> items;
     private Context context;
 
-
-    public FriendAdapter(@NonNull Context context, int resource, ArrayList<UserSummary> items) {
-        super(context, resource, items);
+    public TSAdapter(@NonNull Context context, int resource, @NonNull ArrayList<TripSummary> objects) {
+        super(context, resource, objects);
         this.context = context;
-        this.items = items;
+        this.items = objects;
     }
-
-    // getters //
 
     @Override
     public int getCount() {
@@ -44,34 +41,31 @@ public class FriendAdapter extends ArrayAdapter<UserSummary> {
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = Objects.requireNonNull(inflater).inflate(R.layout.friend_item, parent, false);
+            convertView = Objects.requireNonNull(inflater).inflate(R.layout.trip_summary_item, parent, false);
         }
 
         // get reference to TextViews
-        TextView name = convertView.findViewById(R.id.friend_name);
-        TextView email = convertView.findViewById(R.id.friend_email);
+        TextView title = convertView.findViewById(R.id.trip_title);
+        TextView date = convertView.findViewById(R.id.trip_date);
 
         // fill TextView with appropriate data
-        UserSummary user = items.get(position);
-        // friend name
-        name.setText(user.getName());
-        // friend email
-        email.setText(user.getEmail());
+        TripSummary trip = items.get(position);
+        // trip title
+        title.setText(trip.getTitle());
+        // trip date
+        date.setText(trip.getDate());
 
-        // return view
         return convertView;
     }
 
-    // adders //
-
     @Override
-    public void add(@Nullable UserSummary object) {
+    public void add(@Nullable TripSummary object) {
         super.add(object);
         items.add(object);
     }
 
     @Override
-    public void addAll(UserSummary... items) {
+    public void addAll(TripSummary... items) {
         super.addAll(items);
         this.items.addAll(Arrays.asList(items));
     }

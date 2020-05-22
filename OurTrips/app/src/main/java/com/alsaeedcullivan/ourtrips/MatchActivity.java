@@ -106,7 +106,7 @@ public class MatchActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         // get the list of friends
                         mFriends = (ArrayList<UserSummary>) task.getResult();
-                        // add them to an adapter
+                        // add them to the adapter
                         if (mFriends != null) {
                             mAdapter.addAll(mFriends);
                             mAdapter.notifyDataSetChanged();

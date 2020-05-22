@@ -24,7 +24,7 @@ public class UserSummary implements Parcelable {
 
     // getters and setters
 
-    protected UserSummary(Parcel in) {
+    private UserSummary(Parcel in) {
         name = in.readString();
         email = in.readString();
         userId = in.readString();

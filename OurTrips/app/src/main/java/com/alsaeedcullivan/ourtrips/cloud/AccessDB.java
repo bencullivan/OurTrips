@@ -3,6 +3,7 @@ package com.alsaeedcullivan.ourtrips.cloud;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.alsaeedcullivan.ourtrips.models.TripSummary;
 import com.alsaeedcullivan.ourtrips.models.User;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
@@ -369,7 +370,7 @@ public class AccessDB {
                         if (result == null || result.getDocuments().size() == 0)
                             return new ArrayList<>();
 
-                        // extract and return the ids of the documents
+                        // extract and return the info from the documents
                         List<DocumentSnapshot> docList = result.getDocuments();
                         List<UserSummary> friends = new ArrayList<>();
                         for (DocumentSnapshot doc : docList) {
@@ -507,6 +508,39 @@ public class AccessDB {
                                 !(doc.get(Const.USER_NAME_KEY) instanceof String))
                                         return "";
                         return (String) doc.get(Const.USER_NAME_KEY);
+                    }
+                });
+    }
+
+    /**
+     * getTripSummaries()
+     * returns a list of trip summaries of all the trips that this user has been on
+     * @param userId - the id of this user
+     */
+    public static Task<List<TripSummary>> getTripSummaries(String userId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .collection(Const.USER_TRIPS_COLLECTION)
+                .get()
+                .continueWith(new Continuation<QuerySnapshot, List<TripSummary>>() {
+                    @Override
+                    public List<TripSummary> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                        QuerySnapshot result = task.getResult();
+                        if (result == null || result.getDocuments().size() == 0)
+                            return new ArrayList<>();
+
+                        // extract and return the ids of the documents
+                        List<DocumentSnapshot> docList = result.getDocuments();
+                        List<TripSummary> trips = new ArrayList<>();
+                        for (DocumentSnapshot doc : docList) {
+                            TripSummary trip = new TripSummary();
+                            trip.setId(doc.getId());
+                            trip.setDate((String)doc.get(Const.TRIP_START_DATE_KEY));
+                            trip.setTitle((String)doc.get(Const.TRIP_TITLE_KEY));
+                            trips.add(trip);
+                        }
+                        return trips;
                     }
                 });
     }
@@ -662,5 +696,4 @@ public class AccessDB {
                     }
                 });
     }
-
 }

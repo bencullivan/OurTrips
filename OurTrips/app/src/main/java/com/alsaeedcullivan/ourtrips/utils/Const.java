@@ -18,6 +18,7 @@ public class Const {
     public static final String SETTINGS_TAG = "SettingsActivity";
     public static final String MATCH_TAG = "MatchActivity";
     public static final String MATCH_ARR_TAG = "matched";
+    public static final String TRIP_ID_TAG = "trip_id_tag";
     public static final String SUMMARY_TAG = "SummaryFragment";
     public static final String PLAN_TAG = "PlanFragment";
     public static final String MEDIA_TAG = "MediaFragment";
@@ -59,7 +60,8 @@ public class Const {
     public static final String TRIP_ID_KEY = "trip_id";
     public static final String TRIP_TITLE_KEY = "title";
     public static final String TRIP_LOCATIONS_KEY = "locations";
-    public static final String TRIP_DATES_KEY = "dates";
+    public static final String TRIP_START_DATE_KEY = "start_date";
+    public static final String TRIP_END_DATE_KEY = "end_date";
     public static final String TRIP_TRIPPERS_COLLECTION = "trippers";
     public static final String TRIP_TRIPPER_KEY = "tripper";
     public static final String TRIP_COMMENTS_COLLECTION = "comments";

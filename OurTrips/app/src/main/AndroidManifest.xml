@@ -12,7 +12,8 @@
         android:roundIcon="@mipmap/our_trips_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MatchActivity"></activity>
+        <activity android:name=".RequestTripActivity"></activity>
+        <activity android:name=".MatchActivity" />
         <activity android:name=".FriendActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

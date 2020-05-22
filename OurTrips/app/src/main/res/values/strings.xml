@@ -6,7 +6,7 @@
     <string name="title_activity_edit">Edit Profile</string>
     <string name="title_activity_verify">Create Account</string>
     <string name="title_activity_trip">Trip</string>
-    <string name="title_activity_main">Trips</string>
+    <string name="title_activity_main">Our Trips</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_calendar">Calendar</string>
     <string name="title_activity_findFriends">Find Friends</string>
@@ -76,4 +76,6 @@
     <string name="match_dates">Match Dates</string>
     <string name="loading_friends">Loading friends...</string>
     <string name="matching">Matching...</string>
+    <string name="loading_your_trips">Loading your trips...</string>
+    <string name="view_or_edit">Click on a trip to view or edit</string>
 </resources>
