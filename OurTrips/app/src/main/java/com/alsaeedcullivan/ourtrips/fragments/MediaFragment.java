@@ -13,8 +13,6 @@ import com.alsaeedcullivan.ourtrips.R;
 
 public class MediaFragment extends Fragment implements View.OnClickListener {
 
-    public static final String TAG = "MediaFragment";
-
     public MediaFragment() {
         // Required empty public constructor
     }

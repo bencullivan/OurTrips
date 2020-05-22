@@ -17,7 +17,6 @@ import com.alsaeedcullivan.ourtrips.R;
  */
 public class SummaryFragment extends Fragment implements View.OnClickListener {
 
-    public static final String TAG = "SummaryFragment";
 
 
     public SummaryFragment() {

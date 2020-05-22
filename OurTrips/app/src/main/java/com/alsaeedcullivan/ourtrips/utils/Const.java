@@ -18,6 +18,10 @@ public class Const {
     public static final String SETTINGS_TAG = "SettingsActivity";
     public static final String MATCH_TAG = "MatchActivity";
     public static final String MATCH_ARR_TAG = "matched";
+    public static final String SUMMARY_TAG = "SummaryFragment";
+    public static final String PLAN_TAG = "PlanFragment";
+    public static final String MEDIA_TAG = "MediaFragment";
+    public static final String TRIPPERS_TAG = "TrippersFragment";
 
     // codes
     public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;

@@ -13,8 +13,6 @@ import com.alsaeedcullivan.ourtrips.R;
 
 public class TrippersFragment extends Fragment implements View.OnClickListener {
 
-    public static final String TAG = "TrippersFragment";
-
 
     public TrippersFragment() {
         // Required empty public constructor

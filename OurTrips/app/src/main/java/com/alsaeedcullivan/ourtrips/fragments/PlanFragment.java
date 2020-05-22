@@ -13,8 +13,6 @@ import com.alsaeedcullivan.ourtrips.R;
 
 public class PlanFragment extends Fragment implements View.OnClickListener{
 
-    public static final String TAG = "PlanFragment";
-
 
     public PlanFragment() {
         // Required empty public constructor
