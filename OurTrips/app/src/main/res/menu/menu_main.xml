@@ -3,6 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/search_trips"
+        android:title="@string/search"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/sort_trips"
+        android:title="@string/sort"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/update_dates"
         android:icon="@drawable/ic_launcher_background"
         android:orderInCategory="100"

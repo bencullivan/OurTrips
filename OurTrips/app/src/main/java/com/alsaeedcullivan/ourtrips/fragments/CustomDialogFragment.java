@@ -2,6 +2,7 @@ package com.alsaeedcullivan.ourtrips.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.DatePicker;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
@@ -22,8 +24,12 @@ import com.alsaeedcullivan.ourtrips.FriendActivity;
 import com.alsaeedcullivan.ourtrips.MatchActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.RegisterActivity;
+import com.alsaeedcullivan.ourtrips.RequestTripActivity;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
+
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * custom implementation of DialogFragment
@@ -38,6 +44,7 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int MATCH_ID = 3;
     public static final int SEARCH_FRIEND_ID = 4;
     public static final int SETTINGS_DIALOG_ID = 5;
+    public static final int SELECT_END_DATE_ID = 6;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -86,6 +93,8 @@ public class CustomDialogFragment extends DialogFragment {
                 return searchFriendDialog();
             case SETTINGS_DIALOG_ID:
                 return createSettingsDialog();
+            case SELECT_END_DATE_ID:
+                return createDateDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -274,7 +283,33 @@ public class CustomDialogFragment extends DialogFragment {
                 dialog.dismiss();
             }
         });
-
         return dialog.create();
+    }
+
+    // creates a dialog that allows the user to select the end date of the trip
+    private DatePickerDialog createDateDialog() {
+        // get calendar instance
+        final Calendar calendar = Calendar.getInstance();
+        if (getActivity() != null) {
+            Date start = ((RequestTripActivity) getActivity()).getDate();
+            calendar.setTime(start);
+        }
+        // return the date picker dialog
+        return new DatePickerDialog(requireActivity(), new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                // update the calendar
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                if (getActivity() != null) {
+                    if (calendar.getTime().compareTo(((RequestTripActivity) getActivity()).getStart()) < 0) {
+                        dismiss();
+                        ((RequestTripActivity) getActivity()).endBeforeStart();
+                    } else ((RequestTripActivity) getActivity()).updateEndDate(calendar.getTime());
+                }
+            }
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
     }
 }

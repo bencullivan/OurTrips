@@ -1,25 +1,19 @@
 package com.alsaeedcullivan.ourtrips.cloud;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.models.TripSummary;
-import com.alsaeedcullivan.ourtrips.models.User;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.gson.internal.$Gson$Preconditions;
 
 import java.io.InputStream;
 import java.text.ParseException;
@@ -125,10 +119,12 @@ public class AccessDB {
      * @param userId the id of the user
      * @param tripId the id of the trip
      */
-    public static Task<Void> addUserTrip(String userId, String tripId) {
+    public static Task<Void> addUserTrip(String userId, String tripId, String tripTitle, String startDate) {
         // map to contain the document data
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_ID_KEY, tripId);
+        data.put(Const.TRIP_TITLE_KEY, tripTitle);
+        data.put(Const.TRIP_START_DATE_KEY, startDate);
 
         // add the trip to the user_trips sub-collection
         return FirebaseFirestore.getInstance()
@@ -190,15 +186,6 @@ public class AccessDB {
      * @param data a map of the data and fields to be added
      */
     public static Task<String> addTrip(Map<String, Object> data) {
-//        // map to contain the trip data
-//        HashMap<String, Object> data = new HashMap<>();
-//
-//        // add the trip data to the map
-//        data.put(Const.TRIP_ID_KEY, trip.getTripId());
-//        data.put(Const.TRIP_TITLE_KEY, trip.getTitle());
-//        data.put(Const.TRIP_COMMENTS_LIST_KEY, trip.getCommentsList());
-//        data.put(Const.TRIP_USERS_LIST_KEY, trip.getUsersList());
-
         // add the trip to the database
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
@@ -536,8 +523,8 @@ public class AccessDB {
                         for (DocumentSnapshot doc : docList) {
                             TripSummary trip = new TripSummary();
                             trip.setId(doc.getId());
-                            trip.setDate((String)doc.get(Const.TRIP_START_DATE_KEY));
                             trip.setTitle((String)doc.get(Const.TRIP_TITLE_KEY));
+                            trip.setDate((String)doc.get(Const.TRIP_START_DATE_KEY));
                             trips.add(trip);
                         }
                         return trips;

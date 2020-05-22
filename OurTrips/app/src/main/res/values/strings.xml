@@ -87,4 +87,6 @@
     <string name="end_date">End Date:</string>
     <string name="select">Select</string>
     <string name="friend">Friend:</string>
+    <string name="save">save</string>
+    <string name="sort">Sort</string>
 </resources>

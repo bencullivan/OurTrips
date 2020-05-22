@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         // set title
         setTitle(R.string.title_activity_main);
-
+        Log.d(Const.TAG, "onCreate: main");
         // get references to the widgets
         mLayout = findViewById(R.id.main_list_layout);
         mSpinner = findViewById(R.id.main_spinner);
@@ -88,8 +89,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<List<TripSummary>> task) {
                     if (task.isSuccessful()) {
+                        Log.d(Const.TAG, "onComplete: loaded summaries");
                         // get the list of trip summaries
                         mTrips = (ArrayList<TripSummary>) task.getResult();
+                        Log.d(Const.TAG, "onComplete: " + mTrips);
                         // add them to the adapter
                         if (mTrips != null) {
                             mAdapter.addAll(mTrips);
@@ -111,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mTrips != null) outState.putParcelableArrayList(TRIP_LIST_KEY, mTrips);
+        if (mTrips != null && mTrips.size() > 0) outState.putParcelableArrayList(TRIP_LIST_KEY, mTrips);
     }
 
     // handle menu //
