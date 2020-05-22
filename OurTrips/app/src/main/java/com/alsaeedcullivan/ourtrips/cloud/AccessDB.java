@@ -83,7 +83,7 @@ public class AccessDB {
             @Override
             public void run() {
                 // convert the list of dates to a list of strings in the desired format
-                SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy",
+                SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy",
                         Locale.getDefault());
                 List<String> sDates = new ArrayList<>();
                 for (Date date : dDates) {
@@ -446,7 +446,7 @@ public class AccessDB {
 
                         if (sDates == null) return realDates;
 
-                        SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+                        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
                         try {
                             Date today = format.parse(format.format(new Date()));
 
@@ -661,7 +661,7 @@ public class AccessDB {
                         List<Date> friendDates = new ArrayList<>();
 
                         if (stringDates == null) return new long[0];
-                        SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+                        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
 
                         try {
                             // convert the strings to dates
