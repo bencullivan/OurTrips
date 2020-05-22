@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Our Trips</string>
     <!--    titles  -->
     <string name="title_activity_login">Sign In</string>
@@ -71,11 +71,12 @@
     <string name="preferences">profile_prefs</string>
     <string name="loading_friend_requests">Loading friend requests</string>
     <string name="no_req">No friend requests.</string>
-    <string name="search_for_a_friend">Enter a friend\'s name or email...</string>
+    <string name="search_for_a_friend" tools:ignore="TypographyEllipsis">Enter a friend\'s name or email...</string>
     <string name="search">Search</string>
-    <string name="match_dates">Match Dates</string>
-    <string name="loading_friends">Loading friends...</string>
-    <string name="matching">Matching...</string>
-    <string name="loading_your_trips">Loading your trips...</string>
+    <string name="match_dates">Arrange Trip</string>
+    <string name="loading_friends" tools:ignore="TypographyEllipsis">Loading friends...</string>
+    <string name="matching" tools:ignore="TypographyEllipsis">Matching...</string>
+    <string name="loading_your_trips" tools:ignore="TypographyEllipsis">Loading your trips...</string>
     <string name="view_or_edit">Click on a trip to view or edit</string>
+    <string name="click_matched">Click on a matched date to arrange a trip!</string>
 </resources>

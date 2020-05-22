@@ -57,8 +57,9 @@ public class CalendarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
 
-        // set the back button
+        // set the back button and title
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setTitle(getString(R.string.title_activity_calendar));
 
         // get references to the widgets
         mHeader = findViewById(R.id.calendar_text);
@@ -80,16 +81,6 @@ public class CalendarActivity extends AppCompatActivity {
         nextYear.add(Calendar.YEAR, 1);
         Date today = new Date();
         mCalView.init(today, nextYear.getTime()).inMode(CalendarPickerView.SelectionMode.MULTIPLE);
-        mCalView.setOnDateSelectedListener(new CalendarPickerView.OnDateSelectedListener() {
-            @Override
-            public void onDateSelected(Date date) {
-                mRecent = date;
-            }
-            @Override
-            public void onDateUnselected(Date date) {
-                mRecent = date;
-            }
-        });
 
         // get the source
         Intent intent = getIntent();
@@ -102,7 +93,7 @@ public class CalendarActivity extends AppCompatActivity {
         if (source != null && source.equals(Const.MATCH_TAG) && savedInstanceState != null &&
                 savedInstanceState.getLongArray(MATCHED_KEY) != null && savedInstanceState
                 .getParcelable(FRIEND_KEY) != null) {
-            setTitle("Select a date to set up a trip");
+            mHeader.setText(R.string.click_matched);
             mMatched = savedInstanceState.getLongArray(MATCHED_KEY);
             mFriend = savedInstanceState.getParcelable(FRIEND_KEY);
             mSet = new HashSet<>();
@@ -113,33 +104,13 @@ public class CalendarActivity extends AppCompatActivity {
                     mCalView.selectDate(d);
                     mSet.add(d);
                 }
-                // make sure the dates can not be selected
-                mCalView.setDateSelectableFilter(new CalendarPickerView.DateSelectableFilter() {
-                    @Override
-                    public boolean isDateSelectable(Date date) {
-                        return mSet.contains(date);
-                    }
-                });
-                mCalView.setOnDateSelectedListener(new CalendarPickerView.OnDateSelectedListener() {
-                    @Override
-                    public void onDateSelected(Date date) {}
-                    @Override
-                    public void onDateUnselected(Date date) {
-                        if (mSet.contains(date)) {
-                            // proceed to request trip activity
-                            Intent intent = new Intent(CalendarActivity.this,
-                                    RequestTripActivity.class);
-                            intent.putExtra(Const.SELECTED_DATE_TAG, date.getTime());
-                            intent.putExtra(Const.SELECTED_FRIEND_TAG, mFriend);
-                            startActivity(intent);
-                        }
-                    }
-                });
+                mCalView.setDateSelectableFilter(nonSelectable());
+                mCalView.setOnInvalidDateSelectedListener(proceedToRequest());
                 makeCalAppear();
             }
         }
         else if (source != null && source.equals(Const.MATCH_TAG)) {
-            setTitle("Select a date to set up a trip");
+            mHeader.setText(R.string.click_matched);
             mMatched = intent.getLongArrayExtra(Const.MATCH_ARR_TAG);
             mFriend = intent.getParcelableExtra(Const.SELECTED_FRIEND_TAG);
             mSet = new HashSet<>();
@@ -150,35 +121,14 @@ public class CalendarActivity extends AppCompatActivity {
                     mCalView.selectDate(d);
                     mSet.add(d);
                 }
-                // make sure the dates can not be selected
-                mCalView.setDateSelectableFilter(new CalendarPickerView.DateSelectableFilter() {
-                    @Override
-                    public boolean isDateSelectable(Date date) {
-                        return mSet.contains(date);
-                    }
-                });
-                mCalView.setOnDateSelectedListener(new CalendarPickerView.OnDateSelectedListener() {
-                    @Override
-                    public void onDateSelected(Date date) {}
-                    @Override
-                    public void onDateUnselected(Date date) {
-                        if (mSet.contains(date)) {
-                            // proceed to request trip activity
-                            Intent intent = new Intent(CalendarActivity.this,
-                                    RequestTripActivity.class);
-                            intent.putExtra(Const.SELECTED_DATE_TAG, date.getTime());
-                            intent.putExtra(Const.SELECTED_FRIEND_TAG, mFriend);
-                            startActivity(intent);
-                        }
-                    }
-                });
+                mCalView.setDateSelectableFilter(nonSelectable());
+                mCalView.setOnInvalidDateSelectedListener(proceedToRequest());
                 makeCalAppear();
             }
         }
         // SELECT MODE
         // if there was already a list of selected dates in select mode no need to load from the database
         else if (savedInstanceState != null && savedInstanceState.getLongArray(DATE_LIST_KEY) != null) {
-            setTitle(getString(R.string.title_activity_calendar));
             long[] times = savedInstanceState.getLongArray(DATE_LIST_KEY);
             if (times != null) {
                 // select the dates that were saved in savedInstanceState
@@ -190,13 +140,14 @@ public class CalendarActivity extends AppCompatActivity {
                     mRecent = new Date(savedInstanceState.getLong(RECENT_KEY));
                     mCalView.scrollToDate(mRecent);
                 }
+                mCalView.setOnInvalidDateSelectedListener(doNothing());
+                mCalView.setOnDateSelectedListener(maintainRecent());
                 // show the calendar
                 makeCalAppear();
             }
         }
         // get the list of dates from the db that the user is available
         else if (mUser != null) {
-            setTitle(getString(R.string.title_activity_calendar));
             Task<List<Date>> datesTask = AccessDB.getUserDatesForCal(mUser.getUid());
             datesTask.addOnCompleteListener(new OnCompleteListener<List<Date>>() {
                 @Override
@@ -213,6 +164,8 @@ public class CalendarActivity extends AppCompatActivity {
                                 mCalView.selectDate(dates.get(i));
                             }
                         }
+                        mCalView.setOnInvalidDateSelectedListener(doNothing());
+                        mCalView.setOnDateSelectedListener(maintainRecent());
                         // display the calendar
                         makeCalAppear();
                     }
@@ -279,6 +232,70 @@ public class CalendarActivity extends AppCompatActivity {
         mSpinner.setVisibility(View.GONE);
         mHeader.setVisibility(View.VISIBLE);
         mCalView.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * proceedToRequest()
+     * @return a listener that takes the user to request trip activity if they click on one of the
+     * matched dates
+     */
+    private CalendarPickerView.OnInvalidDateSelectedListener proceedToRequest() {
+        return new CalendarPickerView.OnInvalidDateSelectedListener() {
+            @Override
+            public void onInvalidDateSelected(Date date) {
+                if (mSet.contains(date)) {
+                    // proceed to request trip activity
+                    Intent intent = new Intent(CalendarActivity.this,
+                            RequestTripActivity.class);
+                    intent.putExtra(Const.SELECTED_DATE_TAG, date.getTime());
+                    intent.putExtra(Const.SELECTED_FRIEND_TAG, mFriend);
+                    startActivity(intent);
+                }
+            }
+        };
+    }
+
+    /**
+     * nonSelectable()
+     * @return a listener that prevents the user from being able to select any date
+     */
+    public CalendarPickerView.DateSelectableFilter nonSelectable() {
+        return new CalendarPickerView.DateSelectableFilter() {
+            @Override
+            public boolean isDateSelectable(Date date) {
+                return false;
+            }
+        };
+    }
+
+    /**
+     * doNothing()
+     * @return a listener that does nothing when the user selects an invalid date
+     */
+    public CalendarPickerView.OnInvalidDateSelectedListener doNothing() {
+        return new CalendarPickerView.OnInvalidDateSelectedListener() {
+            @Override
+            public void onInvalidDateSelected(Date date) {
+                // do nothing, this prevents the default toast message from being displayed
+            }
+        };
+    }
+
+    /**
+     * maintainRecent()
+     * @return a listener that keeps track of which date the user most recently selected
+     */
+    private CalendarPickerView.OnDateSelectedListener maintainRecent() {
+        return new CalendarPickerView.OnDateSelectedListener() {
+            @Override
+            public void onDateSelected(Date date) {
+                mRecent = date;
+            }
+            @Override
+            public void onDateUnselected(Date date) {
+                mRecent = date;
+            }
+        };
     }
 
     /**

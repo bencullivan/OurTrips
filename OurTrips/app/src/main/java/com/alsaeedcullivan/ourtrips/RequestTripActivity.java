@@ -11,6 +11,12 @@ public class RequestTripActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request_trip);
 
+        // set up the back button and the
+        if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setTitle("Arrange a trip!");
 
+        
     }
+
+
 }
