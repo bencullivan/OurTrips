@@ -27,7 +27,7 @@
     <string name="update_profile_fail">Your profile could not be updated. Check that you have filled all the required fields.</string>
     <string name="toast_registered">Registered successfully!</string>
     <string name="toast_profileUpdated">Profile updated successfully</string>
-    <string name="message_important_access">the Requested Permission is necessary for the app to run properly</string>
+    <string name="message_important_access">The requested permission is necessary for the app to run properly</string>
     <string name="trip_cal_select">Select dates where you are available to go on a trip!</string>
     <string name="not_registered">Your email is verified but you have not registered, please click Sign Up to create an account</string>
     <string name="need_to_verify">You have not verified your email address, please click Sign Up to verifiy</string>
@@ -79,4 +79,7 @@
     <string name="loading_your_trips" tools:ignore="TypographyEllipsis">Loading your trips...</string>
     <string name="view_or_edit">Click on a trip to view or edit</string>
     <string name="click_matched">Click on a matched date to arrange a trip!</string>
+    <string name="permission_denied">You have denied permission</string>
+    <string name="permission_settings">In order to use the camera you must give permission in settings.</string>
+    <string name="go_settings">Go to settings</string>
 </resources>

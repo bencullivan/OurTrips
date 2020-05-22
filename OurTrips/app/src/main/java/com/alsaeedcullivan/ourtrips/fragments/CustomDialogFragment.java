@@ -37,6 +37,7 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int ACCEPT_ID = 2;
     public static final int MATCH_ID = 3;
     public static final int SEARCH_FRIEND_ID = 4;
+    public static final int SETTINGS_DIALOG_ID = 5;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -83,6 +84,8 @@ public class CustomDialogFragment extends DialogFragment {
                 return createMatchDialog();
             case SEARCH_FRIEND_ID:
                 return searchFriendDialog();
+            case SETTINGS_DIALOG_ID:
+                return createSettingsDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -100,7 +103,7 @@ public class CustomDialogFragment extends DialogFragment {
         dialog.setPositiveButton(R.string.prompt_grantAccess, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
-                ((RegisterActivity) requireActivity()).requestPermission();
+                if (getActivity() != null) ((RegisterActivity) getActivity()).requestPermission();
                 dialog.dismiss();
             }
         }).setNegativeButton(R.string.prompt_dismiss, new DialogInterface.OnClickListener() {
@@ -248,6 +251,30 @@ public class CustomDialogFragment extends DialogFragment {
                 dismiss();
             }
         });
+        return dialog.create();
+    }
+
+    // creates a dialog that takes the user to settings where they can update their permissions
+    private AlertDialog createSettingsDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        // set the title
+        dialog.setTitle(R.string.permission_denied);
+        // set the message
+        dialog.setMessage(R.string.permission_settings);
+        dialog.setPositiveButton(R.string.go_settings, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (getActivity() != null) ((RegisterActivity) getActivity()).goToSettings();
+                dismiss();
+            }
+        }).setNegativeButton(R.string.prompt_dismiss, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
         return dialog.create();
     }
 }

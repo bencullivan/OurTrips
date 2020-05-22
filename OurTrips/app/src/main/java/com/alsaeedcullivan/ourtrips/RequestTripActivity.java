@@ -15,7 +15,7 @@ public class RequestTripActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setTitle("Arrange a trip!");
 
-        
+
     }
 
 

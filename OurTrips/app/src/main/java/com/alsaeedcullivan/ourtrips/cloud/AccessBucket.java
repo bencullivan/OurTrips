@@ -2,8 +2,11 @@ package com.alsaeedcullivan.ourtrips.cloud;
 
 import android.net.Uri;
 
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 
+import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -19,6 +22,17 @@ public class AccessBucket {
      */
     public static void uploadPicture(String path, InputStream is) {
         FirebaseStorage.getInstance().getReference().child(path).putStream(is);
+    }
+
+    /**
+     * downLoadPicture()
+     * downloads the picture located at the given path in the storage bucket to the file that is
+     * provided
+     * @param path the path of the photo
+     * @param file the temporary file
+     */
+    public static Task<FileDownloadTask.TaskSnapshot> downloadPicture(String path, File file) {
+        return FirebaseStorage.getInstance().getReference().child(path).getFile(file);
     }
 
     /**

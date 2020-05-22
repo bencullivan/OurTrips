@@ -7,11 +7,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -30,16 +33,15 @@ import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.alsaeedcullivan.ourtrips.utils.SharedPreference;
 import com.alsaeedcullivan.ourtrips.utils.Utilities;
-import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.FileDownloadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -57,9 +59,11 @@ import java.util.Objects;
 public class RegisterActivity extends AppCompatActivity {
 
     private static final String URI_KEY = "uri_key";
+    private static final String TEMP_FILE_KEY = "temp_file";
 
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
+    private File mTempFile;
 
     private ImageView mProfileImageView;
     private EditText mNameEditText, mEmailEditText, mAffiliationEditText, mBirthdayEditText;
@@ -74,7 +78,6 @@ public class RegisterActivity extends AppCompatActivity {
     private boolean mRegistered;
 
     public String mSourceExtra;   // source activity intent extra
-    private String mUserToastMessage = "";  // for toasting based on source activity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,10 +108,27 @@ public class RegisterActivity extends AppCompatActivity {
         mEmailEditText.setText(mUser.getEmail());
         mEmailEditText.setEnabled(false);
 
-        // get source activity & load profile is source: MainActivity
+        // get source activity
         mSourceExtra = getIntent().getStringExtra(Const.SOURCE_TAG);
-        if (mSourceExtra != null) {
-            if (mSourceExtra.equalsIgnoreCase(Const.MAIN_TAG)) {
+
+        // if there is a picture uri, (new pic) restore it and set the pic
+        if (savedInstanceState != null && savedInstanceState.getParcelable(URI_KEY) != null) {
+            Log.d(Const.TAG, "onCreate: new pic");
+            mProfileUri = savedInstanceState.getParcelable(URI_KEY);
+            setPic(mProfileUri);
+        } else if (mSourceExtra != null) {
+            // if the profile has already been loaded
+            if (mSourceExtra.equalsIgnoreCase(Const.MAIN_TAG) && savedInstanceState != null &&
+                    savedInstanceState.getString(TEMP_FILE_KEY) != null) {
+                Log.d(Const.TAG, "onCreate: file temp");
+                mNameEditText.setEnabled(false);
+                mTempFile = new File(Objects.requireNonNull(savedInstanceState.getString(TEMP_FILE_KEY)));
+                mProfileImageView.setImageBitmap(BitmapFactory.decodeFile(mTempFile.getAbsolutePath()));
+            }
+            // the profile needs to be loaded
+            else if (mSourceExtra.equalsIgnoreCase(Const.MAIN_TAG)) {
+                Log.d(Const.TAG, "onCreate: load");
+                mNameEditText.setEnabled(false);
                 loadProfile();
             }
         }
@@ -134,16 +154,7 @@ public class RegisterActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         // save picture uri
         if (mProfileUri != null) outState.putParcelable(URI_KEY, mProfileUri);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        // if there is a picture uri, restore it and set the pic
-        if (savedInstanceState.getParcelable(URI_KEY) != null) {
-            mProfileUri = savedInstanceState.getParcelable(URI_KEY);
-            setPic(mProfileUri);
-        }
+        if (mTempFile != null) outState.putString(TEMP_FILE_KEY, mTempFile.getAbsolutePath());
     }
 
     // handle permissions //
@@ -153,16 +164,16 @@ public class RegisterActivity extends AppCompatActivity {
                                            @NonNull int[] grantResults) {
         if (requestCode == Const.GALLERY_PERMISSION_REQUEST_CODE) {
             // check permissions status from dialog fragment & Manifest
-            if (grantResults.length > 0 && (grantResults[0] != PackageManager.PERMISSION_GRANTED ||
-                    grantResults[1] != PackageManager.PERMISSION_GRANTED) &&
-                    (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE) ||
+            if (grantResults.length == 3 && (grantResults[0] != PackageManager.PERMISSION_GRANTED ||
+                    grantResults[1] != PackageManager.PERMISSION_GRANTED || grantResults[2] !=
+                    PackageManager.PERMISSION_GRANTED) &&
+                    shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE) &&
                             shouldShowRequestPermissionRationale(Manifest.permission
-                                    .WRITE_EXTERNAL_STORAGE))) {
-                // keep change picture button disabled
-                mChangePictureButton.setClickable(false);
+                                    .WRITE_EXTERNAL_STORAGE)) {
+                // permission is important
+                createImportantDialogFragment();
             } else {
-                // enable change picture button
-                mChangePictureButton.setClickable(true);
+                updatePermission();
             }
         }
     }
@@ -180,8 +191,6 @@ public class RegisterActivity extends AppCompatActivity {
             menu.findItem(R.id.update_button).setVisible(false);
             // set up activity title
             setTitle(getString(R.string.title_activity_register));
-            // prepare toast message: register
-            mUserToastMessage = getString(R.string.toast_registered);
             // user has not previously registered
             mRegistered = false;
         } else if (mSourceExtra != null && mSourceExtra.equals(Const.MAIN_TAG)) {
@@ -191,8 +200,6 @@ public class RegisterActivity extends AppCompatActivity {
             setTitle(getString(R.string.title_activity_edit));
             // disable editing email
             mEmailEditText.setEnabled(false);
-            // prepare toast message: update profile
-            mUserToastMessage = getString(R.string.toast_profileUpdated);
             // user is registered
             mRegistered = true;
         }
@@ -217,9 +224,12 @@ public class RegisterActivity extends AppCompatActivity {
     // on click listeners //
 
     public void onChangeClicked(View view) {
-        // the user has given permission
+        // if the user has given permission
         // select the pic
-        selectPic();
+        if (mPermission) selectPic();
+        else {
+            createSettingsDialogFragment();
+        }
     }
 
     // handles Register & Update Profile clicks
@@ -282,12 +292,6 @@ public class RegisterActivity extends AppCompatActivity {
             // create || update profile
             if (mRegistered) updateProfile();
             else createUser();
-
-            // toast user: registration || profile update
-            Toast message = Toast.makeText(this, mUserToastMessage,
-                    Toast.LENGTH_SHORT);
-            message.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-            message.show();
         }
     }
 
@@ -303,8 +307,10 @@ public class RegisterActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 // get the Uri of the cropped pic
-                if (result != null) mProfileUri = result.getUri();
-                setPic(mProfileUri);
+                if (result != null){
+                    mProfileUri = result.getUri();
+                    setPic(mProfileUri);
+                }
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 // get the error
@@ -354,30 +360,44 @@ public class RegisterActivity extends AppCompatActivity {
     public void requestPermission() {
         // request read/write permissions from user if not given
         if (!mPermission) {
-            mChangePictureButton.setClickable(false);   // disable change picture button
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE}, Const.GALLERY_PERMISSION_REQUEST_CODE);
-        } else {
-            // make sure change picture button is enabled
-            mChangePictureButton.setClickable(true);
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission
+                            .WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
+                    Const.GALLERY_PERMISSION_REQUEST_CODE);
         }
     }
 
+    // updates user permissions
     private void updatePermission() {
-        // update read & write permissions
+        // update camera and read & write permissions
         mPermission = (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED &&
                 checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                        PackageManager.PERMISSION_GRANTED);
+                        PackageManager.PERMISSION_GRANTED) &&
+                        checkSelfPermission(Manifest.permission.CAMERA)
+                                == PackageManager.PERMISSION_GRANTED;
     }
 
-    // handle dialog fragment //
+    // takes the user to device settings for this app
+    public void goToSettings() {
+        getApplicationContext().startActivity(new Intent()
+                .setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.fromParts("package", this.getPackageName(), null)));
+    }
+
+    // handle dialog fragments //
 
     private void createImportantDialogFragment() {
         // display dialog fragment
         DialogFragment dialog = CustomDialogFragment.newInstance(CustomDialogFragment
                 .PERMISSION_IMPORTANT_ID);
+        dialog.show(getSupportFragmentManager(), Const.DIALOG_TAG);
+    }
+
+    private void createSettingsDialogFragment() {
+        // display dialog fragment
+        DialogFragment dialog = CustomDialogFragment.newInstance(CustomDialogFragment
+                .SETTINGS_DIALOG_ID);
         dialog.show(getSupportFragmentManager(), Const.DIALOG_TAG);
     }
 
@@ -534,6 +554,7 @@ public class RegisterActivity extends AppCompatActivity {
                         }
                     }
                 });
+
     }
 
     /**
@@ -547,10 +568,30 @@ public class RegisterActivity extends AppCompatActivity {
 
         // set the profile pic
         String path = (String) data.get(Const.USER_PROFILE_PIC_KEY);
+        Log.d(Const.TAG, "populateFields: " + path);
         if (path != null && path.length() > 0) {
-            Glide.with(this)
-                    .load(FirebaseStorage.getInstance().getReference().child(path))
-                    .into(mProfileImageView);
+            Log.d(Const.TAG, "populateFields: made it");
+
+            try {
+                // create a file to hold the picture
+                mTempFile = File.createTempFile("profile", "jpg");
+                Log.d(Const.TAG, "populateFields: temp file created");
+                // download the picture from storage
+                Task<FileDownloadTask.TaskSnapshot> picTask = AccessBucket.downloadPicture(path, mTempFile);
+                picTask.addOnCompleteListener(new OnCompleteListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<FileDownloadTask.TaskSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(Const.TAG, "onComplete: ayay");
+                            mProfileImageView.setImageBitmap(BitmapFactory.decodeFile(mTempFile.getAbsolutePath()));
+                        } else {
+                            Log.d(Const.TAG, "onComplete: fail");
+                        }
+                    }
+                });
+            } catch (IOException e) {
+                Log.d(Const.TAG, "populateFields: " + Log.getStackTraceString(e));
+            }
         }
 
         // set the name
