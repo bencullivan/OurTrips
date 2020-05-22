@@ -115,8 +115,7 @@ public class CalendarActivity extends AppCompatActivity {
                 });
                 makeCalAppear();
             }
-        }
-        else if (mSource != null && mSource.equals(Const.MATCH_TAG)) {
+        } else if (mSource != null && mSource.equals(Const.MATCH_TAG)) {
             mMatched = intent.getLongArrayExtra(Const.MATCH_ARR_TAG);
             if (mMatched != null && mMatched.length > 0) {
                 // select all of the matched dates
