@@ -44,6 +44,7 @@ public class FriendActivity extends AppCompatActivity {
     private LinearLayout mFriendLayout;
     private ProgressBar mSpinner;
     private TextView mLoadingText;
+    private TextView mMessage;
 
 
     @Override
@@ -63,15 +64,12 @@ public class FriendActivity extends AppCompatActivity {
         mSpinner = findViewById(R.id.friend_spinner);
         mFriendLayout = findViewById(R.id.friend_linear);
         mLoadingText = findViewById(R.id.friend_loading_text);
+        mMessage = findViewById(R.id.friend_text);
 
         // set initial visibility
         mFriendLayout.setVisibility(View.GONE);
         mSpinner.setVisibility(View.VISIBLE);
         mLoadingText.setVisibility(View.VISIBLE);
-
-
-        //TODO: OMAR replace with custom adapter to make it look however you want
-        // I am using a simple adapter only so that i can test my cloud functions
 
         // if there is a list in savedInstanceState, there is no need to load from the db
         if (savedInstanceState != null && savedInstanceState.getStringArrayList(LIST_KEY) != null) {
@@ -80,10 +78,13 @@ public class FriendActivity extends AppCompatActivity {
             if (mName == null) mName = "";
             if (mList != null) {
                 // set the adapter to the list view with the saved list
-                mAdapter = new FriendAdapter(this, R.layout.activity_friend, mList);
+                mAdapter = new FriendAdapter(this, R.layout.activity_friend, new ArrayList<UserSummary>());
+                mAdapter.addAll(mList);
                 mListView.setAdapter(mAdapter);
                 mListView.setOnItemClickListener(listListener());
                 makeListAppear();
+                if (mList.size() == 0) mMessage.setText(R.string.no_req);
+                else mMessage.setText(R.string.pending_requests);
             }
         } else if (mUser != null) {
             // instantiate the adapter
@@ -103,6 +104,8 @@ public class FriendActivity extends AppCompatActivity {
                         if (mList != null) {
                             mAdapter.addAll(mList);
                             mAdapter.notifyDataSetChanged();
+                            if (mList.size() == 0) mMessage.setText(R.string.no_req);
+                            else mMessage.setText(R.string.pending_requests);
                         }
                     }
                 }
@@ -141,7 +144,7 @@ public class FriendActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mList != null && mList.size() > 0) outState.putParcelableArrayList(LIST_KEY, mList);
+        if (mList != null) outState.putParcelableArrayList(LIST_KEY, mList);
         if (mName != null) outState.putString(NAME_KEY, mName);
     }
 

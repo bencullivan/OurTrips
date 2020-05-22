@@ -78,5 +78,4 @@ public class FriendAdapter extends ArrayAdapter<UserSummary> {
         super.addAll(items);
         this.items.addAll(Arrays.asList(items));
     }
-
 }

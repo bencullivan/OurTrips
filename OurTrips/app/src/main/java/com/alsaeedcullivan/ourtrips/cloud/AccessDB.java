@@ -637,15 +637,20 @@ public class AccessDB {
                             // initialize a list to hold the matched dates
                             List<Date> matched = new ArrayList<>();
 
+                            Log.d(Const.TAG, "then: match: userDates: " + userDates);
+                            Log.d(Const.TAG, "then: match: friend: " + friendDates);
+
                             int a = 0;
                             int b = 0;
                             while (a < userDates.size() && b < friendDates.size()) {
                                 int result = userDates.get(a).compareTo(friendDates.get(b));
                                 if (result < 0) a++;
                                 else if (result > 0 ) b++;
-                                else matched.add(userDates.get(a));
-                                a++;
-                                b++;
+                                else {
+                                    matched.add(userDates.get(a));
+                                    a++;
+                                    b++;
+                                }
                             }
                             // return an array of the times of the matched dates
                             long[] out = new long[matched.size()];

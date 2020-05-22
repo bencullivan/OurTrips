@@ -57,6 +57,11 @@ public class MainActivity extends AppCompatActivity {
                 editIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
                 startActivity(editIntent);
                 break;
+            case R.id.match_dates:
+                Intent matchIntent = new Intent(MainActivity.this, MatchActivity.class);
+                matchIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
+                startActivity(matchIntent);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

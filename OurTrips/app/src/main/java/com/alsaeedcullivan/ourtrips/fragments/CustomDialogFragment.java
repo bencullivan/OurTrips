@@ -1,10 +1,17 @@
 package com.alsaeedcullivan.ourtrips.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.renderscript.ScriptGroup;
+import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
@@ -16,6 +23,7 @@ import com.alsaeedcullivan.ourtrips.MatchActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.RegisterActivity;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
+import com.alsaeedcullivan.ourtrips.utils.Const;
 
 /**
  * custom implementation of DialogFragment
@@ -28,6 +36,7 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int FRIEND_ID = 1;
     public static final int ACCEPT_ID = 2;
     public static final int MATCH_ID = 3;
+    public static final int SEARCH_FRIEND_ID = 4;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -72,6 +81,8 @@ public class CustomDialogFragment extends DialogFragment {
                 return createAcceptDialog();
             case MATCH_ID:
                 return createMatchDialog();
+            case SEARCH_FRIEND_ID:
+                return searchFriendDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -194,6 +205,49 @@ public class CustomDialogFragment extends DialogFragment {
                 }
             });
         }
+        return dialog.create();
+    }
+
+    // allows the user to search for a friend
+    private AlertDialog searchFriendDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        // set the title
+        dialog.setTitle(getString(R.string.search_for_a_friend));
+        final View dialogView = View.inflate(getContext(), R.layout.text_input, null);
+        dialog.setView(dialogView);
+
+        dialog.setPositiveButton("Search by email", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                EditText input = dialogView.findViewById(R.id.dialog_text_input);
+                if (getActivity() != null) {
+                    // perform email search
+                    ((MatchActivity) getActivity()).searchByEmail(input.getText().toString());
+                    // hide the keyboard
+                    InputMethodManager imm = (InputMethodManager) getActivity()
+                            .getSystemService(Activity.INPUT_METHOD_SERVICE);
+                    if (imm != null) imm.hideSoftInputFromWindow(input.getWindowToken(),
+                            InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+                dismiss();
+            }
+        }).setNegativeButton("Search by name", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                EditText input = dialogView.findViewById(R.id.dialog_text_input);
+                if (getActivity() != null) {
+                    // perform name search
+                    ((MatchActivity) getActivity()).searchByName(input.getText().toString());
+                    // hide the keyboard
+                    InputMethodManager imm = (InputMethodManager) getActivity()
+                            .getSystemService(Activity.INPUT_METHOD_SERVICE);
+                    if (imm != null) imm.hideSoftInputFromWindow(input.getWindowToken(),
+                            InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+                dismiss();
+            }
+        });
         return dialog.create();
     }
 }

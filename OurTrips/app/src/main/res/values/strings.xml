@@ -62,12 +62,18 @@
     <string name="sign_out">Sign Out</string>
     <string name="prompt_data_collect">Posting your data anonymously</string>
     <string name="privacy">Privacy</string>
-    <string name="update_dates_text">Update Dates</string>
+    <string name="update_dates_text">Select Dates</string>
     <string name="loading_your_dates">Loading your dates…</string>
     <string name="fcm_notification_channel">firebase_notify</string>
     <string name="string_send_request">create request</string>
     <string name="find_friends">Find Friends</string>
-    <string name="pending_requests">Pending requests…</string>
+    <string name="pending_requests">Pending requests:</string>
     <string name="preferences">profile_prefs</string>
     <string name="loading_friend_requests">Loading friend requests</string>
+    <string name="no_req">No friend requests.</string>
+    <string name="search_for_a_friend">Enter a friend\'s name or email...</string>
+    <string name="search">Search</string>
+    <string name="match_dates">Match Dates</string>
+    <string name="loading_friends">Loading friends...</string>
+    <string name="matching">Matching...</string>
 </resources>

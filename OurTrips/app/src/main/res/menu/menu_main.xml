@@ -10,23 +10,30 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/friends"
+        android:id="@+id/match_dates"
         android:icon="@drawable/ic_launcher_background"
         android:orderInCategory="101"
+        android:title="@string/match_dates"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/friends"
+        android:icon="@drawable/ic_launcher_background"
+        android:orderInCategory="102"
         android:title="@string/find_friends"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/update_profile"
         android:icon="@drawable/ic_launcher_background"
-        android:orderInCategory="102"
+        android:orderInCategory="103"
         android:title="@string/edit_profile_text"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/settings"
         android:icon="@drawable/ic_launcher_background"
-        android:orderInCategory="103"
+        android:orderInCategory="104"
         android:title="@string/settings_text"
         app:showAsAction="never" />
 
