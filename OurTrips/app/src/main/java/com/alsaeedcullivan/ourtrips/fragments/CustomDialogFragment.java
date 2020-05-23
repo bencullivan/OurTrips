@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.alsaeedcullivan.ourtrips.FriendActivity;
+import com.alsaeedcullivan.ourtrips.MainActivity;
 import com.alsaeedcullivan.ourtrips.MatchActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.RegisterActivity;
@@ -45,6 +46,7 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int SEARCH_FRIEND_ID = 4;
     public static final int SETTINGS_DIALOG_ID = 5;
     public static final int SELECT_END_DATE_ID = 6;
+    public static final int SEARCH_TRIP_ID = 7;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -95,6 +97,8 @@ public class CustomDialogFragment extends DialogFragment {
                 return createSettingsDialog();
             case SELECT_END_DATE_ID:
                 return createDateDialog();
+            case SEARCH_TRIP_ID:
+                return searchTripDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -311,5 +315,32 @@ public class CustomDialogFragment extends DialogFragment {
             }
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH));
+    }
+
+    // returns a dialog that allows the user to search for a trip based on the title
+    private AlertDialog searchTripDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        // set title
+        dialog.setTitle(R.string.enter_trip_title);
+        final View dialogView = View.inflate(getContext(), R.layout.text_input, null);
+        dialog.setView(dialogView);
+
+        dialog.setPositiveButton(R.string.search, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                EditText input = dialogView.findViewById(R.id.dialog_text_input);
+                if (getActivity() != null) {
+                    // perform search
+                    ((MainActivity) getActivity()).search(input.getText().toString());
+                    // hide the keyboard
+                    InputMethodManager imm = (InputMethodManager) getActivity()
+                            .getSystemService(Activity.INPUT_METHOD_SERVICE);
+                    if (imm != null) imm.hideSoftInputFromWindow(input.getWindowToken(),
+                            InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+            }
+        });
+        return dialog.create();
     }
 }

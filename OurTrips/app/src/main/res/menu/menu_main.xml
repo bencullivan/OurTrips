@@ -8,11 +8,6 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/sort_trips"
-        android:title="@string/sort"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/update_dates"
         android:icon="@drawable/ic_launcher_background"
         android:orderInCategory="100"

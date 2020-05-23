@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 import com.alsaeedcullivan.ourtrips.adapters.FriendAdapter;
 import com.alsaeedcullivan.ourtrips.adapters.TSAdapter;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
+import com.alsaeedcullivan.ourtrips.comparators.TripDateComparator;
+import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.models.TripSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -42,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar mSpinner;
     private TextView mLoading;
     private LinearLayout mLayout;
+    private boolean mSorted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,9 +99,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(Const.TAG, "onComplete: " + mTrips);
                         // add them to the adapter
                         if (mTrips != null) {
-                            mAdapter.addAll(mTrips);
-                            mAdapter.notifyDataSetChanged();
-                            showList();
+                            new SortTask().execute();
                         }
                     } else {
                         Toast t = Toast.makeText(MainActivity.this, "Could not load your trips.",
@@ -157,8 +159,44 @@ public class MainActivity extends AppCompatActivity {
                 matchIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
                 startActivity(matchIntent);
                 break;
+            case R.id.search_trips:
+                searchTrips();
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * searchTrips
+     * allows the user to search for a trip by name
+     */
+    private void searchTrips() {
+        CustomDialogFragment.newInstance(CustomDialogFragment.SEARCH_TRIP_ID)
+                .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
+    }
+
+    /**
+     * search()
+     * allows the user to search for a specific trip based on the title
+     * @param title the title of the trip they are searching for
+     */
+    public void search(String title) {
+        if (mTrips == null || mTrips.size() <= 1) return;
+        for (int i = 0; i < mTrips.size(); i++) {
+            if (title.equalsIgnoreCase(mTrips.get(i).getTitle())) {
+                TripSummary t = mTrips.get(i);
+                mTrips.set(i, mTrips.get(0));
+                mTrips.set(0, t);
+                mAdapter.clear();
+                mAdapter.addAll(mTrips);
+                mAdapter.notifyDataSetChanged();
+                return;
+            }
+        }
+        Toast t = Toast.makeText(this, "There is no trip with the title: " + title,
+                Toast.LENGTH_SHORT);
+        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+        t.show();
     }
 
     // gets a click listener for the list view
@@ -179,5 +217,27 @@ public class MainActivity extends AppCompatActivity {
         mSpinner.setVisibility(View.GONE);
         mLoading.setVisibility(View.GONE);
         mLayout.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * task to sort the trips by date
+     */
+    private class SortTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTrips != null && mTrips.size() > 0) {
+                mTrips.sort(new TripDateComparator());
+                mAdapter.addAll(mTrips);
+                mAdapter.notifyDataSetChanged();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            showList();
+        }
     }
 }
