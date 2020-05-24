@@ -25,6 +25,7 @@ public class Const {
     public static final String TRIPPERS_TAG = "TrippersFragment";
     public static final String SELECTED_DATE_TAG = "selected";
     public static final String SELECTED_FRIEND_TAG = "selected_friend";
+    public static final String GALLERY_TAG = "gallery_pics";
 
     // codes
     public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;

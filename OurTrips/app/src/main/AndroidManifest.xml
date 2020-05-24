@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.alsaeedcullivan.ourtrips">
 
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
@@ -13,7 +13,8 @@
         android:roundIcon="@mipmap/our_trips_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".RequestTripActivity"></activity>
+        <activity android:name=".GalleryActivity"></activity>
+        <activity android:name=".RequestTripActivity" />
         <activity android:name=".MatchActivity" />
         <activity android:name=".FriendActivity">
             <meta-data

@@ -579,8 +579,9 @@ public class RegisterActivity extends AppCompatActivity {
         mOldPath = mGlidePath;
         if (mGlidePath != null && mGlidePath.length() > 0) {
             // load the profile picture
-            StorageReference ref = FirebaseStorage.getInstance().getReference(mGlidePath);
-            GlideApp.with(this).load(ref).into(mProfileImageView);
+            GlideApp.with(this)
+                    .load(FirebaseStorage.getInstance().getReference(mGlidePath))
+                    .into(mProfileImageView);
         }
 
         // set the name
