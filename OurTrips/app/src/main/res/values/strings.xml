@@ -69,7 +69,7 @@
     <string name="find_friends">Find Friends</string>
     <string name="pending_requests">Pending requests:</string>
     <string name="preferences">profile_prefs</string>
-    <string name="loading_friend_requests">Loading friend requests</string>
+    <string name="loading_friend_requests" tools:ignore="TypographyEllipsis">Loading friend requests...</string>
     <string name="no_req">No friend requests.</string>
     <string name="search_for_a_friend" tools:ignore="TypographyEllipsis">Enter a friend\'s name or email...</string>
     <string name="search">Search</string>

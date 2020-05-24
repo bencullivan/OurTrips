@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MatchActivity">
+    tools:context=".MatchActivity"
+    android:background="@color/colorPrimaryDark">
 
     <ProgressBar
         android:id="@+id/match_spinner"
@@ -27,7 +28,7 @@
         android:text="@string/loading_friend_requests"
         android:textStyle="bold"
         android:textSize="28sp"
-        android:textColor="@color/colorPrimaryDark"
+        android:textColor="@color/colorPrimary"
         android:shadowColor="@color/colorSecondaryDark"/>
 
     <LinearLayout
@@ -42,17 +43,18 @@
             android:layout_height="wrap_content"
             android:text="@string/available_match"
             android:textAlignment="center"
-            android:textColor="@color/colorSecondaryDark"
+            android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:textStyle="italic"
+            android:fontFamily="sans-serif-medium"
             android:background="@color/colorPrimary"/>
 
         <ListView
             android:id="@+id/match_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:divider="@color/colorPrimaryDark"
-            android:dividerHeight="1dp" />
+            android:divider="#FFFFFF"
+            android:dividerHeight="2dp" />
 
     </LinearLayout>
 

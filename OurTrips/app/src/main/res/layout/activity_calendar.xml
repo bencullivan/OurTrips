@@ -37,7 +37,7 @@
         android:gravity="center"
         android:shadowColor="@color/colorSecondary"
         android:text="@string/trip_cal_select"
-        android:textColor="@color/colorPrimaryDark"
+        android:textColor="@color/colorAccent"
         android:textSize="@dimen/header_sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent" />

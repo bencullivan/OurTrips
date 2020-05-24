@@ -59,7 +59,7 @@ import java.util.Objects;
 public class RegisterActivity extends AppCompatActivity {
 
     private static final String URI_KEY = "uri_key";
-    private static final String GLIDE_KEY = "glide_path";
+    private static final String GLIDE_KEY = "glide_key";
 
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
@@ -438,12 +438,12 @@ public class RegisterActivity extends AppCompatActivity {
             String path = Const.PROFILE_PIC_PATH + "/" + mUser.getUid() + "/" + Const.PROFILE_PIC_NAME
                     + new Date().getTime() + Const.PIC_JPG;
             try {
-                // if there is an old profile photo, delete it from storage
-                if (mOldPath != null) AccessBucket.deleteFromStorage(mOldPath);
-
                 // open an input stream from the photo Uri and upload to the bucket
                 InputStream is = getContentResolver().openInputStream(mProfileUri);
                 AccessBucket.uploadPicture(path, is);
+
+                // if there is an old profile photo, delete it from storage
+                if (mOldPath != null) AccessBucket.deleteFromStorage(mOldPath);
 
                 // add the storage path to data
                 data.put(Const.USER_PROFILE_PIC_KEY, path);
@@ -508,12 +508,12 @@ public class RegisterActivity extends AppCompatActivity {
             String path = Const.PROFILE_PIC_PATH + "/" + mUser.getUid() + "/" + Const.PROFILE_PIC_NAME +
                     new Date().getTime() + Const.PIC_JPG;
             try {
-                // if there is an old profile photo, delete it from storage
-                if (mOldPath != null) AccessBucket.deleteFromStorage(mOldPath);
-
                 // open an input stream from the photo Uri and upload to the bucket
                 InputStream is = getContentResolver().openInputStream(mProfileUri);
                 AccessBucket.uploadPicture(path, is);
+
+                // if there is an old profile photo, delete it from storage
+                if (mOldPath != null) AccessBucket.deleteFromStorage(mOldPath);
 
                 // add the storage path to data
                 data.put(Const.USER_PROFILE_PIC_KEY, path);
@@ -577,15 +577,11 @@ public class RegisterActivity extends AppCompatActivity {
         // set the profile pic
         mGlidePath = (String) data.get(Const.USER_PROFILE_PIC_KEY);
         mOldPath = mGlidePath;
-        Log.d(Const.TAG, "populateFields mGlidePath: " + mGlidePath);
         if (mGlidePath != null && mGlidePath.length() > 0) {
-            Log.d(Const.TAG, "populateFields: made it");
-
             // load the profile picture
             StorageReference ref = FirebaseStorage.getInstance().getReference(mGlidePath);
             GlideApp.with(this).load(ref).into(mProfileImageView);
         }
-
 
         // set the name
         String name = (String) data.get(Const.USER_NAME_KEY);

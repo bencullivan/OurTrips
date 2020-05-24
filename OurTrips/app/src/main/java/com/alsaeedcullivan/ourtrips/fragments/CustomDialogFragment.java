@@ -108,7 +108,7 @@ public class CustomDialogFragment extends DialogFragment {
     // permission is important
     private AlertDialog createImportantDialog() {
         // create alert dialog
-        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
         // set appropriate title
         dialog.setTitle(PERMISSION_IMPORTANT_TITLE);
         // set message
@@ -131,7 +131,7 @@ public class CustomDialogFragment extends DialogFragment {
     // sends a friend request
     private AlertDialog createFriendDialog() {
         // create alert dialog
-        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
         // set appropriate title
         dialog.setTitle(FRIEND_TITLE);
         final View dialogView = View.inflate(getContext(), R.layout.text_input, null);
@@ -153,7 +153,7 @@ public class CustomDialogFragment extends DialogFragment {
     // allows user to accept friend request
     private AlertDialog createAcceptDialog() {
         // create alert dialog
-        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
         // set the title
         dialog.setTitle(REQUEST_TITLE);
 
@@ -195,7 +195,7 @@ public class CustomDialogFragment extends DialogFragment {
     // allows the user to match dates with a friend
     private AlertDialog createMatchDialog() {
         // create alert dialog
-        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
         // set the title
         dialog.setTitle("Find Match");
 
@@ -227,7 +227,7 @@ public class CustomDialogFragment extends DialogFragment {
     // allows the user to search for a friend
     private AlertDialog searchFriendDialog() {
         // create alert dialog
-        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
         // set the title
         dialog.setTitle(getString(R.string.search_for_a_friend));
         final View dialogView = View.inflate(getContext(), R.layout.text_input, null);
@@ -270,7 +270,7 @@ public class CustomDialogFragment extends DialogFragment {
     // creates a dialog that takes the user to settings where they can update their permissions
     private AlertDialog createSettingsDialog() {
         // create alert dialog
-        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
         // set the title
         dialog.setTitle(R.string.permission_denied);
         // set the message
@@ -320,7 +320,7 @@ public class CustomDialogFragment extends DialogFragment {
     // returns a dialog that allows the user to search for a trip based on the title
     private AlertDialog searchTripDialog() {
         // create alert dialog
-        AlertDialog.Builder dialog = new AlertDialog.Builder((getActivity()));
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
         // set title
         dialog.setTitle(R.string.enter_trip_title);
         final View dialogView = View.inflate(getContext(), R.layout.text_input, null);

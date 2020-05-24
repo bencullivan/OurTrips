@@ -17,7 +17,7 @@
             android:layout_height="@dimen/img_side_dp"
             android:layout_marginTop="@dimen/top_vertical_margin"
             android:contentDescription="@string/profile_picture_string"
-            android:src="@drawable/ic_launcher_background"
+            android:src="@drawable/ic_launcher_foreground"
             app:layout_constraintHorizontal_bias="0.128"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
