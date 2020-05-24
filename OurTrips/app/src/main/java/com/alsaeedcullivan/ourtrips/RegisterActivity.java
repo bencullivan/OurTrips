@@ -7,10 +7,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
 import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,13 +36,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -72,16 +68,13 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText mNameEditText, mEmailEditText, mAffiliationEditText, mBirthdayEditText;
     private RadioGroup mInputGender;
     private RadioButton mFemaleRadioButton, mMaleRadioButton, mOtherRadioButton;
-    private Button mChangePictureButton;
 
     private Uri mProfileUri;
     private String mGlidePath;
     private String mOldPath;
-    private Drawable mProfilePic;
 
     private boolean mPermission;
     private boolean mRegistered;
-    private String test;
 
     public String mSourceExtra;   // source activity intent extra
 
@@ -107,14 +100,9 @@ public class RegisterActivity extends AppCompatActivity {
         mMaleRadioButton = findViewById(R.id.edit_gender_male);
         mOtherRadioButton = findViewById(R.id.edit_gender_other);
 
-        // get reference to the change picture Button
-        mChangePictureButton = findViewById(R.id.change_picture);
-
         // display the user's email as uneditable
         mEmailEditText.setText(mUser.getEmail());
         mEmailEditText.setEnabled(false);
-
-        Log.d(Const.TAG, "onCreate: " + test);
 
         // get source activity
         mSourceExtra = getIntent().getStringExtra(Const.SOURCE_TAG);
@@ -356,8 +344,8 @@ public class RegisterActivity extends AppCompatActivity {
         try {
             // open an InputStream from the Uri
             InputStream is = getContentResolver().openInputStream(uri);
-            mProfilePic = Drawable.createFromStream(is, uri.toString());
-            mProfileImageView.setImageDrawable(mProfilePic);
+            Drawable profilePic = Drawable.createFromStream(is, uri.toString());
+            mProfileImageView.setImageDrawable(profilePic);
             mGlidePath = null;
         } catch (IOException e) {
             Log.d(Const.TAG, Log.getStackTraceString(e));
