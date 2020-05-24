@@ -24,16 +24,16 @@ public class AccessBucket {
         FirebaseStorage.getInstance().getReference().child(path).putStream(is);
     }
 
-    /**
-     * downLoadPicture()
-     * downloads the picture located at the given path in the storage bucket to the file that is
-     * provided
-     * @param path the path of the photo
-     * @param file the temporary file
-     */
-    public static Task<FileDownloadTask.TaskSnapshot> downloadPicture(String path, File file) {
-        return FirebaseStorage.getInstance().getReference().child(path).getFile(file);
-    }
+//    /**
+//     * downLoadPicture()
+//     * downloads the picture located at the given path in the storage bucket to the file that is
+//     * provided
+//     * @param path the path of the photo
+//     * @param file the temporary file
+//     */
+//    public static Task<FileDownloadTask.TaskSnapshot> downloadPicture(String path, File file) {
+//        return FirebaseStorage.getInstance().getReference().child(path).getFile(file);
+//    }
 
     /**
      * uploadVideo()

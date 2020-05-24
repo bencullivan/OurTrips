@@ -17,11 +17,11 @@ public class TripDateComparator implements Comparator<TripSummary> {
         String[] aDate = a.split("/");
         String[] bDate = b.split("/");
 
-        int first = aDate[2].compareTo(bDate[2]);
+        int first = bDate[2].compareTo(aDate[2]);
         if (first == 0) {
-            int second = aDate[0].compareTo(bDate[0]);
+            int second = bDate[0].compareTo(aDate[0]);
             if (second == 0) {
-                return aDate[1].compareTo(bDate[1]);
+                return bDate[1].compareTo(aDate[1]);
             } else return second;
         } else return first;
     }

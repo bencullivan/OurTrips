@@ -93,6 +93,7 @@ public class Const {
     // Cloud Storage paths
     public static final String PROFILE_PIC_PATH = "profile_pictures";
     public static final String TRIP_PIC_PATH = "trip_pictures";
-    public static final String PROFILE_PIC_NAME = "profile.jpg";
+    public static final String PROFILE_PIC_NAME = "profile";
+    public static final String PIC_JPG = ".jpg";
 
 }

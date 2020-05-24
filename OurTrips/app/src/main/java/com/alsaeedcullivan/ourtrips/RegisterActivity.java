@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.alsaeedcullivan.ourtrips.cloud.AccessBucket;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
+import com.alsaeedcullivan.ourtrips.glide.GlideApp;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.alsaeedcullivan.ourtrips.utils.SharedPreference;
 import com.alsaeedcullivan.ourtrips.utils.Utilities;
@@ -38,6 +39,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -45,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -59,11 +63,10 @@ import java.util.Objects;
 public class RegisterActivity extends AppCompatActivity {
 
     private static final String URI_KEY = "uri_key";
-    private static final String TEMP_FILE_KEY = "temp_file";
+    private static final String GLIDE_KEY = "glide_path";
 
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
-    private File mTempFile;
 
     private ImageView mProfileImageView;
     private EditText mNameEditText, mEmailEditText, mAffiliationEditText, mBirthdayEditText;
@@ -72,10 +75,13 @@ public class RegisterActivity extends AppCompatActivity {
     private Button mChangePictureButton;
 
     private Uri mProfileUri;
+    private String mGlidePath;
+    private String mOldPath;
     private Drawable mProfilePic;
 
     private boolean mPermission;
     private boolean mRegistered;
+    private String test;
 
     public String mSourceExtra;   // source activity intent extra
 
@@ -108,6 +114,8 @@ public class RegisterActivity extends AppCompatActivity {
         mEmailEditText.setText(mUser.getEmail());
         mEmailEditText.setEnabled(false);
 
+        Log.d(Const.TAG, "onCreate: " + test);
+
         // get source activity
         mSourceExtra = getIntent().getStringExtra(Const.SOURCE_TAG);
 
@@ -118,12 +126,13 @@ public class RegisterActivity extends AppCompatActivity {
             setPic(mProfileUri);
         } else if (mSourceExtra != null) {
             // if the profile has already been loaded
-            if (mSourceExtra.equalsIgnoreCase(Const.MAIN_TAG) && savedInstanceState != null &&
-                    savedInstanceState.getString(TEMP_FILE_KEY) != null) {
-                Log.d(Const.TAG, "onCreate: file temp");
+            if (mSourceExtra.equalsIgnoreCase(Const.MAIN_TAG) && savedInstanceState != null && savedInstanceState.getString(GLIDE_KEY) != null) {
+                Log.d(Const.TAG, "onCreate: file glide");
                 mNameEditText.setEnabled(false);
-                mTempFile = new File(Objects.requireNonNull(savedInstanceState.getString(TEMP_FILE_KEY)));
-                mProfileImageView.setImageBitmap(BitmapFactory.decodeFile(mTempFile.getAbsolutePath()));
+                // load the profile pic
+                mGlidePath = savedInstanceState.getString(GLIDE_KEY);
+                StorageReference ref = FirebaseStorage.getInstance().getReference(mGlidePath);
+                GlideApp.with(this).load(ref).into(mProfileImageView);
             }
             // the profile needs to be loaded
             else if (mSourceExtra.equalsIgnoreCase(Const.MAIN_TAG)) {
@@ -154,7 +163,7 @@ public class RegisterActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         // save picture uri
         if (mProfileUri != null) outState.putParcelable(URI_KEY, mProfileUri);
-        if (mTempFile != null) outState.putString(TEMP_FILE_KEY, mTempFile.getAbsolutePath());
+        if (mGlidePath != null) outState.putString(GLIDE_KEY, mGlidePath);
     }
 
     // handle permissions //
@@ -349,6 +358,7 @@ public class RegisterActivity extends AppCompatActivity {
             InputStream is = getContentResolver().openInputStream(uri);
             mProfilePic = Drawable.createFromStream(is, uri.toString());
             mProfileImageView.setImageDrawable(mProfilePic);
+            mGlidePath = null;
         } catch (IOException e) {
             Log.d(Const.TAG, Log.getStackTraceString(e));
         }
@@ -436,8 +446,13 @@ public class RegisterActivity extends AppCompatActivity {
         // if they have set a profile pic
         if (mProfileUri != null) {
             // establish the path where the profile pic will be stored in the bucket
-            String path = Const.PROFILE_PIC_PATH + "/" + mUser.getUid() + "/" + Const.PROFILE_PIC_NAME;
+            // include timestamp (so glide does not load the incorrect image)
+            String path = Const.PROFILE_PIC_PATH + "/" + mUser.getUid() + "/" + Const.PROFILE_PIC_NAME
+                    + new Date().getTime() + Const.PIC_JPG;
             try {
+                // if there is an old profile photo, delete it from storage
+                if (mOldPath != null) AccessBucket.deleteFromStorage(mOldPath);
+
                 // open an input stream from the photo Uri and upload to the bucket
                 InputStream is = getContentResolver().openInputStream(mProfileUri);
                 AccessBucket.uploadPicture(path, is);
@@ -501,8 +516,13 @@ public class RegisterActivity extends AppCompatActivity {
         // if they have set a profile pic
         if (mProfileUri != null) {
             // establish the path where the profile pic will be stored in the bucket
-            String path = Const.PROFILE_PIC_PATH + "/" + mUser.getUid() + "/" + Const.PROFILE_PIC_NAME;
+            // include timestamp (so glide does not load the incorrect image)
+            String path = Const.PROFILE_PIC_PATH + "/" + mUser.getUid() + "/" + Const.PROFILE_PIC_NAME +
+                    new Date().getTime() + Const.PIC_JPG;
             try {
+                // if there is an old profile photo, delete it from storage
+                if (mOldPath != null) AccessBucket.deleteFromStorage(mOldPath);
+
                 // open an input stream from the photo Uri and upload to the bucket
                 InputStream is = getContentResolver().openInputStream(mProfileUri);
                 AccessBucket.uploadPicture(path, is);
@@ -567,32 +587,17 @@ public class RegisterActivity extends AppCompatActivity {
         if (data == null) return;
 
         // set the profile pic
-        String path = (String) data.get(Const.USER_PROFILE_PIC_KEY);
-        Log.d(Const.TAG, "populateFields: " + path);
-        if (path != null && path.length() > 0) {
+        mGlidePath = (String) data.get(Const.USER_PROFILE_PIC_KEY);
+        mOldPath = mGlidePath;
+        Log.d(Const.TAG, "populateFields mGlidePath: " + mGlidePath);
+        if (mGlidePath != null && mGlidePath.length() > 0) {
             Log.d(Const.TAG, "populateFields: made it");
 
-            try {
-                // create a file to hold the picture
-                mTempFile = File.createTempFile("profile", "jpg");
-                Log.d(Const.TAG, "populateFields: temp file created");
-                // download the picture from storage
-                Task<FileDownloadTask.TaskSnapshot> picTask = AccessBucket.downloadPicture(path, mTempFile);
-                picTask.addOnCompleteListener(new OnCompleteListener<FileDownloadTask.TaskSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<FileDownloadTask.TaskSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(Const.TAG, "onComplete: ayay");
-                            mProfileImageView.setImageBitmap(BitmapFactory.decodeFile(mTempFile.getAbsolutePath()));
-                        } else {
-                            Log.d(Const.TAG, "onComplete: fail");
-                        }
-                    }
-                });
-            } catch (IOException e) {
-                Log.d(Const.TAG, "populateFields: " + Log.getStackTraceString(e));
-            }
+            // load the profile picture
+            StorageReference ref = FirebaseStorage.getInstance().getReference(mGlidePath);
+            GlideApp.with(this).load(ref).into(mProfileImageView);
         }
+
 
         // set the name
         String name = (String) data.get(Const.USER_NAME_KEY);
