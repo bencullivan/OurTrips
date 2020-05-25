@@ -8,12 +8,12 @@
         <PreferenceScreen
             android:icon="@drawable/ic_person"
             android:key="edit_profile_settings"
-            android:title="Edit Profile"/>
+            android:title="Edit Profile" />
 
         <PreferenceScreen
             android:icon="@drawable/ic_arrow_back"
             android:key="sign_out"
-            android:title="@string/sign_out"/>
+            android:title="@string/sign_out" />
 
     </PreferenceCategory>
 
@@ -22,7 +22,7 @@
         app:iconSpaceReserved="false">
 
         <PreferenceScreen
-            android:icon="@drawable/ic_web_asset"
+            android:icon="@mipmap/our_trips_logo"
             android:summary="https://www.cs.dartmouth.edu/~campbell/cs65/cs65.html"
             android:title="App Website">
 
