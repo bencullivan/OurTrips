@@ -100,4 +100,6 @@
     <string name="add_video">Add Video</string>
     <string name="loading_trip" tools:ignore="TypographyEllipsis">Loading trip...</string>
     <string name="edit">Edit</string>
+    <string name="overview">Overview:</string>
+    <string name="change">Change</string>
 </resources>

@@ -13,7 +13,8 @@
         android:roundIcon="@mipmap/our_trips_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ViewUserActivity"></activity>
+        <activity android:name=".EditSummaryActivity"></activity>
+        <activity android:name=".ViewUserActivity" />
         <activity android:name=".ViewPictureActivity" />
         <activity android:name=".GalleryActivity" />
         <activity android:name=".RequestTripActivity" />

@@ -1,5 +1,7 @@
 package com.alsaeedcullivan.ourtrips.fragments;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,8 +12,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
+import com.alsaeedcullivan.ourtrips.EditSummaryActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.TripActivity;
 import com.alsaeedcullivan.ourtrips.utils.Const;
@@ -25,6 +29,7 @@ public class SummaryFragment extends Fragment implements View.OnClickListener {
 
     // text widgets
     private TextView mTitle, mStartDate, mEndDate, mOverview;
+    private Button mEdit;
 
     public SummaryFragment() {
         // Required empty public constructor
@@ -70,6 +75,25 @@ public class SummaryFragment extends Fragment implements View.OnClickListener {
         mEndDate.setText(end);
         String over = "Overview: " + ((TripActivity)getActivity()).getOverview();
         mOverview.setText(over);
+
+        // set up the button
+        mEdit = view.findViewById(R.id.sum_edit_button);
+        mEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TripActivity a = (TripActivity) getActivity();
+                if (a == null) return;
+
+                // send the user to edit summary activity
+                Intent intent = new Intent(getActivity(), EditSummaryActivity.class);
+                intent.putExtra(Const.TRIP_ID_TAG, a.getTripId());
+                intent.putExtra(Const.TRIP_TITLE_TAG, a.getTripTitle());
+                intent.putExtra(Const.TRIP_START_TAG, a.getStartDate());
+                intent.putExtra(Const.TRIP_END_TAG, a.getEndDate());
+                intent.putExtra(Const.TRIP_OVER_TAG, a.getOverview());
+                startActivity(intent);
+            }
+        });
     }
 
     @Override

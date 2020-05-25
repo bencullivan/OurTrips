@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.alsaeedcullivan.ourtrips.EditSummaryActivity;
 import com.alsaeedcullivan.ourtrips.FriendActivity;
 import com.alsaeedcullivan.ourtrips.MainActivity;
 import com.alsaeedcullivan.ourtrips.MatchActivity;
@@ -47,6 +48,8 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int SETTINGS_DIALOG_ID = 5;
     public static final int SELECT_END_DATE_ID = 6;
     public static final int SEARCH_TRIP_ID = 7;
+    public static final int SUMMARY_START_DATE_ID = 9;
+    public static final int SUMMARY_END_DATE_ID = 10;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -99,6 +102,10 @@ public class CustomDialogFragment extends DialogFragment {
                 return createDateDialog();
             case SEARCH_TRIP_ID:
                 return searchTripDialog();
+            case SUMMARY_START_DATE_ID:
+                return createSummaryStartDateDialog();
+            case SUMMARY_END_DATE_ID:
+                return createSummaryEndDateDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -342,5 +349,56 @@ public class CustomDialogFragment extends DialogFragment {
             }
         });
         return dialog.create();
+    }
+
+    // creates a dialog that allows the user to select the start date of the trip
+    private DatePickerDialog createSummaryStartDateDialog() {
+        // get calendar instance
+        final Calendar calendar = Calendar.getInstance();
+        if (getActivity() != null) {
+            Date start = ((EditSummaryActivity) getActivity()).getStartDate();
+            calendar.setTime(start);
+        }
+        // return the date picker dialog
+        return new DatePickerDialog(requireActivity(), new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                // update the calendar
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                if (getActivity() != null) {
+                    ((EditSummaryActivity) getActivity()).updateStartDate(calendar.getTime());
+                }
+            }
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
+    }
+
+    // creates a dialog that allows the user to select the end date of the trip
+    private DatePickerDialog createSummaryEndDateDialog() {
+        // get calendar instance
+        final Calendar calendar = Calendar.getInstance();
+        if (getActivity() != null) {
+            Date start = ((EditSummaryActivity) getActivity()).getEndDate();
+            calendar.setTime(start);
+        }
+        // return the date picker dialog
+        return new DatePickerDialog(requireActivity(), new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                // update the calendar
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                if (getActivity() != null) {
+                    if (calendar.getTime().compareTo(((EditSummaryActivity) getActivity()).getStartDate()) < 0) {
+                        dismiss();
+                        ((EditSummaryActivity) getActivity()).endBeforeStart();
+                    } else ((EditSummaryActivity) getActivity()).updateEndDate(calendar.getTime());
+                }
+            }
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
     }
 }

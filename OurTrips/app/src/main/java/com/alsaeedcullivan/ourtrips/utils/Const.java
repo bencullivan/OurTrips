@@ -27,6 +27,10 @@ public class Const {
     public static final String SELECTED_FRIEND_TAG = "selected_friend";
     public static final String GALLERY_TAG = "gallery_pics";
     public static final String USER_NAME_TAG = "user_name";
+    public static final String TRIP_TITLE_TAG = "title";
+    public static final String TRIP_START_TAG = "start";
+    public static final String TRIP_END_TAG = "end";
+    public static final String TRIP_OVER_TAG = "overview";
 
     // codes
     public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;
