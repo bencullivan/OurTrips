@@ -99,4 +99,5 @@
     <string name="add_photo">Add Photo</string>
     <string name="add_video">Add Video</string>
     <string name="loading_trip" tools:ignore="TypographyEllipsis">Loading trip...</string>
+    <string name="edit">Edit</string>
 </resources>

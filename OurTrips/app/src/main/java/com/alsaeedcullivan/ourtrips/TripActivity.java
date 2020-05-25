@@ -32,6 +32,14 @@ import java.util.Objects;
 // this is the activity where the user will be able to create, view and update trips
 public class TripActivity extends AppCompatActivity {
 
+    // instance state keys
+    private static final String ID_KEY = "id";
+    private static final String TITLE_KEY = "title";
+    private static final String START_KEY = "start";
+    private static final String END_KEY = "end";
+    private static final String OVER_KEY = "overview";
+
+    // widgets
     private BottomNavigationView mNavigation;
     private ViewPager mViewPager;
     private ActionBar mActionBar;
@@ -40,7 +48,6 @@ public class TripActivity extends AppCompatActivity {
 
     // trip data
     private String mTripId, mTripTitle, mStartDate, mEndDate, mOverview;
-    private ArrayList<Place> mLocationList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,12 +91,38 @@ public class TripActivity extends AppCompatActivity {
         mNavigation.setVisibility(View.GONE);
         mSpinner.setVisibility(View.VISIBLE);
         mLoadingText.setVisibility(View.VISIBLE);
+
+        // if the trip data has already been loaded
+        if (savedInstanceState != null && savedInstanceState.getString(ID_KEY) != null &&
+                savedInstanceState.getString(TITLE_KEY) != null && savedInstanceState
+                .getString(START_KEY) != null && savedInstanceState.getString(END_KEY) != null) {
+            Log.d(Const.TAG, "onCreate: save instance state trip activity");
+            mTripId = savedInstanceState.getString(ID_KEY);
+            mTripTitle = savedInstanceState.getString(TITLE_KEY);
+            mStartDate = savedInstanceState.getString(START_KEY);
+            mEndDate = savedInstanceState.getString(END_KEY);
+            mOverview = savedInstanceState.getString(OVER_KEY);
+            // display the fragments
+            showFrags();
+        }
+        // the trip data has not already been loaded, load it from the database
+        else loadTrip();
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) finish();
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mTripId != null) outState.putString(ID_KEY, mTripId);
+        if (mTripTitle != null) outState.putString(TITLE_KEY, mTripTitle);
+        if (mStartDate != null) outState.putString(START_KEY, mStartDate);
+        if (mEndDate != null) outState.putString(END_KEY, mEndDate);
+        if (mOverview != null) outState.putString(OVER_KEY, mOverview);
     }
 
     private ViewPager.OnPageChangeListener createPageChangeListener() {
@@ -161,13 +194,33 @@ public class TripActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * loadTrip()
+     * loads the info of this trip from the db
+     */
     private void loadTrip() {
         AccessDB.getTripInfo(mTripId).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
             @Override
             public void onComplete(@NonNull Task<Map<String, Object>> task) {
                 if (task.isSuccessful()) {
                     Map<String, Object> data = task.getResult();
-                    if (data != null) populateFields(data);
+                    if (data != null) {
+                        // get the title
+                        String title = (String) data.get(Const.TRIP_TITLE_KEY);
+                        if (title != null) mTripTitle = title;
+                        // get the start date
+                        String start = (String) data.get(Const.TRIP_START_DATE_KEY);
+                        if (start != null) mStartDate = start;
+                        // get the end date
+                        String end = (String) data.get(Const.TRIP_END_DATE_KEY);
+                        if (end != null) mEndDate = end;
+                        // get the overview
+                        String over = (String) data.get(Const.TRIP_OVERVIEW_KEY);
+                        if (over != null) mOverview = over;
+                        Log.d(Const.TAG, "onComplete: doneee");
+                        // display the fragments
+                        showFrags();
+                    }
                 } else {
                     //TODO toast user
                 }
@@ -175,29 +228,37 @@ public class TripActivity extends AppCompatActivity {
         });
     }
 
-    private void populateFields(Map<String, Object> data) {
-        // get the title
-        String title = (String) data.get(Const.TRIP_TITLE_KEY);
-        if (title != null) {
-            mTripTitle = title;
+    // hides the progress bar and displays the view pager of fragments
+    private void showFrags() {
+        mSpinner.setVisibility(View.GONE);
+        mLoadingText.setVisibility(View.GONE);
+        mViewPager.setVisibility(View.VISIBLE);
+        mNavigation.setVisibility(View.VISIBLE);
+    }
 
-        }
-        // get the start date
-        String start = (String) data.get(Const.TRIP_START_DATE_KEY);
-        if (start != null) {
-            mStartDate = start;
+    // GETTERS
 
-        }
-        // get the end date
-        String end = (String) data.get(Const.TRIP_END_DATE_KEY);
-        if (end != null) {
-            mEndDate = end;
+    public String getTripId() {
+        return mTripId;
+    }
 
-        }
-        // get the overview
-        String over = (String) data.get(Const.TRIP_OVERVIEW_KEY);
-        if (over != null) {
-            mOverview = over;
-        }
+    public String getTripTitle() {
+        if (mTripTitle != null) return mTripTitle;
+        else return "";
+    }
+
+    public String getStartDate() {
+        if (mStartDate != null) return mStartDate;
+        else return "";
+    }
+
+    public String getEndDate() {
+        if (mEndDate != null) return mEndDate;
+        else return "";
+    }
+
+    public String getOverview() {
+        if (mOverview != null) return mOverview;
+        else return "";
     }
 }
