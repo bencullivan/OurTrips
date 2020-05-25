@@ -91,4 +91,6 @@
     <string name="enter_trip_title">Enter the title of a trip...</string>
     <string name="gallery_item">gallery item</string>
     <string name="gear">gear</string>
+    <string name="pictures">pictures</string>
+    <string name="videos">videos</string>
 </resources>
