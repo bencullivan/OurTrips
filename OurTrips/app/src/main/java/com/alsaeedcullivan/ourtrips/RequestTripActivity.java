@@ -3,7 +3,6 @@ package com.alsaeedcullivan.ourtrips;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,7 +15,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.alsaeedcullivan.ourtrips.cloud.AccessBucket;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
@@ -40,15 +38,13 @@ public class RequestTripActivity extends AppCompatActivity {
 
     private SimpleDateFormat mFormat;
     private UserSummary mFriend;
+    private String mUserName;
     private Date mStart;
     private Date mEnd;
 
     // widgets
     private EditText mTitle;
-    private TextView mStartDate;
     private TextView mEndDate;
-    private TextView mFriendInfo;
-    private Button mSelectButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,13 +57,13 @@ public class RequestTripActivity extends AppCompatActivity {
 
         // get widget references
         mTitle = findViewById(R.id.edit_title);
-        mStartDate = findViewById(R.id.start_date_text);
         mEndDate = findViewById(R.id.end_date_text);
-        mSelectButton = findViewById(R.id.select_end_date);
-        mFriendInfo = findViewById(R.id.friend_info_text);
+        TextView startDate = findViewById(R.id.start_date_text);
+        Button selectButton = findViewById(R.id.select_end_date);
+        TextView friendInfo = findViewById(R.id.friend_info_text);
 
         // set on click listener for the select end date button
-        mSelectButton.setOnClickListener(createSelectListener());
+        selectButton.setOnClickListener(createSelectListener());
 
         // initialize the simple date format
         mFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
@@ -89,14 +85,15 @@ public class RequestTripActivity extends AppCompatActivity {
         if (intent != null) {
             long time = intent.getLongExtra(Const.SELECTED_DATE_TAG, -1);
             mFriend = intent.getParcelableExtra(Const.SELECTED_FRIEND_TAG);
+            mUserName = intent.getStringExtra(Const.USER_NAME_TAG);
             if (time != -1 && mFriend != null) {
                 // update the text
                 mStart = new Date(time);
                 String start = "Start Date: " + mFormat.format(mStart);
-                mStartDate.setText(start);
-                String name = mFriendInfo.getText().toString();
+                startDate.setText(start);
+                String name = friendInfo.getText().toString();
                 name += " " + mFriend.getName();
-                mFriendInfo.setText(name);
+                friendInfo.setText(name);
             }
         }
     }
@@ -169,8 +166,8 @@ public class RequestTripActivity extends AppCompatActivity {
                     }
                     AccessDB.addUserTrip(user.getUid(), tripId, mTitle.getText().toString(), mFormat.format(mStart));
                     AccessDB.addUserTrip(mFriend.getUserId(), tripId, mTitle.getText().toString(), mFormat.format(mStart));
-                    AccessDB.addTripper(tripId, user.getUid());
-                    AccessDB.addTripper(tripId, mFriend.getUserId());
+                    AccessDB.addTripper(tripId, user.getUid(), user.getEmail(), mUserName);
+                    AccessDB.addTripper(tripId, mFriend.getUserId(), mFriend.getEmail(), mFriend.getName());
                     Log.d(Const.TAG, "onComplete: done yay");
                     Intent intent = new Intent(RequestTripActivity.this, MainActivity.class);
                     startActivity(intent);

@@ -26,6 +26,7 @@ public class Const {
     public static final String SELECTED_DATE_TAG = "selected";
     public static final String SELECTED_FRIEND_TAG = "selected_friend";
     public static final String GALLERY_TAG = "gallery_pics";
+    public static final String USER_NAME_TAG = "user_name";
 
     // codes
     public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;
@@ -71,6 +72,7 @@ public class Const {
     public static final String TRIP_COMMENT_KEY = "comment";
     public static final String TRIP_PHOTO_PATHS_COLLECTION = "photos";
     public static final String TRIP_PHOTO_KEY = "photo";
+    public static final String TRIP_TIMESTAMP_KEY = "timestamp";
     public static final String TRIP_TOPIC_KEY = "topic";
     public static final String TRIP_COLL_UPDATE_TYPE_KEY = "type";
     public static final String TRIP_NOTIFY_KEY = "notification";

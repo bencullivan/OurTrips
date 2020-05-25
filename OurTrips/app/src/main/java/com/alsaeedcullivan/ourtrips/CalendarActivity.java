@@ -35,13 +35,15 @@ import java.util.List;
 public class CalendarActivity extends AppCompatActivity {
 
     // savedInstanceState keys
-    public static final String DATE_LIST_KEY = "date_list_key";
-    public static final String MATCHED_KEY = "matched_dates";
-    public static final String SOURCE_KEY = "source";
-    public static final String RECENT_KEY = "recent";
-    public static final String FRIEND_KEY = "friend";
+    private static final String DATE_LIST_KEY = "date_list_key";
+    private static final String MATCHED_KEY = "matched_dates";
+    private static final String SOURCE_KEY = "source";
+    private static final String RECENT_KEY = "recent";
+    private static final String FRIEND_KEY = "friend";
+    private static final String NAME_KEY = "user_name";
 
     private FirebaseUser mUser;
+    private String mUserName;
     private TextView mHeader;
     private CalendarPickerView mCalView;
     private ProgressBar mSpinner;
@@ -92,10 +94,11 @@ public class CalendarActivity extends AppCompatActivity {
         // MATCH MODE
         if (source != null && source.equals(Const.MATCH_TAG) && savedInstanceState != null &&
                 savedInstanceState.getLongArray(MATCHED_KEY) != null && savedInstanceState
-                .getParcelable(FRIEND_KEY) != null) {
+                .getParcelable(FRIEND_KEY) != null && savedInstanceState.getString(NAME_KEY) != null) {
             mHeader.setText(R.string.click_matched);
             mMatched = savedInstanceState.getLongArray(MATCHED_KEY);
             mFriend = savedInstanceState.getParcelable(FRIEND_KEY);
+            mUserName = savedInstanceState.getString(NAME_KEY);
             mSet = new HashSet<>();
             if (mMatched != null && mMatched.length > 0) {
                 // select all of the matched dates
@@ -113,6 +116,7 @@ public class CalendarActivity extends AppCompatActivity {
             mHeader.setText(R.string.click_matched);
             mMatched = intent.getLongArrayExtra(Const.MATCH_ARR_TAG);
             mFriend = intent.getParcelableExtra(Const.SELECTED_FRIEND_TAG);
+            mUserName = intent.getStringExtra(Const.USER_NAME_TAG);
             mSet = new HashSet<>();
             if (mMatched != null && mMatched.length > 0) {
                 // select all of the matched dates
@@ -204,6 +208,7 @@ public class CalendarActivity extends AppCompatActivity {
         else outState.putLongArray(DATE_LIST_KEY, toLongs(mCalView.getSelectedDates()));
         if (mRecent != null) outState.putLong(RECENT_KEY, mRecent.getTime());
         if (mFriend != null) outState.putParcelable(FRIEND_KEY, mFriend);
+        if (mUserName != null) outState.putString(NAME_KEY, mUserName);
     }
 
     /**
@@ -249,21 +254,9 @@ public class CalendarActivity extends AppCompatActivity {
                             RequestTripActivity.class);
                     intent.putExtra(Const.SELECTED_DATE_TAG, date.getTime());
                     intent.putExtra(Const.SELECTED_FRIEND_TAG, mFriend);
+                    intent.putExtra(Const.USER_NAME_TAG, mUserName);
                     startActivity(intent);
                 }
-            }
-        };
-    }
-
-    /**
-     * nonSelectable()
-     * @return a listener that prevents the user from being able to select any date
-     */
-    public CalendarPickerView.DateSelectableFilter nonSelectable() {
-        return new CalendarPickerView.DateSelectableFilter() {
-            @Override
-            public boolean isDateSelectable(Date date) {
-                return false;
             }
         };
     }
@@ -277,6 +270,19 @@ public class CalendarActivity extends AppCompatActivity {
             @Override
             public void onInvalidDateSelected(Date date) {
                 // do nothing, this prevents the default toast message from being displayed
+            }
+        };
+    }
+
+    /**
+     * nonSelectable()
+     * @return a listener that prevents the user from being able to select any date
+     */
+    public CalendarPickerView.DateSelectableFilter nonSelectable() {
+        return new CalendarPickerView.DateSelectableFilter() {
+            @Override
+            public boolean isDateSelectable(Date date) {
+                return false;
             }
         };
     }

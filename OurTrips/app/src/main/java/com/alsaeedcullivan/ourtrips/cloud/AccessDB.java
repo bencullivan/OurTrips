@@ -219,10 +219,13 @@ public class AccessDB {
      * @param tripId the id of the trip
      * @param tripperId the id of the tripper to be added
      */
-    public static void addTripper(String tripId, String tripperId) {
+    public static void addTripper(String tripId, String tripperId, String tripperEmail, String tripperName) {
         // add the tripper id to a map
         Map<String, Object> data = new HashMap<>();
-        data.put(Const.TRIP_TRIPPER_KEY, tripperId);
+        data.put(Const.USER_ID_KEY, tripperId);
+        data.put(Const.USER_EMAIL_KEY, tripperEmail);
+        data.put(Const.USER_NAME_KEY, tripperName);
+
         // add a document to the trippers sub-collection of this trip
         FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
@@ -237,19 +240,20 @@ public class AccessDB {
      * adds a comment to the comments sub-collection of a trip
      * @param tripId the id of the trip
      * @param comment the comment to be added
-     * @param docId the id of the document that will hold the comment
      */
-    public static void addTripComment(String tripId, String comment, String docId) {
+    public static void addTripComment(String tripId, String comment, String userId, long timestamp) {
         // add the comment to a map
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_COMMENT_KEY, comment);
+        data.put(Const.TRIP_TRIPPER_KEY, userId);
+        data.put(Const.TRIP_TIMESTAMP_KEY, timestamp);
+
         // add a document to the comments sub-collection of this trip
         FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_COMMENTS_COLLECTION)
-                .document(docId)
-                .set(data);
+                .add(data);
     }
 
     /**
@@ -259,21 +263,21 @@ public class AccessDB {
      * @param path the path where the photo will be stored in the photo bucket
      * @param is the input stream that will be used to upload the photo to the storage bucket
      */
-    public static void addTripPhoto(String tripId, String path, InputStream is) {
+    public static void addTripPhoto(String tripId, String path, InputStream is, long timestamp) {
         // upload the picture to storage
         AccessBucket.uploadPicture(path, is);
 
         // create a map containing the path of the photo
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_PHOTO_KEY, path);
+        data.put(Const.TRIP_TIMESTAMP_KEY, timestamp);
 
         // add the picture path to the photo paths sub-collection of this trip
         FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_PHOTO_PATHS_COLLECTION)
-                .document(path)
-                .set(data);
+                .add(data);
     }
 
     /**

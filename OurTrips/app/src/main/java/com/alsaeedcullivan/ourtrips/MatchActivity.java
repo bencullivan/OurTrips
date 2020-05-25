@@ -38,10 +38,12 @@ public class MatchActivity extends AppCompatActivity {
 
     private static final String FRIENDS_KEY = "friends";
     private static final String DATES_KEY = "dates";
+    private static final String NAME_KEY = "name";
 
     private FriendAdapter mAdapter;
     private List<Date> mUserDates;
     private ArrayList<UserSummary> mFriends;
+    private String mUserName;
     private FirebaseUser mUser;
     private ListView mListView;
     private UserSummary mSelected;
@@ -75,7 +77,8 @@ public class MatchActivity extends AppCompatActivity {
         mListView = findViewById(R.id.match_list);
 
         if (savedInstanceState != null && savedInstanceState.getLongArray(DATES_KEY) != null &&
-                savedInstanceState.getParcelableArrayList(FRIENDS_KEY) != null) {
+                savedInstanceState.getParcelableArrayList(FRIENDS_KEY) != null &&
+                savedInstanceState.getString(NAME_KEY) != null) {
             long[] dates = savedInstanceState.getLongArray(DATES_KEY);
             if (dates != null) {
                 mUserDates = new ArrayList<>();
@@ -83,6 +86,8 @@ public class MatchActivity extends AppCompatActivity {
                 for (long date : dates) {
                     mUserDates.add(new Date(date));
                 }
+                // get the name of this user
+                mUserName = savedInstanceState.getString(NAME_KEY);
                 // initialize the adapter
                 mFriends = savedInstanceState.getParcelableArrayList(FRIENDS_KEY);
                 mAdapter = new FriendAdapter(this, R.layout.activity_match, new ArrayList<UserSummary>());
@@ -116,6 +121,15 @@ public class MatchActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT);
                         t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                         t.show();
+                    }
+                }
+            });
+            // get this user's name from the database
+            AccessDB.getUserName(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<String>() {
+                @Override
+                public void onComplete(@NonNull Task<String> task) {
+                    if (task.isSuccessful()) {
+                        mUserName = task.getResult();
                     }
                 }
             });
@@ -169,6 +183,7 @@ public class MatchActivity extends AppCompatActivity {
         Log.d(Const.TAG, "onSaveInstanceState: " + mFriends);
         if (mFriends != null) outState.putParcelableArrayList(FRIENDS_KEY, mFriends);
         if (mUserDates != null) outState.putLongArray(DATES_KEY, toLongs(mUserDates));
+        if (mUserName != null) outState.putString(NAME_KEY, mUserName);
     }
 
     /**
@@ -265,6 +280,7 @@ public class MatchActivity extends AppCompatActivity {
                         intent.putExtra(Const.SOURCE_TAG, Const.MATCH_TAG);
                         intent.putExtra(Const.MATCH_ARR_TAG, matched);
                         intent.putExtra(Const.SELECTED_FRIEND_TAG, mSelected);
+                        intent.putExtra(Const.USER_NAME_TAG, mUserName);
                         startActivity(intent);
                     } else {
                         // the two users have no dates in common
