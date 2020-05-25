@@ -5,11 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".GalleryActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/colorSecondaryDark">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycle_gallery"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

@@ -2,6 +2,7 @@ package com.alsaeedcullivan.ourtrips;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,9 +35,10 @@ public class GalleryActivity extends AppCompatActivity {
 
         // set up the recyclerview
         RecyclerView rec = findViewById(R.id.recycle_gallery);
+        GridLayoutManager grid = new GridLayoutManager(this, 2);
+        rec.setLayoutManager(grid);
         GalleryAdapter g = new GalleryAdapter(this, mPictures);
         rec.setAdapter(g);
-        rec.setLayoutManager(new LinearLayoutManager(this));
     }
 
     @Override

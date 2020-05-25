@@ -902,8 +902,12 @@ public class AccessDB {
 
                         // extract a pic from each document and return the list of pics
                         for (DocumentSnapshot doc : docs) {
-                            pics.add(new Pic(doc.getId(), (String)doc.get(Const.TRIP_PIC_PATH),
-                                    (long)doc.get(Const.TRIP_TIMESTAMP_KEY)));
+                            Pic p = new Pic();
+                            p.setDate((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+                            p.setDocId(doc.getId());
+                            p.setPath((String)doc.get(Const.TRIP_PHOTO_KEY));
+                            pics.add(p);
+                            Log.d(Const.TAG, "then: " + p.getPicPath());
                         }
                         return pics;
                     }

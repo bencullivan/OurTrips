@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -226,9 +227,7 @@ public class RegisterActivity extends AppCompatActivity {
         // if the user has given permission
         // select the pic
         if (mPermission) selectPic();
-        else {
-            createSettingsDialogFragment();
-        }
+        else createSettingsDialogFragment();
     }
 
     // handles Register & Update Profile clicks
@@ -304,7 +303,7 @@ public class RegisterActivity extends AppCompatActivity {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             // get the result of the Crop
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
-            if (resultCode == RESULT_OK) {
+            if (resultCode == Activity.RESULT_OK) {
                 // get the Uri of the cropped pic
                 if (result != null){
                     mProfileUri = result.getUri();

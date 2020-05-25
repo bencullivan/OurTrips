@@ -8,28 +8,12 @@ public class Pic implements Parcelable {
     private long date;
     private String docId;
 
-    public Pic(String docId, String path, long date) {
-        this.docId = docId;
-        this.path = path;
-        this.date = date;
-    }
+    public Pic() {}
 
     private Pic(Parcel in) {
-        docId = in.readString();
         path = in.readString();
         date = in.readLong();
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(docId);
-        dest.writeString(path);
-        dest.writeLong(date);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
+        docId = in.readString();
     }
 
     public static final Creator<Pic> CREATOR = new Creator<Pic>() {
@@ -44,8 +28,19 @@ public class Pic implements Parcelable {
         }
     };
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 
-    // getters
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(path);
+        dest.writeLong(date);
+        dest.writeString(docId);
+    }
+
+    // getters and setters
 
     public String getDocId() {
         return docId;
@@ -57,5 +52,17 @@ public class Pic implements Parcelable {
 
     public long getPicDate() {
         return date;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public void setDate(long date) {
+        this.date = date;
+    }
+
+    public void setDocId(String docId) {
+        this.docId = docId;
     }
 }
