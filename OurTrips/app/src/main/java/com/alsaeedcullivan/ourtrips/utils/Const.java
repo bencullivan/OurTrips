@@ -64,7 +64,6 @@ public class Const {
     // Trip keys
     public static final String TRIP_ID_KEY = "trip_id";
     public static final String TRIP_TITLE_KEY = "title";
-    public static final String TRIP_LOCATIONS_KEY = "locations";
     public static final String TRIP_START_DATE_KEY = "start_date";
     public static final String TRIP_END_DATE_KEY = "end_date";
     public static final String TRIP_TRIPPERS_COLLECTION = "trippers";
@@ -74,10 +73,14 @@ public class Const {
     public static final String TRIP_PHOTO_PATHS_COLLECTION = "photos";
     public static final String TRIP_PHOTO_KEY = "photo";
     public static final String TRIP_TIMESTAMP_KEY = "timestamp";
+    public static final String TRIP_LOCATIONS_COLLECTION = "locations";
+    public static final String TRIP_LOCATION_KEY = "location";
+    public static final String TRIP_LOCATION_NAME_KEY = "name";
     public static final String TRIP_TOPIC_KEY = "topic";
     public static final String TRIP_COLL_UPDATE_TYPE_KEY = "type";
     public static final String TRIP_NOTIFY_KEY = "notification";
     public static final String TRIP_INFO_KEY = "info";
+    public static final String TRIP_OVERVIEW_KEY = "overview";
 
     // Cloud function names
     public static final String FUNC_MATCH_DATES = "matchDates";

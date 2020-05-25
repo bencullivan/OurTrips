@@ -4,12 +4,14 @@ import android.util.Log;
 
 import com.alsaeedcullivan.ourtrips.models.Comment;
 import com.alsaeedcullivan.ourtrips.models.Pic;
+import com.alsaeedcullivan.ourtrips.models.Place;
 import com.alsaeedcullivan.ourtrips.models.TripSummary;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
@@ -662,6 +664,28 @@ public class AccessDB {
     }
 
     /**
+     * addTripLocation()
+     * adds a location to the locations sub collection of this trip
+     * @param tripId the id of this trip
+     * @param location the Place object representing the location
+     */
+    public static Task<DocumentReference> addTripLocation(String tripId, Place location) {
+        // create a map to hold the data
+        Map<String, Object> data = new HashMap<>();
+        String coordinate = location.getLocation().latitude + "," +
+                location.getLocation().longitude;
+        data.put(Const.TRIP_LOCATION_KEY, coordinate);
+        data.put(Const.TRIP_LOCATION_NAME_KEY, location.getPlaceName());
+
+        // add the location to the locations sub-collection
+        return FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .collection(Const.TRIP_LOCATIONS_COLLECTION)
+                .add(data);
+    }
+
+    /**
      * deleteTrip()
      * deletes a trip from the database
      * NOTE: ** This function only deletes the document associated with a trip.
@@ -714,6 +738,20 @@ public class AccessDB {
                 .delete();
     }
 
+    /**
+     * deleteTripLocation()
+     * @param tripId the id of the trip
+     * @param docId the id of the document containing the location to be deleted
+     */
+    public static Task<Void> deleteTripLocation(String tripId, String docId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .collection(Const.TRIP_LOCATIONS_COLLECTION)
+                .document(docId)
+                .delete();
+    }
+
 
     // TRIP GETTERS
 
@@ -746,6 +784,26 @@ public class AccessDB {
                             trips.add(trip);
                         }
                         return trips;
+                    }
+                });
+    }
+
+    /**
+     * getTripInfo
+     * gets all of the info within the document of a particular trip
+     * @param tripId the id of the trip
+     */
+    public static Task<Map<String, Object>> getTripInfo(String tripId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .get()
+                .continueWith(new Continuation<DocumentSnapshot, Map<String, Object>>() {
+                    @Override
+                    public Map<String, Object> then(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot doc = task.getResult();
+                        if (doc == null || doc.getData() == null) return new HashMap<>();
+                        return doc.getData();
                     }
                 });
     }
@@ -785,6 +843,11 @@ public class AccessDB {
                 });
     }
 
+    /**
+     * getTripComments()
+     * gets all of the comments of a given trip
+     * @param tripId the id of the trip
+     */
     public static Task<List<Comment>> getTripComments(String tripId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
@@ -843,6 +906,41 @@ public class AccessDB {
                                     (long)doc.get(Const.TRIP_TIMESTAMP_KEY)));
                         }
                         return pics;
+                    }
+                });
+    }
+
+    public static Task<List<Place>> getTripLocations(String tripId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .collection(Const.TRIP_LOCATIONS_COLLECTION)
+                .get()
+                .continueWith(new Continuation<QuerySnapshot, List<Place>>() {
+                    @Override
+                    public List<Place> then(@NonNull Task<QuerySnapshot> task) {
+                        // get the documents
+                        QuerySnapshot q = task.getResult();
+                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
+                        List<DocumentSnapshot> docs = q.getDocuments();
+
+                        // create the list to hold the places
+                        List<Place> places = new ArrayList<>();
+
+                        // extract a place from each document and return the list of places
+                        for (DocumentSnapshot doc : docs) {
+                            Place place = new Place();
+                            place.setDocId(doc.getId());
+                            place.setName((String)doc.get(Const.TRIP_LOCATION_NAME_KEY));
+                            String location = (String) doc.get(Const.TRIP_LOCATION_KEY);
+                            if (location == null) continue;
+                            String[] coordinates = location.split(",");
+                            if (coordinates.length < 2) continue;
+                            place.setLocation(new LatLng(Double.parseDouble(coordinates[0]),
+                                    Double.parseDouble(coordinates[1])));
+                            places.add(place);
+                        }
+                        return places;
                     }
                 });
     }

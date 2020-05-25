@@ -1,25 +1,34 @@
 package com.alsaeedcullivan.ourtrips.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 
+import com.alsaeedcullivan.ourtrips.GalleryActivity;
 import com.alsaeedcullivan.ourtrips.R;
+import com.alsaeedcullivan.ourtrips.TripActivity;
+import com.alsaeedcullivan.ourtrips.models.Pic;
+import com.alsaeedcullivan.ourtrips.utils.Const;
+
+import java.util.ArrayList;
 
 
 public class MediaFragment extends Fragment implements View.OnClickListener {
 
     // widgets
-    ImageButton mPhotoGallery, mVideoGallery;
-    Button mAddPhoto, mAddVideo;
+    private ImageButton mPhotoGallery, mVideoGallery;
+    private Button mAddPhoto, mAddVideo;
+    private ArrayList<Pic> mPics = new ArrayList<>();
 
     public MediaFragment() {
         // Required empty public constructor
@@ -50,7 +59,10 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         mPhotoGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                // send the user to gallery activity
+                Intent intent = new Intent(getActivity(), GalleryActivity.class);
+                intent.putExtra(Const.GALLERY_TAG, mPics);
+                startActivity(intent);
             }
         });
         mVideoGallery = view.findViewById(R.id.go_to_videos);

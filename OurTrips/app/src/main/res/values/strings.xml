@@ -88,7 +88,7 @@
     <string name="friend">Friend:</string>
     <string name="save">save</string>
     <string name="sort">Sort</string>
-    <string name="enter_trip_title">Enter the title of a trip...</string>
+    <string name="enter_trip_title" tools:ignore="TypographyEllipsis">Enter the title of a trip...</string>
     <string name="gallery_item">gallery item</string>
     <string name="gear">gear</string>
     <string name="pictures">pictures</string>
@@ -98,4 +98,5 @@
     <string name="photo_gallery">Photo Gallery</string>
     <string name="add_photo">Add Photo</string>
     <string name="add_video">Add Video</string>
+    <string name="loading_trip" tools:ignore="TypographyEllipsis">Loading trip...</string>
 </resources>

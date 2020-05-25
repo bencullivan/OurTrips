@@ -18,7 +18,6 @@ import android.widget.TextView;
 import com.alsaeedcullivan.ourtrips.adapters.FriendAdapter;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
-import com.alsaeedcullivan.ourtrips.models.User;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
