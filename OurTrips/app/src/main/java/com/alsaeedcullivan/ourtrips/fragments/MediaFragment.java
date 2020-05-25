@@ -33,6 +33,7 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         return inflater.inflate(R.layout.fragment_media, container, false);
     }
 
+
     @Override
     public void onClick(View v) {
 
