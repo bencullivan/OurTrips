@@ -111,7 +111,10 @@ public class TripActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) finish();
+        if (item.getItemId() == android.R.id.home) {
+            startActivity(new Intent(TripActivity.this, MainActivity.class));
+            finish();
+        }
         return super.onOptionsItemSelected(item);
     }
 

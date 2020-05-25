@@ -92,6 +92,9 @@ public class SummaryFragment extends Fragment implements View.OnClickListener {
                 intent.putExtra(Const.TRIP_END_TAG, a.getEndDate());
                 intent.putExtra(Const.TRIP_OVER_TAG, a.getOverview());
                 startActivity(intent);
+
+                // finish this activity
+                if (getActivity() != null) getActivity().finish();
             }
         });
     }

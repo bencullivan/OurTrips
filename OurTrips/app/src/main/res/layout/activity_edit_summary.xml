@@ -6,44 +6,25 @@
     android:layout_height="match_parent"
     tools:context=".RequestTripActivity">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/input_title_sum"
+    <TextView
+        android:id="@+id/title_sum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="10dp"
         android:layout_marginTop="40dp"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_title_sum"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/trip_title"
-            android:inputType="textCapWords"
-            android:singleLine="true"
-            android:textSize="20sp"
-            android:textColorHint="@color/colorSecondaryDark" />
-    </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintTop_toTopOf="parent"
+        android:textSize="20sp"
+        android:textColorHint="@color/colorSecondaryDark"/>
 
     <TextView
         android:id="@+id/start_date_sum"
         android:layout_marginTop="40dp"
         android:paddingHorizontal="10dp"
-        app:layout_constraintTop_toBottomOf="@+id/input_title_sum"
+        app:layout_constraintTop_toBottomOf="@+id/title_sum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/start_date"
         android:textSize="20sp"/>
-
-    <Button
-        android:id="@+id/select_start_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintTop_toTopOf="@+id/start_date_sum"
-        app:layout_constraintBottom_toBottomOf="@+id/start_date_sum"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:text="@string/change" />
 
     <TextView
         android:id="@+id/end_date_sum"
@@ -78,8 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/overview"
-            android:inputType="textCapWords"
-            android:singleLine="true"
+            android:singleLine="false"
             android:textSize="20sp"
             android:textColorHint="@color/colorSecondaryDark" />
     </com.google.android.material.textfield.TextInputLayout>

@@ -203,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, TripActivity.class);
                 intent.putExtra(Const.TRIP_ID_TAG, mTrips.get(position).getId());
                 startActivity(intent);
+                finish();
             }
         };
     }

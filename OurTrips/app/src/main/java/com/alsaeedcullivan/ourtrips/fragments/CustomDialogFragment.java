@@ -48,7 +48,6 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int SETTINGS_DIALOG_ID = 5;
     public static final int SELECT_END_DATE_ID = 6;
     public static final int SEARCH_TRIP_ID = 7;
-    public static final int SUMMARY_START_DATE_ID = 9;
     public static final int SUMMARY_END_DATE_ID = 10;
 
     // private constants
@@ -102,8 +101,6 @@ public class CustomDialogFragment extends DialogFragment {
                 return createDateDialog();
             case SEARCH_TRIP_ID:
                 return searchTripDialog();
-            case SUMMARY_START_DATE_ID:
-                return createSummaryStartDateDialog();
             case SUMMARY_END_DATE_ID:
                 return createSummaryEndDateDialog();
         }
@@ -349,30 +346,6 @@ public class CustomDialogFragment extends DialogFragment {
             }
         });
         return dialog.create();
-    }
-
-    // creates a dialog that allows the user to select the start date of the trip
-    private DatePickerDialog createSummaryStartDateDialog() {
-        // get calendar instance
-        final Calendar calendar = Calendar.getInstance();
-        if (getActivity() != null) {
-            Date start = ((EditSummaryActivity) getActivity()).getStartDate();
-            calendar.setTime(start);
-        }
-        // return the date picker dialog
-        return new DatePickerDialog(requireActivity(), new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                // update the calendar
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                if (getActivity() != null) {
-                    ((EditSummaryActivity) getActivity()).updateStartDate(calendar.getTime());
-                }
-            }
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH));
     }
 
     // creates a dialog that allows the user to select the end date of the trip
