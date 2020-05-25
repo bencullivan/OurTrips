@@ -59,6 +59,15 @@
             android:padding="@dimen/padding_dp"
             app:layout_constraintTop_toBottomOf="@id/user_birthday" />
 
+        <TextView
+            android:id="@+id/user_bio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_dp"
+            android:hint="@string/bio"
+            android:padding="@dimen/padding_dp"
+            app:layout_constraintTop_toBottomOf="@id/user_affiliation" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

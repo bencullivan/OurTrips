@@ -3,32 +3,86 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragments.MediaFragment">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@color/colorSecondaryDark">
 
         <ImageButton
+            android:id="@+id/go_to_gallery"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="true"
+            android:layout_height="wrap_content"
             android:background="@color/colorSecondaryDark"
             android:contentDescription="@string/pictures"
             android:padding="@dimen/padding_dp"
-            android:src="@mipmap/photo_icon" />
+            android:src="@drawable/photo_icon_foreground"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias=".15"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintBottom_toBottomOf="@+id/go_to_gallery"
+            android:text="@string/photo_gallery"
+            android:textAlignment="center"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="20sp"
+            android:textColor="@color/colorSecondary" />
 
         <ImageButton
+            android:id="@+id/go_to_videos"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="true"
+            android:layout_height="wrap_content"
             android:background="@color/colorSecondaryDark"
             android:contentDescription="@string/videos"
             android:padding="@dimen/padding_dp"
-            android:src="@mipmap/video_icon" />
+            android:src="@mipmap/video_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-    </LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/go_to_videos"
+            android:text="@string/video_gallery"
+            android:textAlignment="center"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="20sp"
+            android:textColor="@color/colorSecondary" />
+
+        <Button
+            android:id="@+id/add_photo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="15dp"
+            android:text="@string/add_photo"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textAllCaps="false"
+            android:textColor="@color/colorSecondaryDark"
+            android:background="@color/colorSecondary"
+            app:layout_constraintBottom_toTopOf="@+id/add_video"/>
+
+        <Button
+            android:id="@+id/add_video"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="15dp"
+            android:text="@string/add_video"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textAllCaps="false"
+            android:textColor="@color/colorSecondaryDark"
+            android:background="@color/colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

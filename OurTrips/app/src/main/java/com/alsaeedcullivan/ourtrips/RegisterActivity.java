@@ -18,7 +18,6 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
@@ -65,7 +64,7 @@ public class RegisterActivity extends AppCompatActivity {
     private FirebaseUser mUser;
 
     private ImageView mProfileImageView;
-    private EditText mNameEditText, mEmailEditText, mAffiliationEditText, mBirthdayEditText;
+    private EditText mNameEditText, mEmailEditText, mAffiliationEditText, mBirthdayEditText, mBioEditText;
     private RadioGroup mInputGender;
     private RadioButton mFemaleRadioButton, mMaleRadioButton, mOtherRadioButton;
 
@@ -99,6 +98,7 @@ public class RegisterActivity extends AppCompatActivity {
         mFemaleRadioButton = findViewById(R.id.edit_gender_female);
         mMaleRadioButton = findViewById(R.id.edit_gender_male);
         mOtherRadioButton = findViewById(R.id.edit_gender_other);
+        mBioEditText = findViewById(R.id.edit_bio);
 
         // display the user's email as uneditable
         mEmailEditText.setText(mUser.getEmail());
@@ -121,6 +121,7 @@ public class RegisterActivity extends AppCompatActivity {
                 // load the profile pic
                 mGlidePath = savedInstanceState.getString(GLIDE_KEY);
                 StorageReference ref = FirebaseStorage.getInstance().getReference(mGlidePath);
+                Log.d(Const.TAG, "onCreate: " + ref);
                 GlideApp.with(this).load(ref).into(mProfileImageView);
             }
             // the profile needs to be loaded
@@ -430,6 +431,7 @@ public class RegisterActivity extends AppCompatActivity {
         else gender = "o";
         data.put(Const.USER_GENDER_KEY, gender);
         data.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
+        data.put(Const.USER_BIO_KEY, mBioEditText.getText().toString());
         data.put(Const.DATE_LIST_KEY, new ArrayList<String>());
 
         // if they have set a profile pic
@@ -501,6 +503,7 @@ public class RegisterActivity extends AppCompatActivity {
         else gender = "o";
         data.put(Const.USER_GENDER_KEY, gender);
         data.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
+        data.put(Const.USER_BIO_KEY, mBioEditText.getText().toString());
 
         // if they have set a profile pic
         if (mProfileUri != null) {
@@ -596,6 +599,10 @@ public class RegisterActivity extends AppCompatActivity {
         // set the birthday
         String bDay = (String) data.get(Const.USER_BIRTHDAY_KEY);
         if (bDay != null) mBirthdayEditText.setText(bDay);
+
+        // set the bio
+        String bio = (String) data.get(Const.USER_BIO_KEY);
+        if (bio != null) mBioEditText.setText(bio);
 
         // set the gender
         String gender = (String) data.get(Const.USER_GENDER_KEY);

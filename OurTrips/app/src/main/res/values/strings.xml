@@ -93,4 +93,9 @@
     <string name="gear">gear</string>
     <string name="pictures">pictures</string>
     <string name="videos">videos</string>
+    <string name="bio">Bio</string>
+    <string name="video_gallery">Video Gallery</string>
+    <string name="photo_gallery">Photo Gallery</string>
+    <string name="add_photo">Add Photo</string>
+    <string name="add_video">Add Video</string>
 </resources>

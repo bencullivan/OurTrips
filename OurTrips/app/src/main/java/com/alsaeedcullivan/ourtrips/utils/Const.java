@@ -47,6 +47,7 @@ public class Const {
     public static final String USER_PASSWORD_KEY = "password";
     public static final String USER_PROFILE_PIC_KEY = "profile_pic_path";
     public static final String USER_TOKEN_KEY = "token";
+    public static final String USER_BIO_KEY = "bio";
     public static final String USER_REQ_EMAIL = "user_email";
     public static final String FRIEND_REQ_EMAIL = "friend_email";
 
