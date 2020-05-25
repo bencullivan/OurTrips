@@ -2,6 +2,7 @@ package com.alsaeedcullivan.ourtrips.cloud;
 
 import android.util.Log;
 
+import com.alsaeedcullivan.ourtrips.models.Comment;
 import com.alsaeedcullivan.ourtrips.models.Pic;
 import com.alsaeedcullivan.ourtrips.models.TripSummary;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
@@ -619,12 +620,12 @@ public class AccessDB {
      * @param tripId the id of the trip
      * @param comment the comment to be added
      */
-    public static Task<DocumentReference> addTripComment(String tripId, String comment, String userId,
+    public static Task<DocumentReference> addTripComment(String tripId, String comment, String userName,
                                                          long timestamp) {
         // add the comment to a map
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_COMMENT_KEY, comment);
-        data.put(Const.TRIP_TRIPPER_KEY, userId);
+        data.put(Const.USER_NAME_KEY, userName);
         data.put(Const.TRIP_TIMESTAMP_KEY, timestamp);
 
         // add a document to the comments sub-collection of this trip
@@ -784,12 +785,42 @@ public class AccessDB {
                 });
     }
 
+    public static Task<List<Comment>> getTripComments(String tripId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .collection(Const.TRIP_COMMENTS_COLLECTION)
+                .get()
+                .continueWith(new Continuation<QuerySnapshot, List<Comment>>() {
+                    @Override
+                    public List<Comment> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                        // get the documents
+                        QuerySnapshot q = task.getResult();
+                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
+                        List<DocumentSnapshot> docs = q.getDocuments();
+
+                        // create a list to hold the comments
+                        List<Comment> comments = new ArrayList<>();
+
+                        // extract a comment from each document and return the list of comments
+                        for (DocumentSnapshot doc : docs) {
+                            Comment comment = new Comment();
+                            comment.setUser((String)doc.get(Const.USER_NAME_KEY));
+                            comment.setComment((String)doc.get(Const.TRIP_COMMENT_KEY));
+                            comment.setTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+                            comments.add(comment);
+                        }
+                        return comments;
+                    }
+                });
+    }
+
     /**
      * getTripPhotos()
      * gets the paths and timestamps of all the photos associated with a given trip
      * @param tripId the id of the trip
      */
-    public Task<List<Pic>> getTripPhotos(String tripId) {
+    public static Task<List<Pic>> getTripPhotos(String tripId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)

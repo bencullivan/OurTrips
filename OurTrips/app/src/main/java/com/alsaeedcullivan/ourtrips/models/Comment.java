@@ -7,7 +7,7 @@ public class Comment {
 
     // comment data
     private String user = "";
-    private Long timeStamp;
+    private long timeStamp = 0;
     private String comment = "";
 
     // getters and setters
@@ -20,11 +20,11 @@ public class Comment {
         this.user = user;
     }
 
-    public Long getTimeStamp() {
+    public long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(Long timeStamp) {
+    public void setTimeStamp(long timeStamp) {
         this.timeStamp = timeStamp;
     }
 
