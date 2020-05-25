@@ -2,30 +2,27 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
-        app:iconSpaceReserved="false"
-        app:title="@string/header_app_settings">
-
-        <!--        <EditTextPreference-->
-        <!--            app:key="signature"-->
-        <!--            app:title="@string/signature_title"-->
-        <!--            app:useSimpleSummaryProvider="true" />-->
-
-        <!--        <ListPreference-->
-        <!--            app:defaultValue="reply"-->
-        <!--            app:entries="@array/reply_entries"-->
-        <!--            app:entryValues="@array/reply_values"-->
-        <!--            app:key="reply"-->
-        <!--            app:title="@string/reply_title"-->
-        <!--            app:useSimpleSummaryProvider="true" />-->
-
-        <SwitchPreferenceCompat
-            android:icon="@drawable/ic_launcher_background"
-            android:summary="@string/prompt_data_collect"
-            app:key="privacy_preference"
-            app:title="@string/privacy" />
+        android:title="Profile"
+        app:iconSpaceReserved="false">
 
         <PreferenceScreen
-            android:icon="@drawable/ic_launcher_background"
+            android:icon="@drawable/ic_person"
+            android:key="edit_profile_settings"
+            android:title="Edit Profile"/>
+
+        <PreferenceScreen
+            android:icon="@drawable/ic_arrow_back"
+            android:key="sign_out"
+            android:title="@string/sign_out"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Check out the website!"
+        app:iconSpaceReserved="false">
+
+        <PreferenceScreen
+            android:icon="@drawable/ic_web_asset"
             android:summary="https://www.cs.dartmouth.edu/~campbell/cs65/cs65.html"
             android:title="App Website">
 
@@ -35,31 +32,5 @@
         </PreferenceScreen>
 
     </PreferenceCategory>
-
-    <PreferenceCategory
-        app:iconSpaceReserved="false"
-        app:title="@string/header_account_settings">
-
-        <PreferenceScreen
-            android:icon="@drawable/ic_launcher_background"
-            android:key="sign_put"
-            android:title="@string/sign_out" />
-
-    </PreferenceCategory>
-
-    <!--    <PreferenceCategory app:title="@string/sync_header">-->
-
-    <!--        <SwitchPreferenceCompat-->
-    <!--            app:key="sync"-->
-    <!--            app:title="@string/sync_title" />-->
-
-    <!--        <SwitchPreferenceCompat-->
-    <!--            app:dependency="sync"-->
-    <!--            app:key="attachment"-->
-    <!--            app:summaryOff="@string/attachment_summary_off"-->
-    <!--            app:summaryOn="@string/attachment_summary_on"-->
-    <!--            app:title="@string/attachment_title" />-->
-
-    <!--    </PreferenceCategory>-->
 
 </PreferenceScreen>

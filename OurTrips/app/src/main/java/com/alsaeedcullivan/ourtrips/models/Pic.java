@@ -5,22 +5,22 @@ import android.os.Parcelable;
 
 public class Pic implements Parcelable {
     private String path;
-    private String date;
+    private long date;
 
-    public Pic(String path, String date) {
+    public Pic(String path, long date) {
         this.path = path;
         this.date = date;
     }
 
     protected Pic(Parcel in) {
         path = in.readString();
-        date = in.readString();
+        date = in.readLong();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(path);
-        dest.writeString(date);
+        dest.writeLong(date);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class Pic implements Parcelable {
         return path;
     }
 
-    public String getPicDate() {
+    public long getPicDate() {
         return date;
     }
 }

@@ -114,7 +114,8 @@ public class RegisterActivity extends AppCompatActivity {
             setPic(mProfileUri);
         } else if (mSourceExtra != null) {
             // if the profile has already been loaded
-            if (mSourceExtra.equalsIgnoreCase(Const.MAIN_TAG) && savedInstanceState != null && savedInstanceState.getString(GLIDE_KEY) != null) {
+            if (mSourceExtra.equalsIgnoreCase(Const.SETTINGS_TAG) && savedInstanceState != null &&
+                    savedInstanceState.getString(GLIDE_KEY) != null) {
                 Log.d(Const.TAG, "onCreate: file glide");
                 mNameEditText.setEnabled(false);
                 // load the profile pic
@@ -123,7 +124,7 @@ public class RegisterActivity extends AppCompatActivity {
                 GlideApp.with(this).load(ref).into(mProfileImageView);
             }
             // the profile needs to be loaded
-            else if (mSourceExtra.equalsIgnoreCase(Const.MAIN_TAG)) {
+            else if (mSourceExtra.equalsIgnoreCase(Const.SETTINGS_TAG)) {
                 Log.d(Const.TAG, "onCreate: load");
                 mNameEditText.setEnabled(false);
                 loadProfile();
@@ -190,7 +191,7 @@ public class RegisterActivity extends AppCompatActivity {
             setTitle(getString(R.string.title_activity_register));
             // user has not previously registered
             mRegistered = false;
-        } else if (mSourceExtra != null && mSourceExtra.equals(Const.MAIN_TAG)) {
+        } else if (mSourceExtra != null && mSourceExtra.equals(Const.SETTINGS_TAG)) {
             menu.findItem(R.id.register_button).setVisible(false);
             menu.findItem(R.id.update_button).setVisible(true);
             // set up activity title
@@ -470,7 +471,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                     // send the user to MainActivity
                     Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                    intent.putExtra(Const.MAIN_TAG, Const.REGISTER_TAG);
+                    intent.putExtra(Const.SOURCE_TAG, Const.REGISTER_TAG);
                     startActivity(intent);
                     finish();
                 } else {

@@ -18,7 +18,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.alsaeedcullivan.ourtrips.adapters.FriendAdapter;
 import com.alsaeedcullivan.ourtrips.adapters.TSAdapter;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.comparators.TripDateComparator;
@@ -147,12 +146,6 @@ public class MainActivity extends AppCompatActivity {
                 Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
                 settingsIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
                 startActivity(settingsIntent);
-                break;
-            case R.id.update_profile:
-                // proceed to register activity
-                Intent editIntent = new Intent(MainActivity.this, RegisterActivity.class);
-                editIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
-                startActivity(editIntent);
                 break;
             case R.id.match_dates:
                 Intent matchIntent = new Intent(MainActivity.this, MatchActivity.class);

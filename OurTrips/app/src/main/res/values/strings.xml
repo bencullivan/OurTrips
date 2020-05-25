@@ -57,7 +57,6 @@
     <string name="settings_text">Settings</string>
     <string name="edit_profile_text">"Edit Profile "</string>
     <string name="cal_save">Save</string>
-    <string name="header_app_settings">App Settings</string>
     <string name="header_account_settings">Account Settings</string>
     <string name="sign_out">Sign Out</string>
     <string name="prompt_data_collect">Posting your data anonymously</string>
@@ -91,4 +90,5 @@
     <string name="sort">Sort</string>
     <string name="enter_trip_title">Enter the title of a trip...</string>
     <string name="gallery_item">gallery item</string>
+    <string name="gear">gear</string>
 </resources>

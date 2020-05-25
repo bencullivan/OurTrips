@@ -29,16 +29,9 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/update_profile"
-        android:icon="@drawable/ic_launcher_background"
-        android:orderInCategory="103"
-        android:title="@string/edit_profile_text"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/settings"
         android:icon="@drawable/ic_launcher_background"
-        android:orderInCategory="104"
+        android:orderInCategory="103"
         android:title="@string/settings_text"
         app:showAsAction="never" />
 
