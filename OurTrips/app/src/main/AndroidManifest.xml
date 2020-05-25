@@ -13,7 +13,8 @@
         android:roundIcon="@mipmap/our_trips_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".GalleryActivity"/>
+        <activity android:name=".ViewPictureActivity"></activity>
+        <activity android:name=".GalleryActivity" />
         <activity android:name=".RequestTripActivity" />
         <activity android:name=".MatchActivity" />
         <activity android:name=".FriendActivity">
@@ -39,10 +40,11 @@
                 android:name="com.google.firebase.messaging.default_notification_channel_id"
                 android:value="@string/fcm_notification_channel" />
         </service>
+
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:theme="@style/PreferenceScreen"/>
+            android:theme="@style/PreferenceScreen" />
         <activity android:name=".VerifyActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

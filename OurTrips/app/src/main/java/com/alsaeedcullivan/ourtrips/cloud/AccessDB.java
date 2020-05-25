@@ -137,6 +137,21 @@ public class AccessDB {
     }
 
     /**
+     * removeUserTrip()
+     * removes a trip from the trips sub-collection of a user
+     * @param userId the id of the user
+     * @param tripId the id of the trip
+     */
+    public static Task<Void> removeUserTrip(String userId, String tripId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .collection(Const.USER_TRIPS_COLLECTION)
+                .document(tripId)
+                .delete();
+    }
+
+    /**
      * addUserToken()
      * adds a token that will be used for FCM to a user's entry in FireStore
      * @param userId the id of the user
@@ -258,8 +273,8 @@ public class AccessDB {
      * deleteRequest()
      * deletes a friend request from the db
      */
-    public static void deleteRequest(String userId, String friendId) {
-        FirebaseFirestore.getInstance()
+    public static Task<Void> deleteRequest(String userId, String friendId) {
+        return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_F_REQUESTS_COLLECTION)
@@ -581,7 +596,8 @@ public class AccessDB {
      * @param tripId the id of the trip
      * @param tripperId the id of the tripper to be added
      */
-    public static void addTripper(String tripId, String tripperId, String tripperEmail, String tripperName) {
+    public static Task<Void> addTripper(String tripId, String tripperId, String tripperEmail,
+                                                     String tripperName) {
         // add the tripper id to a map
         Map<String, Object> data = new HashMap<>();
         data.put(Const.USER_ID_KEY, tripperId);
@@ -589,7 +605,7 @@ public class AccessDB {
         data.put(Const.USER_NAME_KEY, tripperName);
 
         // add a document to the trippers sub-collection of this trip
-        FirebaseFirestore.getInstance()
+        return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_TRIPPERS_COLLECTION)
@@ -603,7 +619,8 @@ public class AccessDB {
      * @param tripId the id of the trip
      * @param comment the comment to be added
      */
-    public static void addTripComment(String tripId, String comment, String userId, long timestamp) {
+    public static Task<DocumentReference> addTripComment(String tripId, String comment, String userId,
+                                                         long timestamp) {
         // add the comment to a map
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_COMMENT_KEY, comment);
@@ -611,7 +628,7 @@ public class AccessDB {
         data.put(Const.TRIP_TIMESTAMP_KEY, timestamp);
 
         // add a document to the comments sub-collection of this trip
-        FirebaseFirestore.getInstance()
+        return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_COMMENTS_COLLECTION)
@@ -625,7 +642,8 @@ public class AccessDB {
      * @param path the path where the photo will be stored in the photo bucket
      * @param is the input stream that will be used to upload the photo to the storage bucket
      */
-    public static void addTripPhoto(String tripId, String path, InputStream is, long timestamp) {
+    public static Task<DocumentReference> addTripPhoto(String tripId, String path, InputStream is,
+                                                       long timestamp) {
         // upload the picture to storage
         AccessBucket.uploadPicture(path, is);
 
@@ -635,7 +653,7 @@ public class AccessDB {
         data.put(Const.TRIP_TIMESTAMP_KEY, timestamp);
 
         // add the picture path to the photo paths sub-collection of this trip
-        FirebaseFirestore.getInstance()
+        return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_PHOTO_PATHS_COLLECTION)
@@ -657,6 +675,41 @@ public class AccessDB {
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
+                .delete();
+    }
+
+    /**
+     * deleteTripper()
+     * removes the document corresponding to a tripper from the trippers sub collection of the trip
+     * @param tripId the id of the trip
+     * @param tripperId the id of the tripper
+     */
+    public static Task<Void> deleteTripper(String tripId, String tripperId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .collection(Const.TRIP_TRIPPERS_COLLECTION)
+                .document(tripperId)
+                .delete();
+    }
+
+    /**
+     * deleteTripPhoto()
+     * deletes a trip photo from the storage bucket and deletes the info of the trip photo from
+     * the trips sub-collection in the db
+     * @param tripId the id of the trip
+     * @param docId the id of the document that stores the photo's information
+     * @param path the path of the photo in the storage bucket
+     */
+    public static Task<Void> deleteTripPhoto(String tripId, String docId, String path) {
+        // delete the photo from the storage bucket
+        AccessBucket.deleteFromStorage(path);
+        // delete the document corresponding to the photo from the database
+        return FirebaseFirestore.getInstance()
+                .collection(Const.TRIPS_COLLECTION)
+                .document(tripId)
+                .collection(Const.TRIP_PHOTO_PATHS_COLLECTION)
+                .document(docId)
                 .delete();
     }
 
@@ -755,13 +808,11 @@ public class AccessDB {
 
                         // extract a pic from each document and return the list of pics
                         for (DocumentSnapshot doc : docs) {
-                            pics.add(new Pic((String)doc.get(Const.TRIP_PIC_PATH),
+                            pics.add(new Pic(doc.getId(), (String)doc.get(Const.TRIP_PIC_PATH),
                                     (long)doc.get(Const.TRIP_TIMESTAMP_KEY)));
                         }
                         return pics;
                     }
                 });
     }
-
-
 }

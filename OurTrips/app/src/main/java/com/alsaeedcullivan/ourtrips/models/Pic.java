@@ -6,19 +6,23 @@ import android.os.Parcelable;
 public class Pic implements Parcelable {
     private String path;
     private long date;
+    private String docId;
 
-    public Pic(String path, long date) {
+    public Pic(String docId, String path, long date) {
+        this.docId = docId;
         this.path = path;
         this.date = date;
     }
 
-    protected Pic(Parcel in) {
+    private Pic(Parcel in) {
+        docId = in.readString();
         path = in.readString();
         date = in.readLong();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(docId);
         dest.writeString(path);
         dest.writeLong(date);
     }
@@ -40,7 +44,12 @@ public class Pic implements Parcelable {
         }
     };
 
+
     // getters
+
+    public String getDocId() {
+        return docId;
+    }
 
     public String getPicPath() {
         return path;
