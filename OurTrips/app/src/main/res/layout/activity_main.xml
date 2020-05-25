@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@color/colorPrimaryDark">
 
     <ProgressBar
         android:id="@+id/main_spinner"
@@ -27,7 +28,7 @@
         android:text="@string/loading_your_trips"
         android:textStyle="bold"
         android:textSize="28sp"
-        android:textColor="@color/colorPrimaryDark"
+        android:textColor="@color/colorPrimary"
         android:shadowColor="@color/colorSecondaryDark"/>
 
     <LinearLayout
@@ -44,15 +45,17 @@
             android:layout_height="wrap_content"
             android:text="@string/view_or_edit"
             android:textAlignment="center"
-            android:textColor="@color/colorSecondaryDark"
+            android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:textStyle="italic"
+            android:fontFamily="sans-serif-medium"
             android:background="@color/colorPrimary"/>
 
         <ListView
             android:id="@+id/main_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:dividerHeight="2dp"/>
 
     </LinearLayout>
 

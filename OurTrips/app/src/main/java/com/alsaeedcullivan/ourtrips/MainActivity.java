@@ -1,6 +1,7 @@
 package com.alsaeedcullivan.ourtrips;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         // set title
         setTitle(R.string.title_activity_main);
+
         Log.d(Const.TAG, "onCreate: main");
         // get references to the widgets
         mLayout = findViewById(R.id.main_list_layout);
