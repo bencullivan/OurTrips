@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".GalleryActivity"
     android:orientation="vertical"
-    android:background="@color/colorSecondaryDark">
+    android:background="@color/colorPrimary">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycle_gallery"
