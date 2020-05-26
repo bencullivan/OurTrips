@@ -58,4 +58,8 @@ public class GalleryActivity extends AppCompatActivity {
     public String getTripId() {
         return mTripId;
     }
+
+    public ArrayList<Pic> getPics() {
+        return mPictures;
+    }
 }

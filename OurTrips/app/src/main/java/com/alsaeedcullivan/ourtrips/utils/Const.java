@@ -17,6 +17,7 @@ public class Const {
     public static final String LOGIN_TAG = "LoginActivity";
     public static final String SETTINGS_TAG = "SettingsActivity";
     public static final String MATCH_TAG = "MatchActivity";
+    public static final String VIEW_TAG = "ViewPictureActivity";
     public static final String MATCH_ARR_TAG = "matched";
     public static final String TRIP_ID_TAG = "trip_id_tag";
     public static final String SUMMARY_TAG = "SummaryFragment";
@@ -32,6 +33,7 @@ public class Const {
     public static final String TRIP_END_TAG = "end";
     public static final String TRIP_OVER_TAG = "overview";
     public static final String PIC_TAG = "pic";
+    public static final String POSITION_TAG = "position";
 
     // codes
     public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;
