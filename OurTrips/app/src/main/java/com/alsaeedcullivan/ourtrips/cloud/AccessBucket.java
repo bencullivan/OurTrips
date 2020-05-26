@@ -5,6 +5,7 @@ import android.net.Uri;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.InputStream;
@@ -20,8 +21,8 @@ public class AccessBucket {
      * @param path the path where the photo will be stored in the storage bucket
      * @param is the input stream that will be used to upload the photo to the bucket
      */
-    public static void uploadPicture(String path, InputStream is) {
-        FirebaseStorage.getInstance().getReference().child(path).putStream(is);
+    public static UploadTask uploadPicture(String path, InputStream is) {
+        return FirebaseStorage.getInstance().getReference().child(path).putStream(is);
     }
 
 //    /**
@@ -50,7 +51,7 @@ public class AccessBucket {
      * deletes a file from the storage bucket
      * @param path the path of the file that will be deleted
      */
-    public static void deleteFromStorage(String path) {
-        FirebaseStorage.getInstance().getReference().child(path).delete();
+    public static Task<Void> deleteFromStorage(String path) {
+        return FirebaseStorage.getInstance().getReference().child(path).delete();
     }
 }

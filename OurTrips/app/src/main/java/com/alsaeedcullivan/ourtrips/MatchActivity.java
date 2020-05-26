@@ -27,6 +27,7 @@ import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -125,7 +126,7 @@ public class MatchActivity extends AppCompatActivity {
                 }
             });
             // get this user's name from the database
-            AccessDB.getUserName(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<String>() {
+            Task<String> nameTask = AccessDB.getUserName(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<String>() {
                 @Override
                 public void onComplete(@NonNull Task<String> task) {
                     if (task.isSuccessful()) {
@@ -134,18 +135,24 @@ public class MatchActivity extends AppCompatActivity {
                 }
             });
             // load this user's dates from the db
-            AccessDB.getUserDatesForCal(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<List<Date>>() {
+            Task<List<Date>> dateTask = AccessDB.getUserDatesForCal(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<List<Date>>() {
                 @Override
                 public void onComplete(@NonNull Task<List<Date>> task) {
                     if (task.isSuccessful()) {
                         mUserDates = task.getResult();
-                        showList();
                     } else {
                         Toast t = Toast.makeText(MatchActivity.this, "Could not load your dates.",
                                 Toast.LENGTH_SHORT);
                         t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                         t.show();
                     }
+                }
+            });
+            // when all the tasks are finished, show the friends list
+            Tasks.whenAll(friendTask, nameTask, dateTask).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    showList();
                 }
             });
         }

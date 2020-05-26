@@ -22,6 +22,7 @@ import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -116,6 +117,12 @@ public class FriendActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<String> task) {
                     if (task.isSuccessful()) mName = task.getResult();
                     else mName = "";
+                }
+            });
+            // when both tasks are finished, make the list appear
+            Tasks.whenAll(emailTask, nameTask).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
                     makeListAppear();
                 }
             });

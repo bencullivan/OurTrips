@@ -103,4 +103,7 @@
     <string name="overview">Overview:</string>
     <string name="change">Change</string>
     <string name="locations">Locations</string>
+    <string name="adding_to_the_gallery" tools:ignore="TypographyEllipsis">Adding to the gallery...</string>
+    <string name="loading_photos" tools:ignore="TypographyEllipsis">Loading photos...</string>
+    <string name="delete">Delete</string>
 </resources>

@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 
 import com.alsaeedcullivan.ourtrips.adapters.GalleryAdapter;
 import com.alsaeedcullivan.ourtrips.models.Pic;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 public class GalleryActivity extends AppCompatActivity {
 
     private ArrayList<Pic> mPictures;
+    private String mTripId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +34,7 @@ public class GalleryActivity extends AppCompatActivity {
         // get the list of pictures
         Intent intent = getIntent();
         mPictures = intent.getParcelableArrayListExtra(Const.GALLERY_TAG);
+        mTripId = intent.getStringExtra(Const.TRIP_ID_TAG);
 
         // set up the recyclerview
         RecyclerView rec = findViewById(R.id.recycle_gallery);
@@ -48,5 +51,11 @@ public class GalleryActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    // getters
+
+    public String getTripId() {
+        return mTripId;
     }
 }

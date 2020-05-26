@@ -31,6 +31,7 @@ public class Const {
     public static final String TRIP_START_TAG = "start";
     public static final String TRIP_END_TAG = "end";
     public static final String TRIP_OVER_TAG = "overview";
+    public static final String PIC_TAG = "pic";
 
     // codes
     public static final int GALLERY_PERMISSION_REQUEST_CODE = 0;

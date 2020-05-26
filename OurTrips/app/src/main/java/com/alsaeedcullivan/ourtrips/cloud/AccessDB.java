@@ -643,13 +643,9 @@ public class AccessDB {
      * adds a photo to storage and adds its path to the photo paths sub collection of this trip
      * @param tripId the id of the trip
      * @param path the path where the photo will be stored in the photo bucket
-     * @param is the input stream that will be used to upload the photo to the storage bucket
      */
-    public static Task<DocumentReference> addTripPhoto(String tripId, String path, InputStream is,
+    public static Task<DocumentReference> addTripPhoto(String tripId, String path,
                                                        long timestamp) {
-        // upload the picture to storage
-        AccessBucket.uploadPicture(path, is);
-
         // create a map containing the path of the photo
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_PHOTO_KEY, path);
@@ -724,11 +720,8 @@ public class AccessDB {
      * the trips sub-collection in the db
      * @param tripId the id of the trip
      * @param docId the id of the document that stores the photo's information
-     * @param path the path of the photo in the storage bucket
      */
-    public static Task<Void> deleteTripPhoto(String tripId, String docId, String path) {
-        // delete the photo from the storage bucket
-        AccessBucket.deleteFromStorage(path);
+    public static Task<Void> deleteTripPhoto(String tripId, String docId) {
         // delete the document corresponding to the photo from the database
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
