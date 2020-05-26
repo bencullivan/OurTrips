@@ -108,4 +108,8 @@
     <string name="delete">Delete</string>
     <string name="deleting" tools:ignore="TypographyEllipsis">Deleting...</string>
     <string name="title_activity_maps">Map</string>
+    <string name="location_settings">In order to use the map you must allow location access in device settings.</string>
+    <string name="permission_required">Permission is required</string>
+    <string name="enable_location">In order to use the map you must allow location access.</string>
+    <string name="allow">Allow</string>
 </resources>

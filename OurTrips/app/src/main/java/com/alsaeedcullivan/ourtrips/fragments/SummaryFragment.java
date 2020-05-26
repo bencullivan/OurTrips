@@ -9,16 +9,26 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.EditSummaryActivity;
+import com.alsaeedcullivan.ourtrips.MapsActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.TripActivity;
+import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
+import com.alsaeedcullivan.ourtrips.models.Place;
 import com.alsaeedcullivan.ourtrips.utils.Const;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,7 +39,7 @@ public class SummaryFragment extends Fragment implements View.OnClickListener {
 
     // text widgets
     private TextView mTitle, mStartDate, mEndDate, mOverview;
-    private Button mEdit;
+    private Button mEdit, mLocations;
 
     public SummaryFragment() {
         // Required empty public constructor
@@ -76,7 +86,7 @@ public class SummaryFragment extends Fragment implements View.OnClickListener {
         String over = "Overview: " + ((TripActivity)getActivity()).getOverview();
         mOverview.setText(over);
 
-        // set up the button
+        // set up the buttons
         mEdit = view.findViewById(R.id.sum_edit_button);
         mEdit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,6 +105,14 @@ public class SummaryFragment extends Fragment implements View.OnClickListener {
 
                 // finish this activity
                 if (getActivity() != null) getActivity().finish();
+            }
+        });
+        mLocations = view.findViewById(R.id.sum_location_button);
+        mLocations.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // load the locations
+                loadLocations();
             }
         });
     }
@@ -126,5 +144,37 @@ public class SummaryFragment extends Fragment implements View.OnClickListener {
     public void onStop() {
         super.onStop();
         Log.d(Const.TAG, "onStop: sum");
+    }
+
+    /**
+     * loadLocations()
+     * loads the list of locations for this trip and sends the user to maps activity where they can
+     * view those locations
+     */
+    private void loadLocations() {
+        if (getActivity() == null) return;
+        // get the trip id
+        final String tripId = ((TripActivity)getActivity()).getTripId();
+        // get the list of places from the database
+        AccessDB.getTripLocations(tripId).addOnCompleteListener(new OnCompleteListener<List<Place>>() {
+            @Override
+            public void onComplete(@NonNull Task<List<Place>> task) {
+                if (task.isSuccessful()) {
+                    // get the results
+                    ArrayList<Place> places = (ArrayList<Place>) task.getResult();
+                    if (places == null) places = new ArrayList<>();
+                    Intent intent = new Intent(getActivity(), MapsActivity.class);
+                    intent.putExtra(Const.PLACE_LIST_TAG, places);
+                    intent.putExtra(Const.TRIP_ID_TAG, tripId);
+                    startActivity(intent);
+                } else {
+                    // tell the user that the locations could not be loaded
+                    Toast t = Toast.makeText(getActivity(), "The locations of this trip " +
+                            "could not be loaded.", Toast.LENGTH_SHORT);
+                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                    t.show();
+                }
+            }
+        });
     }
 }

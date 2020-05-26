@@ -665,13 +665,14 @@ public class AccessDB {
      * @param tripId the id of this trip
      * @param location the Place object representing the location
      */
-    public static Task<DocumentReference> addTripLocation(String tripId, Place location) {
+    public static Task<DocumentReference> addTripLocation(String tripId, Place location, long timeStamp) {
         // create a map to hold the data
         Map<String, Object> data = new HashMap<>();
         String coordinate = location.getLocation().latitude + "," +
                 location.getLocation().longitude;
         data.put(Const.TRIP_LOCATION_KEY, coordinate);
         data.put(Const.TRIP_LOCATION_NAME_KEY, location.getPlaceName());
+        data.put(Const.TRIP_TIMESTAMP_KEY, timeStamp);
 
         // add the location to the locations sub-collection
         return FirebaseFirestore.getInstance()
@@ -907,6 +908,11 @@ public class AccessDB {
                 });
     }
 
+    /**
+     * getTripLocations()
+     * get all the locations from this trip
+     * @param tripId the id of the trip
+     */
     public static Task<List<Place>> getTripLocations(String tripId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
@@ -935,6 +941,7 @@ public class AccessDB {
                             if (coordinates.length < 2) continue;
                             place.setLocation(new LatLng(Double.parseDouble(coordinates[0]),
                                     Double.parseDouble(coordinates[1])));
+                            place.setTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
                             places.add(place);
                         }
                         return places;

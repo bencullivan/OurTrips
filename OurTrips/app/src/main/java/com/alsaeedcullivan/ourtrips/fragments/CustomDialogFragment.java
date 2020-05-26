@@ -23,6 +23,7 @@ import androidx.fragment.app.DialogFragment;
 import com.alsaeedcullivan.ourtrips.EditSummaryActivity;
 import com.alsaeedcullivan.ourtrips.FriendActivity;
 import com.alsaeedcullivan.ourtrips.MainActivity;
+import com.alsaeedcullivan.ourtrips.MapsActivity;
 import com.alsaeedcullivan.ourtrips.MatchActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.RegisterActivity;
@@ -30,6 +31,7 @@ import com.alsaeedcullivan.ourtrips.RequestTripActivity;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -49,6 +51,8 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int SELECT_END_DATE_ID = 6;
     public static final int SEARCH_TRIP_ID = 7;
     public static final int SUMMARY_END_DATE_ID = 10;
+    public static final int LOCATION_SETTINGS_ID = 11;
+    public static final int LOCATION_REQUIRED_ID = 12;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -103,6 +107,10 @@ public class CustomDialogFragment extends DialogFragment {
                 return searchTripDialog();
             case SUMMARY_END_DATE_ID:
                 return createSummaryEndDateDialog();
+            case LOCATION_SETTINGS_ID:
+                return createLocationSettingsDialog();
+            case LOCATION_REQUIRED_ID:
+                return createLocationRequiredDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -373,5 +381,53 @@ public class CustomDialogFragment extends DialogFragment {
             }
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH));
+    }
+
+    // creates a dialog that offers to take the user to settings
+    private AlertDialog createLocationSettingsDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
+        // set the title
+        dialog.setTitle(R.string.permission_denied);
+        // set the message
+        dialog.setMessage(R.string.location_settings);
+        dialog.setPositiveButton(R.string.go_settings, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (getActivity() != null) ((MapsActivity) getActivity()).goToSettings();
+                dismiss();
+            }
+        }).setNegativeButton(R.string.prompt_dismiss, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (getActivity() != null) getActivity().finish();
+                dialog.dismiss();
+            }
+        });
+        return dialog.create();
+    }
+
+    // creates a dialog that tells the user that location is required
+    private AlertDialog createLocationRequiredDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
+        // set title
+        dialog.setTitle(R.string.permission_required);
+        // set the message
+        dialog.setMessage(R.string.enable_location);
+        dialog.setPositiveButton(R.string.allow, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (getActivity() != null) ((MapsActivity) getActivity()).checkPermission();
+                dismiss();
+            }
+        }).setNegativeButton(R.string.prompt_dismiss, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (getActivity() != null) getActivity().finish();
+                dialog.dismiss();
+            }
+        });
+        return dialog.create();
     }
 }
