@@ -14,7 +14,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
+import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.models.Place;
 import com.alsaeedcullivan.ourtrips.utils.Const;
@@ -25,19 +28,24 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private static final int LOCATION_PERMISSION_CODE = 0;
-    private static final int ZOOM_LEVEL = 17;
+    private static final int ZOOM_LEVEL = 14;
 
     private GoogleMap mMap;
     private ArrayList<Place> mPlaces;
-    private String mTripId;
+    private String mTripId, mLocationName;
     private LocationManager mLocationManager;
     private String mProvider;
+    private Button mRemove, mAdd, mCancel, mRemoveText, mAddText;
+    private HashMap<LatLng, Place> mPlaceMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,8 +63,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mPlaces = intent.getParcelableArrayListExtra(Const.PLACE_LIST_TAG);
             mTripId = intent.getStringExtra(Const.TRIP_ID_TAG);
         } else finish();
-    }
 
+        // get widget references
+        mRemove = findViewById(R.id.remove_location);
+        mAdd = findViewById(R.id.add_location);
+        mCancel = findViewById(R.id.cancel_map);
+        mRemoveText = findViewById(R.id.remove_text);
+        mAddText = findViewById(R.id.add_text);
+    }
 
     /**
      * Manipulates the map once available.
@@ -144,8 +158,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     private void startMapWithLocation() {
         // add all the places to the map
-        for (Place place : mPlaces) mMap.addMarker(new MarkerOptions().position(place.getLocation())
-                .title(place.getPlaceName()));
+        for (Place place : mPlaces) {
+            mPlaceMap.put(place.getLocation(), place);
+            mMap.addMarker(new MarkerOptions().position(place.getLocation())
+                    .title(place.getPlaceName()));
+        }
 
         // start the location provider
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -171,6 +188,75 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinates, ZOOM_LEVEL));
             }
         }
+        // set on click listeners
+        mRemove.setOnClickListener(removeListener());
+        mCancel.setOnClickListener(cancelListener());
+        mAdd.setOnClickListener(addListener());
+    }
+
+    /**
+     * initiateSelect()
+     * allows the user to select a location to drop a marker
+     * adds this location to the database
+     */
+    public void initiateSelect() {
+        if (mLocationName == null) mLocationName = "";
+        Log.d(Const.TAG, "initiateAdd: " + mLocationName);
+
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                // drop a marker at this location
+                mMap.addMarker(new MarkerOptions().position(latLng).title(mLocationName));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_LEVEL));
+                cancelAction();
+
+                // save this location to the db
+                if (mTripId == null) return;
+                AccessDB.addTripLocation(mTripId, latLng, mLocationName, new Date().getTime());
+                mLocationName = null;
+            }
+        });
+    }
+
+    /**
+     * useCurrent()
+     * adds a marker at the user's current location
+     * adds this location to the database
+     */
+    public void useCurrent() {
+        if (mLocationName == null) mLocationName = "";
+        Log.d(Const.TAG, "initiateAdd: " + mLocationName);
+
+        // drop the marker at the current location
+        checkPermission();
+        Location here = mLocationManager.getLastKnownLocation(mProvider);
+        if (here == null) return;
+        LatLng latLng = new LatLng(here.getLatitude(), here.getLongitude());
+        mMap.addMarker(new MarkerOptions().position(latLng).title(mLocationName));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_LEVEL));
+        cancelAction();
+
+        // save this location to the db
+        if (mTripId == null) return;
+        AccessDB.addTripLocation(mTripId, latLng, mLocationName, new Date().getTime());
+        mLocationName = null;
+    }
+
+    /**
+     * cancelAction()
+     * takes the map out of edit mode
+     */
+    private void cancelAction() {
+        // remove listeners
+        mMap.setOnInfoWindowLongClickListener(null);
+        mMap.setOnMapLongClickListener(null);
+
+        mAddText.setVisibility(View.GONE);
+        mRemoveText.setVisibility(View.GONE);
+        mCancel.setVisibility(View.GONE);
+        mRemove.setVisibility(View.VISIBLE);
+        mAdd.setVisibility(View.VISIBLE);
     }
 
     // takes the user to device settings for this app
@@ -178,5 +264,72 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         getApplicationContext().startActivity(new Intent()
                 .setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 .setData(Uri.fromParts("package", this.getPackageName(), null)));
+    }
+
+    // on click listeners
+
+    private View.OnClickListener removeListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // adjust visibility
+                mRemove.setVisibility(View.GONE);
+                mAdd.setVisibility(View.GONE);
+                mCancel.setVisibility(View.VISIBLE);
+                mRemoveText.setVisibility(View.VISIBLE);
+
+                // set map click listener
+                mMap.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
+                    @Override
+                    public void onInfoWindowLongClick(Marker marker) {
+                        // remove this marker from the map
+                        marker.remove();
+                        cancelAction();
+
+                        // get the place corresponding to this location
+                        Place here = mPlaceMap.get(marker.getPosition());
+                        if (here == null || mTripId == null || here.getDocId() == null) return;
+
+                        // remove this place from the database
+                        AccessDB.deleteTripLocation(mTripId, here.getDocId()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.d(Const.TAG, "onSuccess: place deleted");
+                            }
+                        });
+                    }
+                });
+            }
+        };
+    }
+    private View.OnClickListener addListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // adjust visibility
+                mRemove.setVisibility(View.GONE);
+                mAdd.setVisibility(View.GONE);
+                mCancel.setVisibility(View.VISIBLE);
+                mAddText.setVisibility(View.VISIBLE);
+
+                // show the dialog for name input
+                CustomDialogFragment.newInstance(CustomDialogFragment.ADD_LOCATION_ID)
+                        .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
+            }
+        };
+    }
+    private View.OnClickListener cancelListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelAction();
+            }
+        };
+    }
+
+    // setters
+
+    public void setLocationName(String name) {
+        mLocationName = name;
     }
 }

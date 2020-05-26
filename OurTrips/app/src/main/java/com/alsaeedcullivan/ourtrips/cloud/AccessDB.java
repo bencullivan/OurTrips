@@ -665,13 +665,13 @@ public class AccessDB {
      * @param tripId the id of this trip
      * @param location the Place object representing the location
      */
-    public static Task<DocumentReference> addTripLocation(String tripId, Place location, long timeStamp) {
+    public static Task<DocumentReference> addTripLocation(String tripId, LatLng location, String name, long timeStamp) {
         // create a map to hold the data
         Map<String, Object> data = new HashMap<>();
-        String coordinate = location.getLocation().latitude + "," +
-                location.getLocation().longitude;
+        String coordinate = location.latitude + "," +
+                location.longitude;
         data.put(Const.TRIP_LOCATION_KEY, coordinate);
-        data.put(Const.TRIP_LOCATION_NAME_KEY, location.getPlaceName());
+        data.put(Const.TRIP_LOCATION_NAME_KEY, name);
         data.put(Const.TRIP_TIMESTAMP_KEY, timeStamp);
 
         // add the location to the locations sub-collection

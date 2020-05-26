@@ -4,14 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.renderscript.ScriptGroup;
-import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -29,9 +24,7 @@ import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.RegisterActivity;
 import com.alsaeedcullivan.ourtrips.RequestTripActivity;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
-import com.alsaeedcullivan.ourtrips.utils.Const;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -53,6 +46,7 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int SUMMARY_END_DATE_ID = 10;
     public static final int LOCATION_SETTINGS_ID = 11;
     public static final int LOCATION_REQUIRED_ID = 12;
+    public static final int ADD_LOCATION_ID = 13;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -111,6 +105,8 @@ public class CustomDialogFragment extends DialogFragment {
                 return createLocationSettingsDialog();
             case LOCATION_REQUIRED_ID:
                 return createLocationRequiredDialog();
+            case ADD_LOCATION_ID:
+                return addLocationDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -426,6 +422,52 @@ public class CustomDialogFragment extends DialogFragment {
             public void onClick(DialogInterface dialog, int which) {
                 if (getActivity() != null) getActivity().finish();
                 dialog.dismiss();
+            }
+        });
+        return dialog.create();
+    }
+
+    // creates a dialog that allows the user to add a location
+    private AlertDialog addLocationDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
+        // set the title
+        dialog.setTitle(R.string.enter_name_location);
+        final View dialogView = View.inflate(getContext(), R.layout.text_input, null);
+        dialog.setView(dialogView);
+
+        dialog.setPositiveButton("Use Current Location", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                EditText input = dialogView.findViewById(R.id.dialog_text_input);
+                if (getActivity() != null) {
+                    // save the location name
+                    ((MapsActivity) getActivity()).setLocationName(input.getText().toString());
+                    // put the map in add mode
+                    ((MapsActivity) getActivity()).useCurrent();
+                    // hide the keyboard
+                    InputMethodManager imm = (InputMethodManager) getActivity()
+                            .getSystemService(Activity.INPUT_METHOD_SERVICE);
+                    if (imm != null) imm.hideSoftInputFromWindow(input.getWindowToken(),
+                            InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+            }
+        });
+        dialog.setNegativeButton("Select Location", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                EditText input = dialogView.findViewById(R.id.dialog_text_input);
+                if (getActivity() != null) {
+                    // save the location name
+                    ((MapsActivity) getActivity()).setLocationName(input.getText().toString());
+                    // put the map in add mode
+                    ((MapsActivity) getActivity()).initiateSelect();
+                    // hide the keyboard
+                    InputMethodManager imm = (InputMethodManager) getActivity()
+                            .getSystemService(Activity.INPUT_METHOD_SERVICE);
+                    if (imm != null) imm.hideSoftInputFromWindow(input.getWindowToken(),
+                            InputMethodManager.HIDE_NOT_ALWAYS);
+                }
             }
         });
         return dialog.create();

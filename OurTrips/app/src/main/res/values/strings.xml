@@ -112,4 +112,11 @@
     <string name="permission_required">Permission is required</string>
     <string name="enable_location">In order to use the map you must allow location access.</string>
     <string name="allow">Allow</string>
+    <string name="add_location">Add Location</string>
+    <string name="remove_location">Remove Location</string>
+    <string name="cancel">Cancel</string>
+    <string name="remove_marker">Long-press the info window of a location marker to remove it.</string>
+    <string name="enter_name_location">Enter a location name.</string>
+    <string name="long_press_the_map_to_add_a_marker">Long-press the map to add a marker.</string>
+    <string name="save_map">Save Map</string>
 </resources>
