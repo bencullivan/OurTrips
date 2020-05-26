@@ -12,7 +12,7 @@
         android:paddingHorizontal="5dp"
         android:textSize="20sp"
         android:fontFamily="sans-serif-medium"
-        android:textColor="@color/colorSecondary"/>
+        android:textColor="@color/colorAccent"/>
     <TextView
         android:id="@+id/tripper_email"
         android:layout_width="match_parent"
@@ -20,5 +20,5 @@
         android:paddingHorizontal="5dp"
         android:textSize="16sp"
         android:fontFamily="sans-serif-medium"
-        android:textColor="@color/colorSecondary"/>
+        android:textColor="@color/colorAccent"/>
 </LinearLayout>

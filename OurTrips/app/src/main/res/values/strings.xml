@@ -120,4 +120,9 @@
     <string name="long_press_the_map_to_add_a_marker">Long-press the map to add a marker.</string>
     <string name="save_map">Save Map</string>
     <string name="click_on_a_tripper_to_view_their_profile">Click on a tripper to view their profile</string>
+    <string name="name">Name:</string>
+    <string name="email">Email:</string>
+    <string name="birthday">BirthDay:</string>
+    <string name="affiliation">Affiliation:</string>
+    <string name="bio_view">Bio:</string>
 </resources>

@@ -26,7 +26,7 @@
         android:id="@+id/trippers_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:divider="@color/colorSecondary"
+        android:divider="@color/colorAccent"
         android:dividerHeight="2dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ViewUserActivity">
+    tools:context=".ViewUserActivity"
+    android:background="@color/colorSecondaryDark">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -22,51 +23,135 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:id="@+id/name_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/img_user"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/colorAccent"
+            android:text="@string/name"/>
 
         <TextView
             android:id="@+id/user_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_dp"
             android:hint="@string/name_text"
-            android:padding="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/img_user" />
+            android:paddingHorizontal="@dimen/padding_dp"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/colorAccent"
+            app:layout_constraintTop_toBottomOf="@id/name_header" />
+
+        <TextView
+            android:id="@+id/email_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/user_name"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/colorAccent"
+            android:text="@string/email"/>
 
         <TextView
             android:id="@+id/user_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_dp"
             android:hint="@string/prompt_email"
-            android:padding="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/user_name" />
+            android:paddingHorizontal="@dimen/padding_dp"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/colorAccent"
+            app:layout_constraintTop_toBottomOf="@id/email_header" />
+
+        <TextView
+            android:id="@+id/birthday_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/user_email"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/colorAccent"
+            android:text="@string/birthday"/>
 
         <TextView
             android:id="@+id/user_birthday"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_dp"
             android:hint="@string/prompt_birthday"
-            android:padding="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/user_email" />
+            android:paddingHorizontal="@dimen/padding_dp"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/colorAccent"
+            app:layout_constraintTop_toBottomOf="@id/birthday_header" />
+
+        <TextView
+            android:id="@+id/aff_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/user_birthday"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/colorAccent"
+            android:text="@string/affiliation"/>
 
         <TextView
             android:id="@+id/user_affiliation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_dp"
             android:hint="@string/prompt_affiliation"
-            android:padding="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/user_birthday" />
+            android:paddingHorizontal="@dimen/padding_dp"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/colorAccent"
+            app:layout_constraintTop_toBottomOf="@id/aff_header" />
+
+        <TextView
+            android:id="@+id/bio_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/user_affiliation"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/colorAccent"
+            android:text="@string/bio_view"/>
 
         <TextView
             android:id="@+id/user_bio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_dp"
             android:hint="@string/bio"
-            android:padding="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/user_affiliation" />
+            android:paddingHorizontal="@dimen/padding_dp"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/colorAccent"
+            app:layout_constraintTop_toBottomOf="@id/bio_header" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
