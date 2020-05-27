@@ -47,4 +47,8 @@ Note: There may be additional tutorials that we forgot to include, these are the
 
 Note: Stack Overflow was used A LOT :) in order to fix bugs and answer questions that we had.
 
+Note: The notes from class were also consulted especially when creating features such as "Locations".
+
+Note: We also referenced our MyRuns projects in order to remember how we created list view adapters, custom dialog fragments etc...
+
 We had an AWESOME time creating this app!
