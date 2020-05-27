@@ -57,9 +57,6 @@ public class TripperAdapter extends ArrayAdapter<UserSummary> {
         // friend email
         email.setText(user.getEmail());
 
-        Log.d(Const.TAG, "adapter getView: " + user.getName());
-        Log.d(Const.TAG, "adapter getView: " + user.getEmail());
-
         // return view
         return convertView;
     }

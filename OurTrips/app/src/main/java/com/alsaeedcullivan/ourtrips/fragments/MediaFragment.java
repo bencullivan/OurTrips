@@ -2,7 +2,6 @@ package com.alsaeedcullivan.ourtrips.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -35,21 +34,15 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.storage.UploadTask;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This fragment uses the Android ImagePicker open source library
@@ -58,6 +51,8 @@ import java.util.Map;
  * The library has been in no way modified, we merely implement it in this fragment for photo cropping
  */
 public class MediaFragment extends Fragment implements View.OnClickListener {
+
+    private static final int VID_REQUEST = 101;
 
     // widgets
     private ImageButton mPhotoGallery, mVideoGallery;
@@ -97,6 +92,7 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         mAddPhoto = view.findViewById(R.id.add_photo);
         mAddPhoto.setOnClickListener(photoListener());
         mAddVideo = view.findViewById(R.id.add_video);
+        mAddVideo.setOnClickListener(videoListener());
         mPhotoText = view.findViewById(R.id.photo_gallery_text);
         mVideoText = view.findViewById(R.id.video_gallery_text);
         mSpinner = view.findViewById(R.id.gallery_spinner);
@@ -114,11 +110,24 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && data != null) {
-            // get the uri
-            File file = ImagePicker.Companion.getFile(data);
-            if (file != null) {
-                Uri uri = Uri.fromFile(file);
-                addPic(uri);
+            Log.d(Const.TAG, "onActivityResult: " + requestCode);
+            // if the user selected a video
+            if (requestCode == VID_REQUEST) {
+                Log.d(Const.TAG, "onActivityResult: video selected");
+                Uri uri = data.getData();
+                if (uri == null) return;
+                Log.d(Const.TAG, "onActivityResult: uri   " + uri.toString());
+                addVid(uri);
+            }
+            // if the user selected a photo
+
+            else {
+                // get the uri
+                File file = ImagePicker.Companion.getFile(data);
+                if (file != null) {
+                    Uri uri = Uri.fromFile(file);
+                    addPic(uri);
+                }
             }
         }
     }
@@ -135,8 +144,18 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
      */
     private void selectPic() {
         if (getContext() == null) return;
-        // start picker to get the image for cropping and then use the result
+        // start picker to get the image and then use the result
         ImagePicker.Companion.with(this).start();
+    }
+
+    /**
+     * selectVid
+     * allows the user to select a video from the gallery
+     */
+    private void selectVid() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("video/*");
+        startActivityForResult(intent, VID_REQUEST);
     }
 
     /**
@@ -145,7 +164,7 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
      * @param uri the uri of the file where the photo is stored
      */
     private void addPic(Uri uri) {
-        if (getActivity() != null)
+        if (getActivity() == null) return;
         try {
             mLoading.setText(getString(R.string.adding_to_the_gallery));
             showSpinner();
@@ -177,6 +196,37 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
             hideSpinner();
             Log.d(Const.TAG, Log.getStackTraceString(e));
         }
+    }
+
+    private void addVid(Uri uri) {
+        Log.d(Const.TAG, "addVid: ");
+        if (getActivity() == null) return;
+        try {
+            mLoading.setText(getString(R.string.adding_to_the_gallery));
+            showSpinner();
+            long timeStamp = new Date().getTime();
+            String id = ((TripActivity) getActivity()).getTripId();
+
+            // establish the path where this video will be stored in the bucket
+            String path = Const.TRIP_VID_PATH + "/" + id +
+                    "/" + Const.TRIP_VIDEO_KEY + timeStamp + Const.VID_MP4;
+
+            // open an input stream for the uri
+            InputStream is = getActivity().getContentResolver().openInputStream(uri);
+            // add this video to the storage bucket
+            final long one = new Date().getTime();
+            AccessBucket.uploadVideo(path, uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Log.d(Const.TAG, "onSuccess: " + (new Date().getTime() - one));
+                    Log.d(Const.TAG, "onSuccess: yay video was uploaded to bucket");
+                }
+            });
+        } catch (IOException e) {
+            hideSpinner();
+            Log.d(Const.TAG, Log.getStackTraceString(e));
+        }
+
     }
 
     /**
@@ -242,7 +292,7 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
                             if (task.getResult() != null && task.getResult().size() > 0) {
                                 mPics = (ArrayList<Pic>) task.getResult();
                                 Log.d(Const.TAG, "onComplete: " + mPics.get(0).getPicPath());
-                                new SortTask().execute();
+                                new PicSortTask().execute();
                             } else {
                                 Toast t = Toast.makeText(getActivity(), "There are no photos " +
                                         "in the photo gallery.", Toast.LENGTH_SHORT);
@@ -271,8 +321,18 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         };
     }
 
+    // on click listener for the add video button
+    private View.OnClickListener videoListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectVid();
+            }
+        };
+    }
 
-    private class SortTask extends AsyncTask<Void, Void, Void> {
+
+    private class PicSortTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {

@@ -42,8 +42,8 @@ public class AccessBucket {
      * @param path the path where the video will be stored in the storage bucket
      * @param vidUri the Uri of the video that will be uploaded
      */
-    public static void uploadVideo(String path, Uri vidUri) {
-        FirebaseStorage.getInstance().getReference().child(path).putFile(vidUri);
+    public static UploadTask uploadVideo(String path, Uri vidUri) {
+        return FirebaseStorage.getInstance().getReference().child(path).putFile(vidUri);
     }
 
     /**

@@ -79,6 +79,7 @@ public class Const {
     public static final String TRIP_COMMENT_KEY = "comment";
     public static final String TRIP_PHOTO_PATHS_COLLECTION = "photos";
     public static final String TRIP_PHOTO_KEY = "photo";
+    public static final String TRIP_VIDEO_KEY = "video";
     public static final String TRIP_TIMESTAMP_KEY = "timestamp";
     public static final String TRIP_LOCATIONS_COLLECTION = "locations";
     public static final String TRIP_LOCATION_KEY = "location";
@@ -108,6 +109,8 @@ public class Const {
     public static final String PROFILE_PIC_PATH = "profile_pictures";
     public static final String TRIP_PIC_PATH = "trip_pictures";
     public static final String PROFILE_PIC_NAME = "profile";
+    public static final String TRIP_VID_PATH = "trip_videos";
     public static final String PIC_JPG = ".jpg";
+    public static final String VID_MP4 = ".mp4";
 
 }
