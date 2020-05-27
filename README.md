@@ -9,13 +9,18 @@ https://coolors.co/b1c462-8aa399-7d84b2-0d0630-eac8ca
 
 
 Open Source Libraries from Github that were used:
+
 • https://github.com/bumptech/glide
+
 • https://github.com/ArthurHub/Android-Image-Cropper
+
 • https://github.com/square/android-times-square
+
 • https://github.com/Dhaval2404/ImagePicker
 
 
 Tutorials that were consulted
+
 • https://firebase.google.com/docs  (Firebase Documentation / Google Documentation)
 
 • https://developer.android.com/docs  (Android Documentation)
