@@ -19,7 +19,8 @@ Open Source Libraries from Github that were used:
 • https://github.com/Dhaval2404/ImagePicker
 
 
-Tutorials that were consulted
+
+Tutorials that were consulted:
 
 • https://firebase.google.com/docs  (Firebase Documentation / Google Documentation)
 
