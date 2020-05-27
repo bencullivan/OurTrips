@@ -3,7 +3,6 @@ package com.alsaeedcullivan.ourtrips;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,8 +10,6 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -45,20 +42,24 @@ public class MatchActivity extends AppCompatActivity {
     private List<Date> mUserDates;
     private ArrayList<UserSummary> mFriends;
     private String mUserName;
+    private String mTripId;
     private FirebaseUser mUser;
     private ListView mListView;
     private UserSummary mSelected;
     private ProgressBar mSpinner;
     private TextView mLoading;
     private LinearLayout mLayout;
+    private String mSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_match);
 
-        setTitle("Match Dates");
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        Intent intent = getIntent();
+        mSource = intent.getStringExtra(Const.SOURCE_TAG);
 
         // get widget reference
         mSpinner = findViewById(R.id.match_spinner);
@@ -77,84 +78,145 @@ public class MatchActivity extends AppCompatActivity {
         // get a reference to the ListView
         mListView = findViewById(R.id.match_list);
 
-        if (savedInstanceState != null && savedInstanceState.getLongArray(DATES_KEY) != null &&
-                savedInstanceState.getParcelableArrayList(FRIENDS_KEY) != null &&
-                savedInstanceState.getString(NAME_KEY) != null) {
-            long[] dates = savedInstanceState.getLongArray(DATES_KEY);
-            if (dates != null) {
-                mUserDates = new ArrayList<>();
-                // get the dates
-                for (long date : dates) {
-                    mUserDates.add(new Date(date));
-                }
-                // get the name of this user
-                mUserName = savedInstanceState.getString(NAME_KEY);
-                // initialize the adapter
+        // instantiate the adapter
+        mAdapter = new FriendAdapter(this, R.layout.activity_match, new ArrayList<UserSummary>());
+
+        // assign the adapter to the list view
+        mListView.setAdapter(mAdapter);
+
+        // if this is to add a tripper
+        if (mSource != null && mSource.equals(Const.TRIP_ACTIVITY_TAG) && intent
+                .getStringExtra(Const.TRIP_ID_TAG) != null) {
+            // set the title and header
+            setTitle("Add Tripper");
+            TextView header = findViewById(R.id.match_text);
+            header.setText(R.string.add_tripper_friend);
+            // get the trip id
+            mTripId = intent.getStringExtra(Const.TRIP_ID_TAG);
+            // set the on item click listener
+            mListView.setOnItemClickListener(addTripperListener());
+
+            // if the instance state has been saved
+            if (savedInstanceState != null && savedInstanceState.getParcelableArrayList(FRIENDS_KEY) != null) {
+                // get the list of friends
                 mFriends = savedInstanceState.getParcelableArrayList(FRIENDS_KEY);
-                mAdapter = new FriendAdapter(this, R.layout.activity_match, new ArrayList<UserSummary>());
-                mAdapter.addAll(mFriends);
-                mListView.setAdapter(mAdapter);
-                mListView.setOnItemClickListener(getClickListener());
+                // add the list to the adapter
+                if (mFriends != null) {
+                    mAdapter.addAll(mFriends);
+                    mAdapter.notifyDataSetChanged();
+                }
+                // show the list
                 showList();
             }
-        }
-        else if (mUser != null) {
-            // instantiate the adapter
-            mAdapter = new FriendAdapter(this, R.layout.activity_match, new ArrayList<UserSummary>());
-            // set the adapter to the ListView
-            mListView.setAdapter(mAdapter);
-            mListView.setOnItemClickListener(getClickListener());
-            // load this user's list of friends
-            Task<List<UserSummary>> friendTask = AccessDB.getFriendsList(mUser.getUid());
-            friendTask.addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
-                @Override
-                public void onComplete(@NonNull Task<List<UserSummary>> task) {
-                    if (task.isSuccessful()) {
-                        // get the list of friends
-                        mFriends = (ArrayList<UserSummary>) task.getResult();
-                        // add them to the adapter
-                        if (mFriends != null) {
-                            mAdapter.addAll(mFriends);
-                            mAdapter.notifyDataSetChanged();
+            // else load the user's friends from the db
+            else if (mUser != null) {
+                // load this user's list of friends
+                Task<List<UserSummary>> friendTask = AccessDB.getFriendsList(mUser.getUid());
+                friendTask.addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                    @Override
+                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
+                        if (task.isSuccessful()) {
+                            // get the list of friends
+                            mFriends = (ArrayList<UserSummary>) task.getResult();
+                            // add them to the adapter
+                            if (mFriends != null) {
+                                mAdapter.addAll(mFriends);
+                                mAdapter.notifyDataSetChanged();
+                            }
+                        } else {
+                            Toast t = Toast.makeText(MatchActivity.this, "Could not load your friends.",
+                                    Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
                         }
-                    } else {
-                        Toast t = Toast.makeText(MatchActivity.this, "Could not load your friends.",
-                                Toast.LENGTH_SHORT);
-                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                        t.show();
+                        // show the list regardless of whether the task was successful
+                        showList();
                     }
-                }
-            });
-            // get this user's name from the database
-            Task<String> nameTask = AccessDB.getUserName(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<String>() {
-                @Override
-                public void onComplete(@NonNull Task<String> task) {
-                    if (task.isSuccessful()) {
-                        mUserName = task.getResult();
+                });
+            }
+        }
+        // if this is to match dates
+        else {
+            setTitle("Match Dates");
+            // set the on item click listener
+            mListView.setOnItemClickListener(getClickListener());
+
+            // if the instance state has been saved
+            if (savedInstanceState != null && savedInstanceState.getLongArray(DATES_KEY) != null &&
+                    savedInstanceState.getParcelableArrayList(FRIENDS_KEY) != null &&
+                    savedInstanceState.getString(NAME_KEY) != null) {
+                long[] dates = savedInstanceState.getLongArray(DATES_KEY);
+                if (dates != null) {
+                    mUserDates = new ArrayList<>();
+                    // get the dates
+                    for (long date : dates) {
+                        mUserDates.add(new Date(date));
                     }
-                }
-            });
-            // load this user's dates from the db
-            Task<List<Date>> dateTask = AccessDB.getUserDatesForCal(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<List<Date>>() {
-                @Override
-                public void onComplete(@NonNull Task<List<Date>> task) {
-                    if (task.isSuccessful()) {
-                        mUserDates = task.getResult();
-                    } else {
-                        Toast t = Toast.makeText(MatchActivity.this, "Could not load your dates.",
-                                Toast.LENGTH_SHORT);
-                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                        t.show();
+                    // get the name of this user
+                    mUserName = savedInstanceState.getString(NAME_KEY);
+                    // get the list of friends
+                    mFriends = savedInstanceState.getParcelableArrayList(FRIENDS_KEY);
+                    if (mFriends != null) {
+                        mAdapter.addAll(mFriends);
+                        mAdapter.notifyDataSetChanged();
                     }
-                }
-            });
-            // when all the tasks are finished, show the friends list
-            Tasks.whenAll(friendTask, nameTask, dateTask).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
                     showList();
                 }
-            });
+            }
+            // load the
+            else if (mUser != null) {
+                // load this user's list of friends
+                Task<List<UserSummary>> friendTask = AccessDB.getFriendsList(mUser.getUid());
+                friendTask.addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                    @Override
+                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
+                        if (task.isSuccessful()) {
+                            // get the list of friends
+                            mFriends = (ArrayList<UserSummary>) task.getResult();
+                            // add them to the adapter
+                            if (mFriends != null) {
+                                mAdapter.addAll(mFriends);
+                                mAdapter.notifyDataSetChanged();
+                            }
+                        } else {
+                            Toast t = Toast.makeText(MatchActivity.this, "Could not load your friends.",
+                                    Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                        }
+                    }
+                });
+                // get this user's name from the database
+                Task<String> nameTask = AccessDB.getUserName(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (task.isSuccessful()) {
+                            mUserName = task.getResult();
+                        }
+                    }
+                });
+                // load this user's dates from the db
+                Task<List<Date>> dateTask = AccessDB.getUserDatesForCal(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<List<Date>>() {
+                    @Override
+                    public void onComplete(@NonNull Task<List<Date>> task) {
+                        if (task.isSuccessful()) {
+                            mUserDates = task.getResult();
+                        } else {
+                            Toast t = Toast.makeText(MatchActivity.this, "Could not load your dates.",
+                                    Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                        }
+                    }
+                });
+                // when all the tasks are finished, show the friends list
+                Tasks.whenAll(friendTask, nameTask, dateTask).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        showList();
+                    }
+                });
+            }
         }
     }
 
@@ -168,6 +230,13 @@ public class MatchActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
+                // if this was to add a tripper, Trip activity must be started
+                if (mSource != null && mSource.equals(Const.TRIP_ACTIVITY_TAG) || mTripId == null) {
+                    Intent intent = new Intent(MatchActivity.this, TripActivity.class);
+                    intent.putExtra(Const.TRIP_ID_TAG, mTripId);
+                    startActivity(intent);
+                }
+                // finish this activity
                 finish();
                 return true;
             case R.id.search_button:
@@ -316,6 +385,14 @@ public class MatchActivity extends AppCompatActivity {
                 // display the match dialog
                 CustomDialogFragment.newInstance(CustomDialogFragment.MATCH_ID)
                         .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
+            }
+        };
+    }
+    private AdapterView.OnItemClickListener addTripperListener() {
+        return new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(Const.TAG, "onItemClick: " + mFriends.get(position).getUserId());
             }
         };
     }

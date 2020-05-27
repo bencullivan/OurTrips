@@ -18,6 +18,7 @@ public class Const {
     public static final String SETTINGS_TAG = "SettingsActivity";
     public static final String MATCH_TAG = "MatchActivity";
     public static final String MATCH_ARR_TAG = "matched";
+    public static final String TRIP_ACTIVITY_TAG = "TripActivity";
     public static final String TRIP_ID_TAG = "trip_id_tag";
     public static final String SUMMARY_TAG = "SummaryFragment";
     public static final String PLAN_TAG = "PlanFragment";

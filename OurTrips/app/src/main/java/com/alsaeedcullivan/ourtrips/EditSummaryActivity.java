@@ -126,6 +126,8 @@ public class EditSummaryActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                Intent intent = new Intent(EditSummaryActivity.this, TripActivity.class);
+                startActivity(intent);
                 finish();
                 return true;
             case R.id.save_summary_button:

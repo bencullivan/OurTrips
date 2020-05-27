@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.EditSummaryActivity;
 import com.alsaeedcullivan.ourtrips.MapsActivity;
+import com.alsaeedcullivan.ourtrips.MatchActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.TripActivity;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
@@ -31,9 +32,7 @@ import java.util.List;
 
 public class SummaryFragment extends Fragment {
 
-    // text widgets
-    private TextView mTitle, mStartDate, mEndDate, mOverview;
-    private Button mEdit, mLocations;
+    private Button addTripper;
 
     public SummaryFragment() {
         // Required empty public constructor
@@ -65,74 +64,29 @@ public class SummaryFragment extends Fragment {
         if (getActivity() == null) return;
 
         // get widget references
-        mTitle = view.findViewById(R.id.summary_title);
-        mStartDate = view.findViewById(R.id.sum_start_date_text);
-        mEndDate = view.findViewById(R.id.sum_end_date_text);
-        mOverview = view.findViewById(R.id.sum_overview);
+        // text widgets
+        TextView title1 = view.findViewById(R.id.summary_title);
+        TextView startDate = view.findViewById(R.id.sum_start_date_text);
+        TextView endDate = view.findViewById(R.id.sum_end_date_text);
+        TextView overView = view.findViewById(R.id.sum_overview);
 
         // set up the content in the widgets
         String title = ((TripActivity)getActivity()).getTripTitle();
-        mTitle.setText(title);
+        title1.setText(title);
         String start = "Start Date: " + ((TripActivity)getActivity()).getStartDate();
-        mStartDate.setText(start);
+        startDate.setText(start);
         String end = "End Date: " + ((TripActivity)getActivity()).getEndDate();
-        mEndDate.setText(end);
+        endDate.setText(end);
         String over = "Overview: " + ((TripActivity)getActivity()).getOverview();
-        mOverview.setText(over);
+        overView.setText(over);
 
         // set up the buttons
-        mEdit = view.findViewById(R.id.sum_edit_button);
-        mEdit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TripActivity a = (TripActivity) getActivity();
-                if (a == null) return;
-
-                // send the user to edit summary activity
-                Intent intent = new Intent(getActivity(), EditSummaryActivity.class);
-                intent.putExtra(Const.TRIP_ID_TAG, a.getTripId());
-                intent.putExtra(Const.TRIP_TITLE_TAG, a.getTripTitle());
-                intent.putExtra(Const.TRIP_START_TAG, a.getStartDate());
-                intent.putExtra(Const.TRIP_END_TAG, a.getEndDate());
-                intent.putExtra(Const.TRIP_OVER_TAG, a.getOverview());
-                startActivity(intent);
-
-                // finish this activity
-                if (getActivity() != null) getActivity().finish();
-            }
-        });
-        mLocations = view.findViewById(R.id.sum_location_button);
-        mLocations.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // load the locations
-                loadLocations();
-            }
-        });
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.d(Const.TAG, "onStart: summary ");
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(Const.TAG, "onresume: summary ");
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.d(Const.TAG, "onPause: sum ");
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.d(Const.TAG, "onStop: sum");
+        Button edit = view.findViewById(R.id.sum_edit_button);
+        edit.setOnClickListener(editListener());
+        Button locations = view.findViewById(R.id.sum_location_button);
+        locations.setOnClickListener(locationListener());
+        Button addTripper = view.findViewById(R.id.sum_add_tripper);
+        addTripper.setOnClickListener(tripperListener());
     }
 
     /**
@@ -165,5 +119,56 @@ public class SummaryFragment extends Fragment {
                 }
             }
         });
+    }
+
+    // listeners
+
+    private View.OnClickListener editListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TripActivity a = (TripActivity) getActivity();
+                if (a == null) return;
+
+                // send the user to edit summary activity
+                Intent intent = new Intent(getActivity(), EditSummaryActivity.class);
+                intent.putExtra(Const.TRIP_ID_TAG, a.getTripId());
+                intent.putExtra(Const.TRIP_TITLE_TAG, a.getTripTitle());
+                intent.putExtra(Const.TRIP_START_TAG, a.getStartDate());
+                intent.putExtra(Const.TRIP_END_TAG, a.getEndDate());
+                intent.putExtra(Const.TRIP_OVER_TAG, a.getOverview());
+                startActivity(intent);
+
+                // finish this activity
+                if (getActivity() != null) getActivity().finish();
+            }
+        };
+    }
+    private View.OnClickListener locationListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // load the locations
+                loadLocations();
+            }
+        };
+    }
+    private View.OnClickListener tripperListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (getActivity() == null) return;
+                String tripId = ((TripActivity)getActivity()).getTripId();
+                if (tripId == null) return;
+
+                // send the user to match activity where they will be able to choose a
+                // friend to add to the trip
+                Intent intent = new Intent(getActivity(), MatchActivity.class);
+                intent.putExtra(Const.SOURCE_TAG, Const.TRIP_ACTIVITY_TAG);
+                intent.putExtra(Const.TRIP_ID_TAG, tripId);
+                startActivity(intent);
+                getActivity().finish();
+            }
+        };
     }
 }

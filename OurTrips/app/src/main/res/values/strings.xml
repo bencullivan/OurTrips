@@ -99,10 +99,10 @@
     <string name="add_photo">Add Photo</string>
     <string name="add_video">Add Video</string>
     <string name="loading_trip" tools:ignore="TypographyEllipsis">Loading trip...</string>
-    <string name="edit">Edit</string>
+    <string name="edit">Edit Trip Info</string>
     <string name="overview">Overview:</string>
     <string name="change">Change</string>
-    <string name="locations">Locations</string>
+    <string name="locations">View Locations</string>
     <string name="adding_to_the_gallery" tools:ignore="TypographyEllipsis">Adding to the gallery...</string>
     <string name="loading_photos" tools:ignore="TypographyEllipsis">Loading photos...</string>
     <string name="delete">Delete</string>
@@ -127,4 +127,6 @@
     <string name="bio_view">Bio:</string>
     <string name="enter_message">Enter message</string>
     <string name="send">Send</string>
+    <string name="add_tripper">Add Tripper</string>
+    <string name="add_tripper_friend">Click on a friend to add them to the trip!</string>
 </resources>

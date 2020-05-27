@@ -341,6 +341,7 @@ exports.onTripDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
     const commentsPath = 'trips/'+id+'/comments';
     const trippersPath = 'trips/'+id+'/trippers';
     const photosPath = 'trips/'+id+'/photos';
+    const locationsPath = 'trips/'+id+'/locations';
 
     // delete all of the photos from the storage bucket
     db.collection(photosPath).get()
@@ -412,6 +413,22 @@ exports.onTripDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
     .then(() => {
       return {
         path: trippersPath
+      };
+    })
+    .catch(err => {
+      console.log(err);
+    });
+
+    // delete the locations sub-collection
+    tools.firestore.delete(locationsPath, {
+      project: process.env.GCLOUD_PROJECT,
+      recursive: true,
+      yes: true,
+      token: functions.config().fb.token
+    })
+    .then(() => {
+      return {
+        path: locationsPath
       };
     })
     .catch(err => {
