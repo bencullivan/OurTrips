@@ -24,11 +24,15 @@ Tutorials that were consulted:
 
 • https://firebase.google.com/docs  (Firebase Documentation / Google Documentation)
 
+• https://www.youtube.com/channel/UCP4bf6IHJJQehibu6ai__cg  (Firebase Firecasts)
+
 • https://developer.android.com/docs  (Android Documentation)
 
 • https://www.youtube.com/watch?v=OVSe6bAnjgg  (Glide / RecyclerView)
 
 • https://javapapers.com/android/android-image-gallery-example-app-using-glide-library/  (Glide / RecyclerView)
+
+• https://codingwithmitch.com/blog/android-recyclerview/  (Glide / RecyclerView)
 
 • https://medium.com/@egemenhamutcu/displaying-images-from-firebase-storage-using-glide-for-kotlin-projects-3e4950f6c103  (Glide)
 
