@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class TrippersFragment extends Fragment implements View.OnClickListener {
+public class TrippersFragment extends Fragment {
 
     private String mTripId;
     private ArrayList<UserSummary> mTrippers;
@@ -64,6 +64,7 @@ public class TrippersFragment extends Fragment implements View.OnClickListener {
                     mTrippers = (ArrayList<UserSummary>) task.getResult();
                     mAdapter.clear();
                     mAdapter.addAll(mTrippers);
+                    mAdapter.notifyDataSetChanged();
                     Log.d(Const.TAG, "onComplete: trippers frag");
                 }
             }
@@ -103,10 +104,5 @@ public class TrippersFragment extends Fragment implements View.OnClickListener {
                 startActivity(intent);
             }
         });
-    }
-
-    @Override
-    public void onClick(View v) {
-
     }
 }

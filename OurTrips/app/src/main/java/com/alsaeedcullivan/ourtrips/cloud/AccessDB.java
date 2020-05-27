@@ -5,6 +5,7 @@ import android.util.Log;
 import com.alsaeedcullivan.ourtrips.models.Comment;
 import com.alsaeedcullivan.ourtrips.models.Pic;
 import com.alsaeedcullivan.ourtrips.models.Place;
+import com.alsaeedcullivan.ourtrips.models.Plan;
 import com.alsaeedcullivan.ourtrips.models.TripSummary;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
@@ -622,13 +623,15 @@ public class AccessDB {
      * @param tripId the id of the trip
      * @param comment the comment to be added
      */
-    public static Task<DocumentReference> addTripComment(String tripId, String comment, String userName,
+    public static Task<DocumentReference> addTripComment(String tripId, String comment, String userName, String userId,
                                                          long timestamp) {
         // add the comment to a map
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_COMMENT_KEY, comment);
         data.put(Const.USER_NAME_KEY, userName);
+        data.put(Const.USER_ID_KEY, userId);
         data.put(Const.TRIP_TIMESTAMP_KEY, timestamp);
+
 
         // add a document to the comments sub-collection of this trip
         return FirebaseFirestore.getInstance()
@@ -842,32 +845,34 @@ public class AccessDB {
      * gets all of the comments of a given trip
      * @param tripId the id of the trip
      */
-    public static Task<List<Comment>> getTripComments(String tripId) {
+    public static Task<List<Plan>> getTripComments(String tripId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_COMMENTS_COLLECTION)
                 .get()
-                .continueWith(new Continuation<QuerySnapshot, List<Comment>>() {
+                .continueWith(new Continuation<QuerySnapshot, List<Plan>>() {
                     @Override
-                    public List<Comment> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                    public List<Plan> then(@NonNull Task<QuerySnapshot> task) throws Exception {
                         // get the documents
                         QuerySnapshot q = task.getResult();
                         if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
                         List<DocumentSnapshot> docs = q.getDocuments();
 
                         // create a list to hold the comments
-                        List<Comment> comments = new ArrayList<>();
+                        List<Plan> plans = new ArrayList<>();
 
                         // extract a comment from each document and return the list of comments
                         for (DocumentSnapshot doc : docs) {
-                            Comment comment = new Comment();
-                            comment.setUser((String)doc.get(Const.USER_NAME_KEY));
-                            comment.setComment((String)doc.get(Const.TRIP_COMMENT_KEY));
-                            comment.setTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
-                            comments.add(comment);
+                            Plan plan = new Plan();
+                            plan.setPlanUserId((String)doc.get(Const.USER_ID_KEY));
+                            plan.setPlanUserName((String)doc.get(Const.USER_NAME_KEY));
+                            plan.setMessage((String)doc.get(Const.TRIP_COMMENT_KEY));
+                            plan.setPlanDocId(doc.getId());
+                            plan.setPlanTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+                            plans.add(plan);
                         }
-                        return comments;
+                        return plans;
                     }
                 });
     }

@@ -29,7 +29,7 @@ import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SummaryFragment extends Fragment implements View.OnClickListener {
+public class SummaryFragment extends Fragment {
 
     // text widgets
     private TextView mTitle, mStartDate, mEndDate, mOverview;
@@ -109,11 +109,6 @@ public class SummaryFragment extends Fragment implements View.OnClickListener {
                 loadLocations();
             }
         });
-    }
-
-    @Override
-    public void onClick(View v) {
-
     }
 
     @Override

@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:maxWidth="100dp"
+        android:maxWidth="300dp"
         android:layout_marginTop="8dp"
         android:padding="10dp"
         android:background="@drawable/plan_shape"

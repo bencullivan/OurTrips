@@ -2,8 +2,11 @@ package com.alsaeedcullivan.ourtrips.models;
 
 public class Plan {
 
-    private String message, planTripId, planUserId, planUserName;
-    private long planTimeStamp;
+    private String message = "";
+    private String planDocId = "";
+    private String planUserId = "";
+    private String planUserName = "";
+    private long planTimeStamp = 0;
 
     public Plan() { }
 
@@ -15,12 +18,12 @@ public class Plan {
         this.message = message;
     }
 
-    public String getPlanTripId() {
-        return planTripId;
+    public String getPlanDocId() {
+        return planDocId;
     }
 
-    public void setPlanTripId(String planTripId) {
-        this.planTripId = planTripId;
+    public void setPlanDocId(String planDocId) {
+        this.planDocId = planDocId;
     }
 
     public String getPlanUserId() {

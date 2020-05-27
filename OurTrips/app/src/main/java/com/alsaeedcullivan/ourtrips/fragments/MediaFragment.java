@@ -31,7 +31,6 @@ import com.alsaeedcullivan.ourtrips.models.Pic;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
@@ -50,7 +49,7 @@ import java.util.List;
  * Android ImagePicker can be found on github at https://github.com/Dhaval2404/ImagePicker
  * The library has been in no way modified, we merely implement it in this fragment for photo picking
  */
-public class MediaFragment extends Fragment implements View.OnClickListener {
+public class MediaFragment extends Fragment {
 
     private static final int VID_REQUEST = 101;
 
@@ -95,11 +94,6 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         mLoading = view.findViewById(R.id.gallery_loading);
         mSpinner.setVisibility(View.GONE);
         mLoading.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void onClick(View v) {
-
     }
 
     @Override

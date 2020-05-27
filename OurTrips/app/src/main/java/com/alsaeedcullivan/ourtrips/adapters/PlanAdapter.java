@@ -61,4 +61,15 @@ public class PlanAdapter extends RecyclerView.Adapter {
     public int getItemCount() {
         return mPlans.size();
     }
+
+    /**
+     * setData()
+     * sets the list of plans for this adapter
+     * @param plans the list of plans
+     */
+    public void setData(ArrayList<Plan> plans) {
+        mPlans.clear();
+        mPlans.addAll(plans);
+        notifyDataSetChanged();
+    }
 }
