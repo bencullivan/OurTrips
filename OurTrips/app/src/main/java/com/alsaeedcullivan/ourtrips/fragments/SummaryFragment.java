@@ -1,6 +1,5 @@
 package com.alsaeedcullivan.ourtrips.fragments;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -30,11 +29,6 @@ import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SummaryFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class SummaryFragment extends Fragment implements View.OnClickListener {
 
     // text widgets

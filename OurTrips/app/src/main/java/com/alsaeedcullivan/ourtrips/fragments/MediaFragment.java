@@ -48,17 +48,17 @@ import java.util.List;
  * This fragment uses the Android ImagePicker open source library
  * Android ImagePicker is licensed under the Apache License, Version 2.0
  * Android ImagePicker can be found on github at https://github.com/Dhaval2404/ImagePicker
- * The library has been in no way modified, we merely implement it in this fragment for photo cropping
+ * The library has been in no way modified, we merely implement it in this fragment for photo picking
  */
 public class MediaFragment extends Fragment implements View.OnClickListener {
 
     private static final int VID_REQUEST = 101;
 
     // widgets
-    private ImageButton mPhotoGallery, mVideoGallery;
-    private Button mAddPhoto, mAddVideo;
+    private ImageButton mPhotoGallery;
+    private Button mAddPhoto;
     private ProgressBar mSpinner;
-    private TextView mLoading, mPhotoText, mVideoText;
+    private TextView mLoading, mPhotoText;
     private ArrayList<Pic> mPics;
 
     public MediaFragment() {
@@ -88,13 +88,9 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         // get widget references, add on click listeners and set initial visibility
         mPhotoGallery = view.findViewById(R.id.go_to_gallery);
         mPhotoGallery.setOnClickListener(galleryListener());
-        mVideoGallery = view.findViewById(R.id.go_to_videos);
         mAddPhoto = view.findViewById(R.id.add_photo);
         mAddPhoto.setOnClickListener(photoListener());
-        mAddVideo = view.findViewById(R.id.add_video);
-        mAddVideo.setOnClickListener(videoListener());
         mPhotoText = view.findViewById(R.id.photo_gallery_text);
-        mVideoText = view.findViewById(R.id.video_gallery_text);
         mSpinner = view.findViewById(R.id.gallery_spinner);
         mLoading = view.findViewById(R.id.gallery_loading);
         mSpinner.setVisibility(View.GONE);
@@ -110,24 +106,11 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && data != null) {
-            Log.d(Const.TAG, "onActivityResult: " + requestCode);
-            // if the user selected a video
-            if (requestCode == VID_REQUEST) {
-                Log.d(Const.TAG, "onActivityResult: video selected");
-                Uri uri = data.getData();
-                if (uri == null) return;
-                Log.d(Const.TAG, "onActivityResult: uri   " + uri.toString());
-                addVid(uri);
-            }
-            // if the user selected a photo
-
-            else {
-                // get the uri
-                File file = ImagePicker.Companion.getFile(data);
-                if (file != null) {
-                    Uri uri = Uri.fromFile(file);
-                    addPic(uri);
-                }
+            // get the uri
+            File file = ImagePicker.Companion.getFile(data);
+            if (file != null) {
+                Uri uri = Uri.fromFile(file);
+                addPic(uri);
             }
         }
     }
@@ -146,16 +129,6 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         if (getContext() == null) return;
         // start picker to get the image and then use the result
         ImagePicker.Companion.with(this).start();
-    }
-
-    /**
-     * selectVid
-     * allows the user to select a video from the gallery
-     */
-    private void selectVid() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("video/*");
-        startActivityForResult(intent, VID_REQUEST);
     }
 
     /**
@@ -198,48 +171,14 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    private void addVid(Uri uri) {
-        Log.d(Const.TAG, "addVid: ");
-        if (getActivity() == null) return;
-        try {
-            mLoading.setText(getString(R.string.adding_to_the_gallery));
-            showSpinner();
-            long timeStamp = new Date().getTime();
-            String id = ((TripActivity) getActivity()).getTripId();
-
-            // establish the path where this video will be stored in the bucket
-            String path = Const.TRIP_VID_PATH + "/" + id +
-                    "/" + Const.TRIP_VIDEO_KEY + timeStamp + Const.VID_MP4;
-
-            // open an input stream for the uri
-            InputStream is = getActivity().getContentResolver().openInputStream(uri);
-            // add this video to the storage bucket
-            final long one = new Date().getTime();
-            AccessBucket.uploadVideo(path, uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Log.d(Const.TAG, "onSuccess: " + (new Date().getTime() - one));
-                    Log.d(Const.TAG, "onSuccess: yay video was uploaded to bucket");
-                }
-            });
-        } catch (IOException e) {
-            hideSpinner();
-            Log.d(Const.TAG, Log.getStackTraceString(e));
-        }
-
-    }
-
     /**
      * showSpinner()
      * displays the progress bar
      */
     private void showSpinner() {
         mPhotoGallery.setVisibility(View.GONE);
-        mVideoGallery.setVisibility(View.GONE);
         mAddPhoto.setVisibility(View.GONE);
-        mAddVideo.setVisibility(View.GONE);
         mPhotoText.setVisibility(View.GONE);
-        mVideoText.setVisibility(View.GONE);
         mSpinner.setVisibility(View.VISIBLE);
         mLoading.setVisibility(View.VISIBLE);
     }
@@ -252,11 +191,8 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         mSpinner.setVisibility(View.GONE);
         mLoading.setVisibility(View.GONE);
         mPhotoGallery.setVisibility(View.VISIBLE);
-        mVideoGallery.setVisibility(View.VISIBLE);
         mAddPhoto.setVisibility(View.VISIBLE);
-        mAddVideo.setVisibility(View.VISIBLE);
         mPhotoText.setVisibility(View.VISIBLE);
-        mVideoText.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -317,16 +253,6 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onClick(View v) {
                 selectPic();
-            }
-        };
-    }
-
-    // on click listener for the add video button
-    private View.OnClickListener videoListener() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectVid();
             }
         };
     }

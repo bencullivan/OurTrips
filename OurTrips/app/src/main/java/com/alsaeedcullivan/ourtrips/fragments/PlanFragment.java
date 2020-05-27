@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 
 import com.alsaeedcullivan.ourtrips.R;
 
-
 public class PlanFragment extends Fragment implements View.OnClickListener{
 
 

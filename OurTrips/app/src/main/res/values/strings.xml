@@ -125,4 +125,6 @@
     <string name="birthday">BirthDay:</string>
     <string name="affiliation">Affiliation:</string>
     <string name="bio_view">Bio:</string>
+    <string name="enter_message">Enter message</string>
+    <string name="send">Send</string>
 </resources>
