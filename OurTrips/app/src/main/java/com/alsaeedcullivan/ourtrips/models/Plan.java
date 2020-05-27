@@ -1,6 +1,9 @@
 package com.alsaeedcullivan.ourtrips.models;
 
-public class Plan {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Plan implements Parcelable {
 
     private String message = "";
     private String planDocId = "";
@@ -9,6 +12,40 @@ public class Plan {
     private long planTimeStamp = 0;
 
     public Plan() { }
+
+    private Plan(Parcel in) {
+        message = in.readString();
+        planDocId = in.readString();
+        planUserId = in.readString();
+        planUserName = in.readString();
+        planTimeStamp = in.readLong();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(message);
+        dest.writeString(planDocId);
+        dest.writeString(planUserId);
+        dest.writeString(planUserName);
+        dest.writeLong(planTimeStamp);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Plan> CREATOR = new Creator<Plan>() {
+        @Override
+        public Plan createFromParcel(Parcel in) {
+            return new Plan(in);
+        }
+
+        @Override
+        public Plan[] newArray(int size) {
+            return new Plan[size];
+        }
+    };
 
     public String getMessage() {
         return message;

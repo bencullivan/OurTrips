@@ -154,7 +154,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/bio"
-                android:inputType="date"
                 android:singleLine="true"
                 android:textColorHint="@color/colorSecondaryDark" />
         </com.google.android.material.textfield.TextInputLayout>

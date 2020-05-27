@@ -11,15 +11,18 @@
         can be found here https://blog.sendbird.com/android-chat-tutorial-building-a-messaging-ui/-->
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/plan_recycle"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="60dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/line_block"/>
+        android:layout_height="wrap_content"
+        android:paddingTop="100dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/line_block">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/plan_recycle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 
     <View
         android:id="@+id/line_block"
@@ -41,16 +44,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <EditText
-            android:id="@+id/plan_type_box"
-            android:hint="@string/enter_message"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_message"
             android:background="@android:color/transparent"
             android:layout_gravity="center"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/plan_type_box"
+                android:hint="@string/enter_message"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColorHint="@color/colorSecondaryDark" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/plan_send"
