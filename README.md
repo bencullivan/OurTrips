@@ -34,7 +34,7 @@ Tutorials that were consulted:
 
 • https://codingwithmitch.com/blog/android-recyclerview/  (Glide / RecyclerView)
 
-• https://medium.com/@egemenhamutcu/displaying-images-from-firebase-storage-using-glide-for-kotlin-projects-3e4950f6c103  (Glide)
+• https://medium.com/@egemenhamutcu/displaying-images-from-firebase-storage-using-glide-for-kotlin-projects-3e4950f6c103 (Glide)
 
 • https://github.com/firebase/FirebaseUI-Android/tree/master/storage (Glide)
 
