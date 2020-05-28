@@ -9,23 +9,30 @@ import androidx.viewpager.widget.ViewPager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.adapters.PageAdapter;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.models.Place;
+import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.type.LatLng;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -202,7 +209,10 @@ public class TripActivity extends AppCompatActivity {
      * loads the info of this trip from the db
      */
     private void loadTrip() {
-        AccessDB.getTripInfo(mTripId).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
+        if (mTripId == null) return;
+        // load the trip info
+        Task<Map<String, Object>> infoTask = AccessDB.getTripInfo(mTripId)
+                .addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
             @Override
             public void onComplete(@NonNull Task<Map<String, Object>> task) {
                 if (task.isSuccessful()) {
@@ -220,12 +230,14 @@ public class TripActivity extends AppCompatActivity {
                         // get the overview
                         String over = (String) data.get(Const.TRIP_OVERVIEW_KEY);
                         if (over != null) mOverview = over;
-                        Log.d(Const.TAG, "onComplete: doneee");
-                        // display the fragments
-                        showFrags();
                     }
+                    showFrags();
                 } else {
-                    //TODO toast user
+                    Toast t = Toast.makeText(TripActivity.this, "The trip info could " +
+                            "not be loaded", Toast.LENGTH_SHORT);
+                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                    t.show();
+                    finish();
                 }
             }
         });

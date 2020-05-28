@@ -3,6 +3,10 @@ package com.alsaeedcullivan.ourtrips.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.Nullable;
+
+import java.util.Objects;
+
 /**
  * Model to contain the summary data associated with a user
  */
@@ -76,5 +80,18 @@ public class UserSummary implements Parcelable {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (!(obj instanceof UserSummary)) return false;
+        UserSummary user = (UserSummary) obj;
+        return name.equals(user.getName()) && userId.equals(user.getUserId())
+                && email.equals(user.getEmail());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId, name, email);
     }
 }

@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintVertical_bias=".15"
+            app:layout_constraintVertical_bias=".1"
             android:textSize="@dimen/header_sp"
             android:textAlignment="center"
             android:fontFamily="sans-serif-medium"

@@ -24,6 +24,7 @@ public class Const {
     public static final String PLAN_TAG = "PlanFragment";
     public static final String MEDIA_TAG = "MediaFragment";
     public static final String TRIPPERS_TAG = "TrippersFragment";
+    public static final String TRIPPERS_SET_TAG = "trippers_set";
     public static final String SELECTED_DATE_TAG = "selected";
     public static final String SELECTED_FRIEND_TAG = "selected_friend";
     public static final String GALLERY_TAG = "gallery_pics";

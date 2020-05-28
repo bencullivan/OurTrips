@@ -9,9 +9,6 @@ import androidx.fragment.app.Fragment;
 
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -48,30 +45,11 @@ public class TrippersFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getActivity() == null) return;
-
-        Log.d(Const.TAG, "onCreate: trippers frag");
-
-        // get the trip id
-        mTripId = ((TripActivity)getActivity()).getTripId();
-        if (mTripId == null) return;
 
         // instantiate the adapter
         mAdapter = new TripperAdapter(getActivity(), R.layout.fragment_trippers, new ArrayList<UserSummary>());
-
-        // get the list of trippers and add it to the adapter
-        AccessDB.getTrippers(mTripId).addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
-            @Override
-            public void onComplete(@NonNull Task<List<UserSummary>> task) {
-                if (task.isSuccessful() && task.getResult() != null && task.getResult().size() > 0) {
-                    mTrippers = (ArrayList<UserSummary>) task.getResult();
-                    mAdapter.clear();
-                    mAdapter.addAll(mTrippers);
-                    mAdapter.notifyDataSetChanged();
-                    Log.d(Const.TAG, "onComplete: trippers frag");
-                }
-            }
-        });
     }
 
     @Override
@@ -105,6 +83,34 @@ public class TrippersFragment extends Fragment {
                 Intent intent = new Intent(getActivity(), ViewUserActivity.class);
                 intent.putExtra(Const.USER_ID_KEY, user.getUserId());
                 startActivity(intent);
+            }
+        });
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        Log.d(Const.TAG, "onActivityCreated: trippers fragment");
+
+        TripActivity activity = (TripActivity) getActivity();
+        if (activity == null) return;
+
+        // get the trip id
+        mTripId = activity.getTripId();
+        if (mTripId == null || mAdapter == null) return;
+
+        // get the list of trippers and add it to the adapter
+        AccessDB.getTrippers(mTripId).addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+            @Override
+            public void onComplete(@NonNull Task<List<UserSummary>> task) {
+                if (task.isSuccessful() && task.getResult() != null && task.getResult().size() > 0) {
+                    mTrippers = (ArrayList<UserSummary>) task.getResult();
+                    mAdapter.clear();
+                    mAdapter.addAll(mTrippers);
+                    mAdapter.notifyDataSetChanged();
+                    Log.d(Const.TAG, "onComplete: trippers frag");
+                }
             }
         });
     }

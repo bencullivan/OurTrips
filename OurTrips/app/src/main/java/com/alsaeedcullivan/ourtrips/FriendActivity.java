@@ -196,6 +196,8 @@ public class FriendActivity extends AppCompatActivity {
      * @param friendId the email of the new friend
      */
     public void acceptRequest(String friendId, String friendEmail, String friendName) {
+        if (friendId.equals("") || friendEmail.equals("") || friendName.equals("")) return;
+
         // get the current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;

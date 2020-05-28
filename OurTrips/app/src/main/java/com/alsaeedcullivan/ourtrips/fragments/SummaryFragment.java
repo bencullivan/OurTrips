@@ -23,11 +23,13 @@ import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.TripActivity;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.models.Place;
+import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class SummaryFragment extends Fragment {
@@ -161,7 +163,6 @@ public class SummaryFragment extends Fragment {
             public void onClick(View v) {
                 if (getActivity() == null) return;
                 String tripId = ((TripActivity)getActivity()).getTripId();
-                if (tripId == null) return;
 
                 // send the user to match activity where they will be able to choose a
                 // friend to add to the trip

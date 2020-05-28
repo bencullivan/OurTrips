@@ -22,14 +22,17 @@ import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.auth.User;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 public class MatchActivity extends AppCompatActivity {
@@ -41,6 +44,7 @@ public class MatchActivity extends AppCompatActivity {
     private FriendAdapter mAdapter;
     private List<Date> mUserDates;
     private ArrayList<UserSummary> mFriends;
+    private HashSet<UserSummary> mTrippers = new HashSet<>();
     private String mUserName;
     private String mTripId;
     private FirebaseUser mUser;
@@ -111,18 +115,13 @@ public class MatchActivity extends AppCompatActivity {
             // else load the user's friends from the db
             else if (mUser != null) {
                 // load this user's list of friends
-                Task<List<UserSummary>> friendTask = AccessDB.getFriendsList(mUser.getUid());
-                friendTask.addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                Task<List<UserSummary>> friendTask = AccessDB.getFriendsList(mUser.getUid())
+                        .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
                     @Override
                     public void onComplete(@NonNull Task<List<UserSummary>> task) {
                         if (task.isSuccessful()) {
                             // get the list of friends
                             mFriends = (ArrayList<UserSummary>) task.getResult();
-                            // add them to the adapter
-                            if (mFriends != null) {
-                                mAdapter.addAll(mFriends);
-                                mAdapter.notifyDataSetChanged();
-                            }
                         } else {
                             Toast t = Toast.makeText(MatchActivity.this, "Could not load your friends.",
                                     Toast.LENGTH_SHORT);
@@ -131,6 +130,32 @@ public class MatchActivity extends AppCompatActivity {
                         }
                         // show the list regardless of whether the task was successful
                         showList();
+                    }
+                });
+                Task<List<UserSummary>> tripperTask = AccessDB.getTrippers(mTripId)
+                        .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                    @Override
+                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            mTrippers.clear();
+                            mTrippers.addAll(task.getResult());
+                        }
+                    }
+                });
+                // add the friends that are not part of the trip to the list of friends
+                Tasks.whenAll(friendTask, tripperTask).continueWith(new Continuation<Void, Object>() {
+                    @Override
+                    public Object then(@NonNull Task<Void> task) {
+                        if (mFriends == null || mTrippers == null) return null;
+                        ArrayList<UserSummary> temp = new ArrayList<>();
+                        for (UserSummary user : mFriends) {
+                            if (!mTrippers.contains(user)) temp.add(user);
+                        }
+                        mFriends = temp;
+                        mAdapter.clear();
+                        mAdapter.addAll(mFriends);
+                        mAdapter.notifyDataSetChanged();
+                        return null;
                     }
                 });
             }
@@ -396,6 +421,10 @@ public class MatchActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(Const.TAG, "onItemClick: " + mFriends.get(position).getUserId());
+                mSelected = mFriends.get(position);
+                // display the add tripper dialog
+                CustomDialogFragment.newInstance(CustomDialogFragment.ADD_TRIPPER_ID)
+                        .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
             }
         };
     }

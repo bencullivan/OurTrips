@@ -49,6 +49,7 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int LOCATION_REQUIRED_ID = 12;
     public static final int ADD_LOCATION_ID = 13;
     public static final int DELETE_TRIP_ID = 14;
+    public static final int ADD_TRIPPER_ID = 15;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -112,6 +113,8 @@ public class CustomDialogFragment extends DialogFragment {
                 return addLocationDialog();
             case DELETE_TRIP_ID:
                 return deleteTripDialog();
+            case ADD_TRIPPER_ID:
+                return addTripperDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -491,6 +494,27 @@ public class CustomDialogFragment extends DialogFragment {
                 if (getActivity() == null) return;
                 ((TripActivity)getActivity()).deleteTrip();
                 dismiss();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dismiss();
+            }
+        });
+        return dialog.create();
+    }
+
+    // asks the user if they want to add this friend as a tripper
+    private AlertDialog addTripperDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
+        // set the title and message
+        dialog.setTitle("Add Tripper");
+        dialog.setMessage("Click \"Add\" to add this friend to the trip");
+        dialog.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //TODO add this friend to the trip
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override

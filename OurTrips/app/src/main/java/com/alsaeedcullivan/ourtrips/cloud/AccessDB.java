@@ -355,8 +355,10 @@ public class AccessDB {
                         for (DocumentSnapshot doc : docList) {
                             UserSummary u = new UserSummary();
                             u.setUserId(doc.getId());
-                            u.setEmail((String)doc.get(Const.USER_EMAIL_KEY));
-                            u.setName((String)doc.get(Const.USER_NAME_KEY));
+                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
+                            if (email != null) u.setEmail(email);
+                            String name = (String)doc.get(Const.USER_NAME_KEY);
+                            if (name != null) u.setName(name);
                             friends.add(u);
                         }
                         return friends;
@@ -389,8 +391,10 @@ public class AccessDB {
                         for (DocumentSnapshot doc : docList) {
                             UserSummary u = new UserSummary();
                             u.setUserId(doc.getId());
-                            u.setEmail((String)doc.get(Const.USER_EMAIL_KEY));
-                            u.setName((String)doc.get(Const.USER_NAME_KEY));
+                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
+                            if (email != null) u.setEmail(email);
+                            String name = (String)doc.get(Const.USER_NAME_KEY);
+                            if (name != null) u.setName(name);
                             friends.add(u);
                         }
                         return friends;
@@ -830,8 +834,10 @@ public class AccessDB {
                         for (DocumentSnapshot doc : docs) {
                             UserSummary tripper = new UserSummary();
                             tripper.setUserId(doc.getId());
-                            tripper.setEmail((String)doc.get(Const.USER_EMAIL_KEY));
-                            tripper.setName((String)doc.get(Const.USER_NAME_KEY));
+                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
+                            if (email != null) tripper.setEmail(email);
+                            String name = (String)doc.get(Const.USER_NAME_KEY);
+                            if (name != null) tripper.setName(name);
                             trippers.add(tripper);
                         }
                         return trippers;
