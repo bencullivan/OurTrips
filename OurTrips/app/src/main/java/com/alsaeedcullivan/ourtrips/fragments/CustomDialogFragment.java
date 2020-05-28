@@ -23,6 +23,7 @@ import com.alsaeedcullivan.ourtrips.MatchActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.RegisterActivity;
 import com.alsaeedcullivan.ourtrips.RequestTripActivity;
+import com.alsaeedcullivan.ourtrips.TripActivity;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 
 import java.util.Calendar;
@@ -47,6 +48,7 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int LOCATION_SETTINGS_ID = 11;
     public static final int LOCATION_REQUIRED_ID = 12;
     public static final int ADD_LOCATION_ID = 13;
+    public static final int DELETE_TRIP_ID = 14;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -79,6 +81,7 @@ public class CustomDialogFragment extends DialogFragment {
         int id = -1;
         // get the id that was passed in when the dialog was created
         if (getArguments() != null) id = getArguments().getInt(KEY_ID);
+        if (getActivity() == null) return new AlertDialog.Builder(getContext()).create();
 
         // based on the id return the appropriate type of dialog
         switch (id) {
@@ -107,6 +110,8 @@ public class CustomDialogFragment extends DialogFragment {
                 return createLocationRequiredDialog();
             case ADD_LOCATION_ID:
                 return addLocationDialog();
+            case DELETE_TRIP_ID:
+                return deleteTripDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -468,6 +473,29 @@ public class CustomDialogFragment extends DialogFragment {
                     if (imm != null) imm.hideSoftInputFromWindow(input.getWindowToken(),
                             InputMethodManager.HIDE_NOT_ALWAYS);
                 }
+            }
+        });
+        return dialog.create();
+    }
+
+    // asks the user if they are sure they want to delete this trip
+    private AlertDialog deleteTripDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
+        // set the title and message
+        dialog.setTitle(R.string.are_you_sure);
+        dialog.setMessage(R.string.non_reversible);
+        dialog.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (getActivity() == null) return;
+                ((TripActivity)getActivity()).deleteTrip();
+                dismiss();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dismiss();
             }
         });
         return dialog.create();

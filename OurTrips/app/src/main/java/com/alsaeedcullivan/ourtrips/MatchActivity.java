@@ -230,8 +230,9 @@ public class MatchActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
+                Log.d(Const.TAG, "onOptionsItemSelected: " + mSource);
                 // if this was to add a tripper, Trip activity must be started
-                if (mSource != null && mSource.equals(Const.TRIP_ACTIVITY_TAG) || mTripId == null) {
+                if (mSource != null && mSource.equals(Const.TRIP_ACTIVITY_TAG) && mTripId != null) {
                     Intent intent = new Intent(MatchActivity.this, TripActivity.class);
                     intent.putExtra(Const.TRIP_ID_TAG, mTripId);
                     startActivity(intent);
@@ -364,6 +365,7 @@ public class MatchActivity extends AppCompatActivity {
                                 mSelected.getName() + " have no dates in common.", Toast.LENGTH_LONG);
                         t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                         t.show();
+                        showList();
                     }
                 } else {
                     // unable to be matched
@@ -371,6 +373,7 @@ public class MatchActivity extends AppCompatActivity {
                             mSelected.getName() + " were not able to be matched.", Toast.LENGTH_LONG);
                     t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                     t.show();
+                    showList();
                 }
             }
         });

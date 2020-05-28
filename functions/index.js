@@ -343,11 +343,14 @@ exports.onTripDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
     const photosPath = 'trips/'+id+'/photos';
     const locationsPath = 'trips/'+id+'/locations';
 
+    console.log(snap.id);
+
     // delete all of the photos from the storage bucket
     db.collection(photosPath).get()
       .then(snapshot => {
         snapshot.forEach(photo => {
-          bucket.file(photo.id).delete();
+          console.log(photo.get('photo'));
+          bucket.file(photo.get('photo')).delete();
         });
         return snapshot;
       })
@@ -359,6 +362,7 @@ exports.onTripDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
     db.collection(trippersPath).get()
       .then(snapshot => {
         snapshot.forEach(user => {
+          console.log(user.id);
           db.collection('users')
             .doc(user.id)
             .collection('user_trips')

@@ -196,7 +196,7 @@ public class AccessDB {
      * @param userEmail the email of this user
      * @param friendEmail the email of the person they are sending the request to
      */
-    public static void sendFriendRequest(String userId, String userEmail, String userName, String friendEmail) {
+    public static Task<Object> sendFriendRequest(String userId, String userEmail, String userName, String friendEmail) {
         final String id = userId;
         // store this user's summary data in a map
         final Map<String, Object> data = new HashMap<>();
@@ -205,7 +205,7 @@ public class AccessDB {
         data.put(Const.USER_NAME_KEY, userName);
         // get the friend from the db based on the email that was passed in
         final FirebaseFirestore store = FirebaseFirestore.getInstance();
-        store.collection(Const.USERS_COLLECTION)
+        return store.collection(Const.USERS_COLLECTION)
                 .whereEqualTo(Const.USER_EMAIL_KEY, friendEmail)
                 .get()
                 .continueWith(new Continuation<QuerySnapshot, Object>() {

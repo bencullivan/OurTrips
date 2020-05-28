@@ -129,4 +129,7 @@
     <string name="send">Send</string>
     <string name="add_tripper">Add Tripper</string>
     <string name="add_tripper_friend">Click on a friend to add them to the trip!</string>
+    <string name="delete_trip">Delete Trip</string>
+    <string name="non_reversible">Deleting a trip is not reversible, all of the trips information will be deleted. Are you sure you want to delete this trip?</string>
+    <string name="are_you_sure">Are you sure???</string>
 </resources>

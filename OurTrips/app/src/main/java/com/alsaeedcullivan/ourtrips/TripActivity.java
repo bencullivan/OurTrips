@@ -230,6 +230,21 @@ public class TripActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * deleteTrip()
+     * deletes this trip from the db and from all the user's trips sub-collections
+     */
+    public void deleteTrip() {
+        if (mTripId == null) return;
+        AccessDB.deleteTrip(mTripId).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) finish();
+                else Log.d(Const.TAG, "onComplete: fuck, it failed to delete");
+            }
+        });
+    }
+
     // hides the progress bar and displays the view pager of fragments
     private void showFrags() {
         mSpinner.setVisibility(View.GONE);

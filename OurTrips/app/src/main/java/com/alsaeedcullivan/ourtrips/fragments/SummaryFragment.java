@@ -87,6 +87,8 @@ public class SummaryFragment extends Fragment {
         locations.setOnClickListener(locationListener());
         Button addTripper = view.findViewById(R.id.sum_add_tripper);
         addTripper.setOnClickListener(tripperListener());
+        Button deleteTrip = view.findViewById(R.id.delete_trip);
+        deleteTrip.setOnClickListener(deleteListener());
     }
 
     /**
@@ -168,6 +170,15 @@ public class SummaryFragment extends Fragment {
                 intent.putExtra(Const.TRIP_ID_TAG, tripId);
                 startActivity(intent);
                 getActivity().finish();
+            }
+        };
+    }
+    private View.OnClickListener deleteListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CustomDialogFragment.newInstance(CustomDialogFragment.DELETE_TRIP_ID)
+                        .show(getParentFragmentManager(), CustomDialogFragment.TAG);
             }
         };
     }
