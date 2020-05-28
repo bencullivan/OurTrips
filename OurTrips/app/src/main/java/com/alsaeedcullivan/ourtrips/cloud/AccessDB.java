@@ -2,7 +2,6 @@ package com.alsaeedcullivan.ourtrips.cloud;
 
 import android.util.Log;
 
-import com.alsaeedcullivan.ourtrips.models.Comment;
 import com.alsaeedcullivan.ourtrips.models.Pic;
 import com.alsaeedcullivan.ourtrips.models.Place;
 import com.alsaeedcullivan.ourtrips.models.Plan;

@@ -112,6 +112,7 @@ public class TripActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
+            startActivity(new Intent(TripActivity.this, MainActivity.class));
             finish();
         }
         return super.onOptionsItemSelected(item);
@@ -239,7 +240,12 @@ public class TripActivity extends AppCompatActivity {
         AccessDB.deleteTrip(mTripId).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) finish();
+                if (task.isSuccessful()) {
+                    Intent intent = new Intent(TripActivity.this, MainActivity.class);
+                    intent.putExtra(Const.TRIP_ID_TAG, mTripId);
+                    startActivity(intent);
+                    finish();
+                }
                 else Log.d(Const.TAG, "onComplete: fuck, it failed to delete");
             }
         });

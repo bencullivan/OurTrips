@@ -130,7 +130,17 @@ public class VerifyActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
-                    // allow them to proceed to register activity
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    if (user == null || !user.isEmailVerified()) {
+                        // inform the user they are not verified
+                        Toast t = Toast.makeText(VerifyActivity.this, "Please follow " +
+                                "the link that we sent to you in order to verify your account",
+                                Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                        return;
+                    }
+                    // allow them to proceed to register activity if they are verified
                     Intent intent = new Intent(VerifyActivity.this, RegisterActivity.class);
                     intent.putExtra(Const.SOURCE_TAG, Const.VERIFY_TAG);
                     startActivity(intent);

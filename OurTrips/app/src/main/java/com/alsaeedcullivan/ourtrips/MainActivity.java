@@ -41,11 +41,10 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<TripSummary> mTrips;
     private FirebaseUser mUser;
     private ListView mListView;
-    private TripSummary mSelected;
     private ProgressBar mSpinner;
     private TextView mLoading;
     private LinearLayout mLayout;
-    private boolean mSorted = false;
+    private String mTripId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
         mLayout.setVisibility(View.GONE);
         mSpinner.setVisibility(View.VISIBLE);
         mLoading.setVisibility(View.VISIBLE);
+
+        Intent intent = getIntent();
+        if (intent != null && intent.getStringExtra(Const.TRIP_ID_TAG) != null)
+            mTripId = intent.getStringExtra(Const.TRIP_ID_TAG);
 
         // get the user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -203,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, TripActivity.class);
                 intent.putExtra(Const.TRIP_ID_TAG, mTrips.get(position).getId());
                 startActivity(intent);
+                finish();
             }
         };
     }
@@ -222,6 +226,15 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             if (mTrips != null && mTrips.size() > 0) {
+                // remove the trip that was deleted if it has not already been removed
+                if (mTripId != null) {
+                    for (int i = 0; i < mTrips.size(); i++) {
+                        if (mTrips.get(i).getId() != null && mTrips.get(i).getId().equals(mTripId)) {
+                            mTrips.remove(i);
+                            break;
+                        }
+                    }
+                }
                 mTrips.sort(new TripDateComparator());
                 mAdapter.addAll(mTrips);
                 mAdapter.notifyDataSetChanged();

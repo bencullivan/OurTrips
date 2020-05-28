@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.adapters.FriendAdapter;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
@@ -173,6 +175,13 @@ public class FriendActivity extends AppCompatActivity {
         // get the current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
+
+        if (email.equals(user.getEmail())) {
+            Toast t = Toast.makeText(FriendActivity.this, "You cannot send a friend request to yourself", Toast.LENGTH_SHORT);
+            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+            t.show();
+            return;
+        }
 
         Log.d(Const.TAG, "sendRequest: " + email);
         Log.d(Const.TAG, "sendRequest: " + user.getEmail());

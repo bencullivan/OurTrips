@@ -188,8 +188,6 @@ public class LoginActivity extends AppCompatActivity {
                             // get the user
                             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                             if (user == null || !user.isEmailVerified()) {
-                                //TODO insert logic here
-
                                 // tell the user that the email has not been verified
                                 Toast t = Toast.makeText(LoginActivity.this,
                                         R.string.need_to_verify, Toast.LENGTH_LONG);
@@ -198,6 +196,7 @@ public class LoginActivity extends AppCompatActivity {
                                 t.show();
                                 // sign the user out
                                 FirebaseAuth.getInstance().signOut();
+                                hideBar();
                                 return;
                             }
                             // check to see if the user is registered

@@ -30,7 +30,7 @@
     <string name="message_important_access">The requested permission is necessary for the app to run properly</string>
     <string name="trip_cal_select">Select dates where you are available to go on a trip!</string>
     <string name="not_registered">Your email is verified but you have not registered, please click Sign Up to create an account</string>
-    <string name="need_to_verify">You have not verified your email address, please click Sign Up to verifiy</string>
+    <string name="need_to_verify">Please follow the link that we sent to you in order to verify your email address</string>
     <string name="available_match">Click on a friend to find dates where you are both available</string>
     <!--    prompts  -->
     <string name="prompt_email">Email</string>

@@ -228,12 +228,14 @@ public class MediaFragment extends Fragment {
                                         "in the photo gallery.", Toast.LENGTH_SHORT);
                                 t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                                 t.show();
+                                hideSpinner();
                             }
                         } else {
                             Toast t = Toast.makeText(getActivity(), "The photo gallery could " +
                                     "not be loaded.", Toast.LENGTH_SHORT);
                             t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                             t.show();
+                            hideSpinner();
                         }
                     }
                 });
