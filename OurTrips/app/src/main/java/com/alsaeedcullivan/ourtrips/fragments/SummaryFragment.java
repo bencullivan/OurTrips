@@ -163,12 +163,16 @@ public class SummaryFragment extends Fragment {
             public void onClick(View v) {
                 if (getActivity() == null) return;
                 String tripId = ((TripActivity)getActivity()).getTripId();
+                String title = ((TripActivity)getActivity()).getTripTitle();
+                String start = ((TripActivity)getActivity()).getStartDate();
 
                 // send the user to match activity where they will be able to choose a
                 // friend to add to the trip
                 Intent intent = new Intent(getActivity(), MatchActivity.class);
                 intent.putExtra(Const.SOURCE_TAG, Const.TRIP_ACTIVITY_TAG);
                 intent.putExtra(Const.TRIP_ID_TAG, tripId);
+                intent.putExtra(Const.TRIP_TITLE_TAG, title);
+                intent.putExtra(Const.TRIP_START_TAG, start);
                 startActivity(intent);
                 getActivity().finish();
             }

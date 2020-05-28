@@ -24,11 +24,11 @@ import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.auth.User;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,6 +47,8 @@ public class MatchActivity extends AppCompatActivity {
     private HashSet<UserSummary> mTrippers = new HashSet<>();
     private String mUserName;
     private String mTripId;
+    private String mTripTitle;
+    private String mTripStart;
     private FirebaseUser mUser;
     private ListView mListView;
     private UserSummary mSelected;
@@ -90,13 +92,17 @@ public class MatchActivity extends AppCompatActivity {
 
         // if this is to add a tripper
         if (mSource != null && mSource.equals(Const.TRIP_ACTIVITY_TAG) && intent
-                .getStringExtra(Const.TRIP_ID_TAG) != null) {
-            // set the title and header
+                .getStringExtra(Const.TRIP_ID_TAG) != null && intent
+                .getStringExtra(Const.TRIP_START_TAG) != null && intent
+                .getStringExtra(Const.TRIP_TITLE_TAG) != null) {
+
             setTitle("Add Tripper");
             TextView header = findViewById(R.id.match_text);
             header.setText(R.string.add_tripper_friend);
-            // get the trip id
+            // get the trip info
             mTripId = intent.getStringExtra(Const.TRIP_ID_TAG);
+            mTripTitle = intent.getStringExtra(Const.TRIP_TITLE_TAG);
+            mTripStart = intent.getStringExtra(Const.TRIP_START_TAG);
             // set the on item click listener
             mListView.setOnItemClickListener(addTripperListener());
 
@@ -164,7 +170,7 @@ public class MatchActivity extends AppCompatActivity {
         else {
             setTitle("Match Dates");
             // set the on item click listener
-            mListView.setOnItemClickListener(getClickListener());
+            mListView.setOnItemClickListener(getMatchListener());
 
             // if the instance state has been saved
             if (savedInstanceState != null && savedInstanceState.getLongArray(DATES_KEY) != null &&
@@ -363,6 +369,57 @@ public class MatchActivity extends AppCompatActivity {
     }
 
     /**
+     * onAddClicked()
+     * adds the friend that was selected to the current trip
+     */
+    public void onAddClicked() {
+        Log.d(Const.TAG, "onAddClicked: ");
+        if (mSelected == null || mTripId == null || mSelected.getUserId() == null ||
+                mSelected.getEmail() == null || mSelected.getName() == null ||
+                mTripStart == null || mTripTitle == null) return;
+        hideList();
+
+        // add the friend to the trippers sub collection and add the trip to the friend's trips
+        // sub-collection
+        Task<Void> tripTask = AccessDB.addTripper(mTripId, mSelected.getUserId(), mSelected.getEmail(), mSelected.getName())
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (!task.isSuccessful()) {
+                            Toast t = Toast.makeText(MatchActivity.this, mSelected.getName() +
+                                    " could not be added to the trip.", Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                            showList();
+                        }
+                    }
+                });
+        Task<Void> friendTask = AccessDB.addUserTrip(mSelected.getUserId(), mTripId, mTripTitle, mTripStart)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (!task.isSuccessful()) {
+                            Toast t = Toast.makeText(MatchActivity.this, mSelected.getName() +
+                                    " could not be added to the trip.", Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                            showList();
+                        }
+                    }
+                });
+        // if both the tasks succeed, head back to trip activity
+        Tasks.whenAll(tripTask, friendTask).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(Const.TAG, "onSuccess: it worked hell yeah");
+                Intent intent = new Intent(MatchActivity.this, TripActivity.class);
+                intent.putExtra(Const.TRIP_ID_TAG, mTripId);
+                startActivity(intent);
+            }
+        });
+    }
+
+    /**
      * match()
      * called when a user selects one of their friends and clicks "match"
      *
@@ -405,7 +462,7 @@ public class MatchActivity extends AppCompatActivity {
     }
 
     // returns an onClickListener for the list view
-    private AdapterView.OnItemClickListener getClickListener() {
+    private AdapterView.OnItemClickListener getMatchListener() {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

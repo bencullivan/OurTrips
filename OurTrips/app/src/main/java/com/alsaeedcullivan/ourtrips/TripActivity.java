@@ -209,7 +209,10 @@ public class TripActivity extends AppCompatActivity {
      * loads the info of this trip from the db
      */
     private void loadTrip() {
-        if (mTripId == null) return;
+        if (mTripId == null) {
+            finish();
+            return;
+        }
         // load the trip info
         Task<Map<String, Object>> infoTask = AccessDB.getTripInfo(mTripId)
                 .addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {

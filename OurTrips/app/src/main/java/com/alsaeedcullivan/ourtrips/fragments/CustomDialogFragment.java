@@ -225,10 +225,9 @@ public class CustomDialogFragment extends DialogFragment {
             dialog.setPositiveButton("Match", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    if (getActivity() != null) {
-                        ((MatchActivity) getActivity()).onMatchClicked();
-                        dismiss();
-                    }
+                    if (getActivity() == null) return;
+                    ((MatchActivity) getActivity()).onMatchClicked();
+                    dismiss();
                 }
             }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 @Override
@@ -514,7 +513,9 @@ public class CustomDialogFragment extends DialogFragment {
         dialog.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //TODO add this friend to the trip
+                if (getActivity() == null) return;
+                ((MatchActivity) getActivity()).onAddClicked();
+                dismiss();
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
