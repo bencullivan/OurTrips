@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!--    NOTE: this layout is loosely based off of the layout tutorial that
-        can be found here https://blog.sendbird.com/android-chat-tutorial-building-a-messaging-ui/-->
+        can be found here https://blog.sendbird.com/android-chat-tutorial-building-a-messaging-ui/  -->
 
     <TextView
         android:id="@+id/plan_received_message"

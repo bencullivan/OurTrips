@@ -86,12 +86,11 @@ public class UserSummary implements Parcelable {
     public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof UserSummary)) return false;
         UserSummary user = (UserSummary) obj;
-        return name.equals(user.getName()) && userId.equals(user.getUserId())
-                && email.equals(user.getEmail());
+        return email.equals(user.getEmail());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, name, email);
+        return email.hashCode();
     }
 }

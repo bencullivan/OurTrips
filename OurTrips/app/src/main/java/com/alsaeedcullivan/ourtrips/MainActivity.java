@@ -26,7 +26,9 @@ import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.models.TripSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -35,7 +37,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TRIP_LIST_KEY = "trip_list";
+    private static final String TRIP_LIST_KEY = "list";
+    private static final String DELETE_KEY = "del";
+    private static final String POSITION_KEY = "pos";
 
     private TSAdapter mAdapter;
     private ArrayList<TripSummary> mTrips;
@@ -45,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView mLoading;
     private LinearLayout mLayout;
     private String mTripId;
+    private String deleteId;
+    private int mPosition = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +70,18 @@ public class MainActivity extends AppCompatActivity {
         mListView = findViewById(R.id.main_list);
 
         // set initial visibility
-        mLayout.setVisibility(View.GONE);
-        mSpinner.setVisibility(View.VISIBLE);
-        mLoading.setVisibility(View.VISIBLE);
+        showSpinner();
 
         Intent intent = getIntent();
         if (intent != null && intent.getStringExtra(Const.TRIP_ID_TAG) != null)
             mTripId = intent.getStringExtra(Const.TRIP_ID_TAG);
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getString(DELETE_KEY) != null) {
+                deleteId = savedInstanceState.getString(DELETE_KEY);
+                mPosition = savedInstanceState.getInt(POSITION_KEY);
+            } else mPosition = -1;
+        }
 
         // get the user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -83,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
             mAdapter.addAll(mTrips);
             mListView.setAdapter(mAdapter);
             mListView.setOnItemClickListener(getItemListener());
+            mListView.setOnItemLongClickListener(getLongListener());
             showList();
         }
         else if (mUser != null) {
@@ -91,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
             // set the adapter to the list view
             mListView.setAdapter(mAdapter);
             mListView.setOnItemClickListener(getItemListener());
+            mListView.setOnItemLongClickListener(getLongListener());
             // get the list of trip summaries of this user from the db
             Task<List<TripSummary>> task = AccessDB.getTripSummaries(mUser.getUid());
             task.addOnCompleteListener(new OnCompleteListener<List<TripSummary>>() {
@@ -121,6 +134,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mTrips != null && mTrips.size() > 0) outState.putParcelableArrayList(TRIP_LIST_KEY, mTrips);
+        if (deleteId != null) {
+            outState.putString(DELETE_KEY, deleteId);
+            outState.putInt(POSITION_KEY, mPosition);
+        }
     }
 
     // handle menu //
@@ -197,7 +214,55 @@ public class MainActivity extends AppCompatActivity {
         t.show();
     }
 
-    // gets a click listener for the list view
+    /**
+     * removeTrip()
+     * removes this user from the selected trip
+     */
+    public void removeTrip() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (deleteId == null || user == null) return;
+        Log.d(Const.TAG, "removeTrip: " + deleteId + " " + mPosition);
+
+        showSpinner();
+
+        // remove this user from the trip's trippers sub-collection
+        Task<Void> tripTask = AccessDB.deleteTripper(deleteId, user.getUid())
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (!task.isSuccessful()) {
+                    Log.d(Const.TAG, "onComplete: fail");
+                    showList();
+                }
+            }
+        });
+        // remove this trip from the user's trips sub-collection
+        Task<Void> userTask = AccessDB.removeUserTrip(user.getUid(), deleteId)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (!task.isSuccessful()) {
+                    Log.d(Const.TAG, "onComplete: fail 2");
+                    showList();
+                }
+            }
+        });
+        // when both are finished redisplay the list without the item that was just deleted
+        Tasks.whenAll(tripTask, userTask).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(Const.TAG, "onSuccess: updated trip sums");
+                if (mPosition < 0 || mPosition >= mTrips.size() || mAdapter == null) return;
+                mTrips.remove(mPosition);
+                mAdapter.clear();
+                mAdapter.addAll(mTrips);
+                mAdapter.notifyDataSetChanged();
+                showList();
+            }
+        });
+    }
+
+    // listeners
     private AdapterView.OnItemClickListener getItemListener() {
         return new AdapterView.OnItemClickListener() {
             @Override
@@ -210,12 +275,31 @@ public class MainActivity extends AppCompatActivity {
             }
         };
     }
+    private AdapterView.OnItemLongClickListener getLongListener() {
+        return new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                deleteId = mTrips.get(position).getId();
+                mPosition = position;
+                CustomDialogFragment.newInstance(CustomDialogFragment.REMOVE_USER_TRIP_ID)
+                        .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
+                return true;
+            }
+        };
+    }
 
     // shows the list view
     private void showList() {
         mSpinner.setVisibility(View.GONE);
         mLoading.setVisibility(View.GONE);
         mLayout.setVisibility(View.VISIBLE);
+    }
+
+    // hides the list view
+    private void showSpinner() {
+        mLayout.setVisibility(View.GONE);
+        mSpinner.setVisibility(View.VISIBLE);
+        mLoading.setVisibility(View.VISIBLE);
     }
 
     /**

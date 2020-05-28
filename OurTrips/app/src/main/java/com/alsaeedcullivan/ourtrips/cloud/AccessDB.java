@@ -1,6 +1,7 @@
 package com.alsaeedcullivan.ourtrips.cloud;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.models.Pic;
 import com.alsaeedcullivan.ourtrips.models.Place;
@@ -13,6 +14,8 @@ import androidx.annotation.NonNull;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -195,7 +198,7 @@ public class AccessDB {
      * @param userEmail the email of this user
      * @param friendEmail the email of the person they are sending the request to
      */
-    public static Task<Object> sendFriendRequest(String userId, String userEmail, String userName, String friendEmail) {
+    public static Task<String> sendFriendRequest(String userId, String userEmail, String userName, String friendEmail) {
         final String id = userId;
         // store this user's summary data in a map
         final Map<String, Object> data = new HashMap<>();
@@ -207,20 +210,40 @@ public class AccessDB {
         return store.collection(Const.USERS_COLLECTION)
                 .whereEqualTo(Const.USER_EMAIL_KEY, friendEmail)
                 .get()
-                .continueWith(new Continuation<QuerySnapshot, Object>() {
+                .continueWith(new Continuation<QuerySnapshot, String>() {
                     @Override
-                    public Object then(@NonNull Task<QuerySnapshot> task) {
+                    public String then(@NonNull Task<QuerySnapshot> task) {
                         QuerySnapshot q = task.getResult();
                         if (q != null && q.size() > 0) {
                             DocumentSnapshot doc = q.getDocuments().get(0);
-                            String friendId = doc.getId();
+                            final String friendId = doc.getId();
+
+                            // check to see if this user has already sent them a request
                             store.collection(Const.USERS_COLLECTION)
                                     .document(friendId)
                                     .collection(Const.USER_F_REQUESTS_COLLECTION)
                                     .document(id)
-                                    .set(data);
+                                    .get()
+                                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                            DocumentSnapshot doc = task.getResult();
+                                            // if they have not
+                                            if (doc == null || !doc.exists()) {
+                                                // add this user to the other user's friend
+                                                // requests collection
+                                                store.collection(Const.USERS_COLLECTION)
+                                                        .document(friendId)
+                                                        .collection(Const.USER_F_REQUESTS_COLLECTION)
+                                                        .document(id)
+                                                        .set(data);
+                                            }
+                                        }
+                                    });
+                            return "a";
+                        } else {
+                            return "n";
                         }
-                        return q;
                     }
                 });
     }
@@ -362,6 +385,38 @@ public class AccessDB {
                             friends.add(u);
                         }
                         return friends;
+                    }
+                });
+    }
+
+    /**
+     * getFriendEmails()
+     * gets a list of the emails of all of a user's friends
+     * @param userId the id of this user
+     */
+    public static Task<List<String>> getFriendEmails(String userId) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .collection(Const.USER_FRIENDS_COLLECTION)
+                .get()
+                .continueWith(new Continuation<QuerySnapshot, List<String>>() {
+                    @Override
+                    public List<String> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                        QuerySnapshot q = task.getResult();
+                        if (q == null) return new ArrayList<>();
+                        // get the documents in the sub collection
+                        List<DocumentSnapshot> docs = q.getDocuments();
+
+                        // a list to hold the emails of all the friends
+                        ArrayList<String> emails = new ArrayList<>();
+
+                        // add the emails to the list
+                        for (DocumentSnapshot doc : docs) {
+                            if (doc.get(Const.USER_EMAIL_KEY) != null)
+                                emails.add((String)doc.get(Const.USER_EMAIL_KEY));
+                        }
+                        return emails;
                     }
                 });
     }

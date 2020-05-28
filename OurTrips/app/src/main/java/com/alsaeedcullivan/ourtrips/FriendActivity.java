@@ -29,16 +29,19 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class FriendActivity extends AppCompatActivity {
 
     private static final String LIST_KEY = "requests";
     private static final String NAME_KEY = "name";
+    private static final String EMAILS_KEY = "emails";
 
     private FirebaseUser mUser;
     private FriendAdapter mAdapter;
     private ArrayList<UserSummary> mList;
+    private HashSet<UserSummary> mRequestSet = new HashSet<>();
     private ListView mListView;
     private int selectedIndex;
     private UserSummary selectedFriend;
@@ -47,6 +50,8 @@ public class FriendActivity extends AppCompatActivity {
     private ProgressBar mSpinner;
     private TextView mLoadingText;
     private TextView mMessage;
+    private HashSet<String> mFriendEmailsSet = new HashSet<>();
+    private ArrayList<String> mFriendEmailsList = new ArrayList<>();
 
 
     @Override
@@ -74,11 +79,22 @@ public class FriendActivity extends AppCompatActivity {
         mLoadingText.setVisibility(View.VISIBLE);
 
         // if there is a list in savedInstanceState, there is no need to load from the db
-        if (savedInstanceState != null && savedInstanceState.getStringArrayList(LIST_KEY) != null) {
+        if (savedInstanceState != null && savedInstanceState.getStringArrayList(LIST_KEY) != null
+                && savedInstanceState.getStringArrayList(EMAILS_KEY) != null &&
+                savedInstanceState.getString(NAME_KEY) != null) {
+
+            // restore the data
             mList = savedInstanceState.getParcelableArrayList(LIST_KEY);
             mName = savedInstanceState.getString(NAME_KEY);
+            mFriendEmailsList = savedInstanceState.getStringArrayList(EMAILS_KEY);
+            mFriendEmailsSet.clear();
+            if (mFriendEmailsList != null) mFriendEmailsSet.addAll(mFriendEmailsList);
+            Log.d(Const.TAG, "onCreate: " + mFriendEmailsSet);
+
             if (mName == null) mName = "";
             if (mList != null) {
+                mRequestSet.clear();
+                mRequestSet.addAll(mList);
                 // set the adapter to the list view with the saved list
                 mAdapter = new FriendAdapter(this, R.layout.activity_friend, new ArrayList<UserSummary>());
                 mAdapter.addAll(mList);
@@ -101,6 +117,8 @@ public class FriendActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<List<UserSummary>> task) {
                     if (task.isSuccessful()) {
                         mList = (ArrayList<UserSummary>) task.getResult();
+                        mRequestSet.clear();
+                        if (mList != null) mRequestSet.addAll(mList);
                         Log.d(Const.TAG, "onComplete: " + mList);
                         // add them to an adapter
                         if (mList != null) {
@@ -109,6 +127,18 @@ public class FriendActivity extends AppCompatActivity {
                             if (mList.size() == 0) mMessage.setText(R.string.no_req);
                             else mMessage.setText(R.string.pending_requests);
                         }
+                    }
+                }
+            });
+            // get the emails of all of this user's friends
+            Task<List<String>> friendTask = AccessDB.getFriendEmails(mUser.getUid());
+            friendTask.addOnCompleteListener(new OnCompleteListener<List<String>>() {
+                @Override
+                public void onComplete(@NonNull Task<List<String>> task) {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        mFriendEmailsList = (ArrayList<String>) task.getResult();
+                        mFriendEmailsSet.clear();
+                        mFriendEmailsSet.addAll(mFriendEmailsList);
                     }
                 }
             });
@@ -121,8 +151,8 @@ public class FriendActivity extends AppCompatActivity {
                     else mName = "";
                 }
             });
-            // when both tasks are finished, make the list appear
-            Tasks.whenAll(emailTask, nameTask).addOnCompleteListener(new OnCompleteListener<Void>() {
+            // when all three tasks are finished, make the list appear
+            Tasks.whenAll(emailTask, friendTask, nameTask).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     makeListAppear();
@@ -154,6 +184,7 @@ public class FriendActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         if (mList != null) outState.putParcelableArrayList(LIST_KEY, mList);
         if (mName != null) outState.putString(NAME_KEY, mName);
+        if (mFriendEmailsList != null) outState.putStringArrayList(EMAILS_KEY, mFriendEmailsList);
     }
 
     /**
@@ -169,24 +200,66 @@ public class FriendActivity extends AppCompatActivity {
      * sendRequest()
      * called when a user presses "send"
      *
-     * @param email the email of the person they are sending the request to
+     * @param e the email of the person they are sending the request to
      */
-    public void sendRequest(String email) {
+    public void sendRequest(String e) {
         // get the current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
 
+        final String email = e;
+
+        UserSummary newFriend = new UserSummary();
+        newFriend.setEmail(email);
+
         if (email.equals(user.getEmail())) {
-            Toast t = Toast.makeText(FriendActivity.this, "You cannot send a friend request to yourself", Toast.LENGTH_SHORT);
+            Toast t = Toast.makeText(FriendActivity.this, "You cannot send a friend " +
+                    "request to yourself", Toast.LENGTH_SHORT);
+            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+            t.show();
+            return;
+        }
+        if (mFriendEmailsSet.contains(email)) {
+            Toast t = Toast.makeText(FriendActivity.this, "You are already friends " +
+                    "with this user", Toast.LENGTH_SHORT);
+            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+            t.show();
+            return;
+        }
+        if (mRequestSet.contains(newFriend)) {
+            Toast t = Toast.makeText(FriendActivity.this, email + " has already sent " +
+                    "you a friend request!", Toast.LENGTH_SHORT);
             t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
             t.show();
             return;
         }
 
-        Log.d(Const.TAG, "sendRequest: " + email);
-        Log.d(Const.TAG, "sendRequest: " + user.getEmail());
+
         // if there is a user, send the friend request
-        AccessDB.sendFriendRequest(user.getUid(), user.getEmail(), mName, email);
+        AccessDB.sendFriendRequest(user.getUid(), user.getEmail(), mName, email)
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        String res = task.getResult();
+                        if (res != null && res.equals("n")) {
+                            Toast t = Toast.makeText(FriendActivity.this, "We could " +
+                                    "not find a user with the email " + email, Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                        } else if (res != null) {
+                            Toast t = Toast.makeText(FriendActivity.this, "The friend " +
+                                    "request will be delivered to " + email + " if you have not " +
+                                    "already sent one to them", Toast.LENGTH_LONG);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                        } else {
+                            Toast t = Toast.makeText(FriendActivity.this, "The friend " +
+                                    "request could not be sent", Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                        }
+                    }
+                });
     }
 
     /**
@@ -200,13 +273,8 @@ public class FriendActivity extends AppCompatActivity {
 
         // get the current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) return;
+        if (user == null || mName == null) return;
 
-        Log.d(Const.TAG, "acceptRequest: " + friendId);
-        Log.d(Const.TAG, "acceptRequest: " + mName);
-        if (mName == null) {
-            return;
-        }
         // if there is a user, accept the friend requests
         AccessDB.acceptFriendRequest(user.getUid(), user.getEmail(), mName, friendId, friendEmail, friendName);
     }

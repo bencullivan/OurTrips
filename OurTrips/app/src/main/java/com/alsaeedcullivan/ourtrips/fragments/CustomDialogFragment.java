@@ -50,6 +50,7 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int ADD_LOCATION_ID = 13;
     public static final int DELETE_TRIP_ID = 14;
     public static final int ADD_TRIPPER_ID = 15;
+    public static final int REMOVE_USER_TRIP_ID = 16;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -115,6 +116,8 @@ public class CustomDialogFragment extends DialogFragment {
                 return deleteTripDialog();
             case ADD_TRIPPER_ID:
                 return addTripperDialog();
+            case REMOVE_USER_TRIP_ID:
+                return removeUserTripDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -515,6 +518,29 @@ public class CustomDialogFragment extends DialogFragment {
             public void onClick(DialogInterface dialog, int which) {
                 if (getActivity() == null) return;
                 ((MatchActivity) getActivity()).onAddClicked();
+                dismiss();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dismiss();
+            }
+        });
+        return dialog.create();
+    }
+
+    // asks the user if they want to remove the trip they just clicked
+    private AlertDialog removeUserTripDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
+        // set the title and message
+        dialog.setTitle(R.string.are_you_sure);
+        dialog.setMessage(R.string.remove_self_from_trip);
+        dialog.setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (getActivity() == null) return;
+                ((MainActivity) getActivity()).removeTrip();
                 dismiss();
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

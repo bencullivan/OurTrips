@@ -35,6 +35,8 @@ public class ViewUserActivity extends AppCompatActivity {
 
         // enable back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        // set title
+        setTitle("Tripper");
 
         // get reference to image view
         mProfileImageView = findViewById(R.id.img_user);

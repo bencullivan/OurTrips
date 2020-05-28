@@ -130,6 +130,8 @@
     <string name="add_tripper">Add Tripper</string>
     <string name="add_tripper_friend">Click on a friend to add them to the trip!</string>
     <string name="delete_trip">Delete Trip</string>
-    <string name="non_reversible">Deleting a trip is not reversible, all of the trips information will be deleted. Are you sure you want to delete this trip?</string>
+    <string name="non_reversible">Are you sure you want to delete this trip? Deleting a trip is not reversible, all of this trip\'s information will be deleted.</string>
     <string name="are_you_sure">Are you sure???</string>
+    <string name="long_press_a_trip_to_remove_it">Long-press a trip to remove it</string>
+    <string name="remove_self_from_trip">Are you sure you want to remove yourself from this trip? This action is not reversible.</string>
 </resources>
