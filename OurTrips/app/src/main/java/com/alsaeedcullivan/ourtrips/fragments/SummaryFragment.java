@@ -19,7 +19,7 @@ import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.EditSummaryActivity;
 import com.alsaeedcullivan.ourtrips.MapsActivity;
-import com.alsaeedcullivan.ourtrips.MatchActivity;
+import com.alsaeedcullivan.ourtrips.MatchOrAddActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.TripActivity;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
@@ -190,7 +190,7 @@ public class SummaryFragment extends Fragment {
 
                 // send the user to match activity where they will be able to choose a
                 // friend to add to the trip
-                Intent intent = new Intent(getActivity(), MatchActivity.class);
+                Intent intent = new Intent(getActivity(), MatchOrAddActivity.class);
                 intent.putExtra(Const.SOURCE_TAG, Const.TRIP_ACTIVITY_TAG);
                 intent.putExtra(Const.TRIP_ID_TAG, tripId);
                 intent.putExtra(Const.TRIP_TITLE_TAG, title);

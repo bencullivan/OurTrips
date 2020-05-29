@@ -161,32 +161,7 @@ public class CalendarActivity extends AppCompatActivity {
             }
         }
         // get the list of dates from the db that the user is available
-        else if (mUser != null) {
-            // run db operation on background
-            new GetDatesTask().execute();
-
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    AccessDB.getUserDates(mUser.getUid())
-//                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//                                @Override
-//                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                                    DocumentSnapshot doc = task.getResult();
-//                                    if (task.isSuccessful() && doc != null &&
-//                                            doc.contains(Const.DATE_LIST_KEY) &&
-//                                            doc.get(Const.DATE_LIST_KEY) instanceof  List) {
-//                                        // this will not produce an exception
-//                                        sDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
-//                                        realDates = new ArrayList<>();
-//                                        //convert them to Dates and add them to the calendar
-//                                        new AddTask().execute();
-//                                    }
-//                                }
-//                            });
-//                }
-//            }).start();
-        }
+        else if (mUser != null) new GetDatesTask().execute();
     }
 
     @Override
@@ -338,7 +313,7 @@ public class CalendarActivity extends AppCompatActivity {
      * converts the string dates that this user is available to date objects and adds them to the
      * calendar view
      */
-    private class AddTask extends AsyncTask<Void, Void, Void> {
+    private class AddToCalTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -371,7 +346,6 @@ public class CalendarActivity extends AppCompatActivity {
                     mCalView.selectDate(mRealDates.get(i));
                 }
             }
-
             mCalView.setOnInvalidDateSelectedListener(doNothing());
             mCalView.setOnDateSelectedListener(maintainRecent());
             // display the calendar
@@ -402,7 +376,7 @@ public class CalendarActivity extends AppCompatActivity {
                                 sDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
                                 mRealDates = new ArrayList<>();
                                 //convert them to Dates and add them to the calendar
-                                new AddTask().execute();
+                                new AddToCalTask().execute();
                             }
                         }
                     });
@@ -411,6 +385,10 @@ public class CalendarActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * SetDatesTask
+     * sets the users dates in the DB
+     */
     private class SetDatesTask extends AsyncTask<Void, Void, Void> {
 
         @Override

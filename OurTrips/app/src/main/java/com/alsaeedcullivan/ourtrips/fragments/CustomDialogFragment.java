@@ -19,7 +19,7 @@ import com.alsaeedcullivan.ourtrips.EditSummaryActivity;
 import com.alsaeedcullivan.ourtrips.FriendActivity;
 import com.alsaeedcullivan.ourtrips.MainActivity;
 import com.alsaeedcullivan.ourtrips.MapsActivity;
-import com.alsaeedcullivan.ourtrips.MatchActivity;
+import com.alsaeedcullivan.ourtrips.MatchOrAddActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.RegisterActivity;
 import com.alsaeedcullivan.ourtrips.RequestTripActivity;
@@ -219,7 +219,7 @@ public class CustomDialogFragment extends DialogFragment {
         dialog.setTitle("Find Match");
 
         if (getActivity() != null) {
-            MatchActivity activity = (MatchActivity) getActivity();
+            MatchOrAddActivity activity = (MatchOrAddActivity) getActivity();
             UserSummary friend = activity.getFriend();
             if (friend == null) return dialog.create();
             // set the message
@@ -230,7 +230,7 @@ public class CustomDialogFragment extends DialogFragment {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     if (getActivity() == null) return;
-                    ((MatchActivity) getActivity()).onMatchClicked();
+                    ((MatchOrAddActivity) getActivity()).onMatchClicked();
                     dismiss();
                 }
             }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -258,7 +258,7 @@ public class CustomDialogFragment extends DialogFragment {
                 EditText input = dialogView.findViewById(R.id.dialog_text_input);
                 if (getActivity() != null) {
                     // perform email search
-                    ((MatchActivity) getActivity()).searchByEmail(input.getText().toString());
+                    ((MatchOrAddActivity) getActivity()).searchByEmail(input.getText().toString());
                     // hide the keyboard
                     InputMethodManager imm = (InputMethodManager) getActivity()
                             .getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -273,7 +273,7 @@ public class CustomDialogFragment extends DialogFragment {
                 EditText input = dialogView.findViewById(R.id.dialog_text_input);
                 if (getActivity() != null) {
                     // perform name search
-                    ((MatchActivity) getActivity()).searchByName(input.getText().toString());
+                    ((MatchOrAddActivity) getActivity()).searchByName(input.getText().toString());
                     // hide the keyboard
                     InputMethodManager imm = (InputMethodManager) getActivity()
                             .getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -518,7 +518,7 @@ public class CustomDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (getActivity() == null) return;
-                ((MatchActivity) getActivity()).onAddClicked();
+                ((MatchOrAddActivity) getActivity()).onAddClicked();
                 dismiss();
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

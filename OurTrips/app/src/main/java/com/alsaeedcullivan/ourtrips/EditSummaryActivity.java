@@ -176,36 +176,6 @@ public class EditSummaryActivity extends AppCompatActivity {
         // update the trip in the db
         // run on background thread
         new UpdateSummaryTask().execute();
-
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                AccessDB.updateTrip(mTripId, mData).addOnCompleteListener(new OnCompleteListener<Void>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<Void> task) {
-//                        if (task.isSuccessful()) {
-//                            // toast the user
-//                            Toast t = Toast.makeText(EditSummaryActivity.this, "Trip updated successfully!",
-//                                    Toast.LENGTH_SHORT);
-//                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-//                            t.show();
-//                            // send the user to trip activity
-//                            Intent intent = new Intent(EditSummaryActivity.this, TripActivity.class);
-//                            intent.putExtra(Const.TRIP_ID_TAG, mTripId);
-//                            startActivity(intent);
-//                            // finish this activity
-//                            finish();
-//                        } else {
-//                            // toast the user
-//                            Toast t = Toast.makeText(EditSummaryActivity.this, "This trip could"
-//                                    + " not be updated.", Toast.LENGTH_SHORT);
-//                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-//                            t.show();
-//                        }
-//                    }
-//                });
-//            }
-//        }).start();
     }
 
     /**
@@ -280,6 +250,7 @@ public class EditSummaryActivity extends AppCompatActivity {
                         Intent intent = new Intent(EditSummaryActivity.this, TripActivity.class);
                         intent.putExtra(Const.TRIP_ID_TAG, mTripId);
                         startActivity(intent);
+                        Log.d(Const.TAG, "finish: edit summary " + new Date().getTime());
                         // finish this activity
                         finish();
                     } else {
@@ -293,6 +264,12 @@ public class EditSummaryActivity extends AppCompatActivity {
             });
 
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            Log.d(Const.TAG, "onPostExecute: edit summary " + new Date().getTime());
         }
     }
 }

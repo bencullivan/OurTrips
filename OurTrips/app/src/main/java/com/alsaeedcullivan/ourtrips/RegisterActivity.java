@@ -65,6 +65,7 @@ public class RegisterActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
 
+    // widgets
     private ImageView mProfileImageView;
     private EditText mNameEditText, mEmailEditText, mAffiliationEditText, mBirthdayEditText, mBioEditText;
     private RadioGroup mInputGender;
@@ -73,6 +74,9 @@ public class RegisterActivity extends AppCompatActivity {
     private Uri mProfileUri;
     private String mGlidePath;
     private String mOldPath;
+    private HashMap<String, Object> mData;
+    private InputStream mIs;
+    private String mNewPath;
 
     private boolean mPermission;
     private boolean mRegistered;
@@ -130,7 +134,7 @@ public class RegisterActivity extends AppCompatActivity {
             else if (mSourceExtra.equalsIgnoreCase(Const.SETTINGS_TAG)) {
                 Log.d(Const.TAG, "onCreate: load");
                 mNameEditText.setEnabled(false);
-                loadProfile();
+                new LoadProfileTask().execute();
             }
         }
 
@@ -419,81 +423,40 @@ public class RegisterActivity extends AppCompatActivity {
      */
     private void createUser() {
         // create a map with the user's information
-        final Map<String, Object> data = new HashMap<>();
-        data.put(Const.USER_ID_KEY, mUser.getUid());
-        data.put(Const.USER_EMAIL_KEY, mUser.getEmail());
-        data.put(Const.USER_NAME_KEY, mNameEditText.getText().toString());
-        data.put(Const.USER_BIRTHDAY_KEY, mBirthdayEditText.getText().toString());
+        mData = new HashMap<>();
+        mData.put(Const.USER_ID_KEY, mUser.getUid());
+        mData.put(Const.USER_EMAIL_KEY, mUser.getEmail());
+        mData.put(Const.USER_NAME_KEY, mNameEditText.getText().toString());
+        mData.put(Const.USER_BIRTHDAY_KEY, mBirthdayEditText.getText().toString());
         String gender;
         int checked = mInputGender.getCheckedRadioButtonId();
         if (checked == R.id.edit_gender_female) gender = "f";
         else if (checked == R.id.edit_gender_male) gender = "m";
         else gender = "o";
-        data.put(Const.USER_GENDER_KEY, gender);
-        data.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
-        data.put(Const.USER_BIO_KEY, mBioEditText.getText().toString());
-        data.put(Const.DATE_LIST_KEY, new ArrayList<String>());
+        mData.put(Const.USER_GENDER_KEY, gender);
+        mData.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
+        mData.put(Const.USER_BIO_KEY, mBioEditText.getText().toString());
+        mData.put(Const.DATE_LIST_KEY, new ArrayList<String>());
 
         // if they have set a profile pic
         if (mProfileUri != null) {
             // establish the path where the profile pic will be stored in the bucket
             // include timestamp (so glide does not load the incorrect image)
-            final String path = Const.PROFILE_PIC_PATH + "/" + mUser.getUid() + "/" + Const.PROFILE_PIC_NAME
+            mNewPath = Const.PROFILE_PIC_PATH + "/" + mUser.getUid() + "/" + Const.PROFILE_PIC_NAME
                     + new Date().getTime() + Const.PIC_JPG;
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        // open an input stream from the photo Uri and upload to the bucket
-                        InputStream is = getContentResolver().openInputStream(mProfileUri);
-                        AccessBucket.uploadPicture(path, is);
-
-                        // if there is an old profile photo, delete it from storage
-                        if (mOldPath != null) AccessBucket.deleteFromStorage(mOldPath);
-                    } catch (IOException e) {
-                        Log.d(Const.TAG, Log.getStackTraceString(e));
-                    }
-                }
-            }).start();
-            // add the storage path to data
-            data.put(Const.USER_PROFILE_PIC_KEY, path);
-        }
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // add the user's data to the database
-                Task<Void> addTask = AccessDB.addNewUser(mUser.getUid(), data);
-                addTask.addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            // set the user as registered
-                            new SharedPreference(getApplicationContext()).setRegistered(true);
-
-                            // Inform the user that they were registered successfully
-                            Toast t = Toast.makeText(RegisterActivity.this,
-                                    R.string.string_register_success, Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-
-                            // send the user to MainActivity
-                            Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                            intent.putExtra(Const.SOURCE_TAG, Const.REGISTER_TAG);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            // inform that their data could not be added
-                            Toast t = Toast.makeText(RegisterActivity.this,
-                                    R.string.string_register_failure, Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                        }
-                    }
-                });
+            try {
+                // open an input stream from the photo Uri and upload to the bucket
+                mIs = getContentResolver().openInputStream(mProfileUri);
+                // update the photo in the storage bucket
+                new ProfilePicTask().execute();
+                // add the storage path to the data object
+                mData.put(Const.USER_PROFILE_PIC_KEY, mNewPath);
+            } catch (IOException e) {
+                Log.d(Const.TAG, Log.getStackTraceString(e));
             }
-        }).start();
+        }
+        // give this new user an entry in the db
+        new NewUserTask().execute();
     }
 
     /**
@@ -502,97 +465,37 @@ public class RegisterActivity extends AppCompatActivity {
      */
     private void updateProfile() {
         // create a map with the new profile info
-        final Map<String, Object> data = new HashMap<>();
-        data.put(Const.USER_NAME_KEY, mNameEditText.getText().toString());
-        data.put(Const.USER_BIRTHDAY_KEY, mBirthdayEditText.getText().toString());
+        mData = new HashMap<>();
+        mData.put(Const.USER_NAME_KEY, mNameEditText.getText().toString());
+        mData.put(Const.USER_BIRTHDAY_KEY, mBirthdayEditText.getText().toString());
         String gender;
         int checked = mInputGender.getCheckedRadioButtonId();
         if (checked == R.id.edit_gender_female) gender = "f";
         else if (checked == R.id.edit_gender_male) gender = "m";
         else gender = "o";
-        data.put(Const.USER_GENDER_KEY, gender);
-        data.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
-        data.put(Const.USER_BIO_KEY, mBioEditText.getText().toString());
+        mData.put(Const.USER_GENDER_KEY, gender);
+        mData.put(Const.USER_AFFILIATION_KEY, mAffiliationEditText.getText().toString());
+        mData.put(Const.USER_BIO_KEY, mBioEditText.getText().toString());
 
         // if they have set a profile pic
         if (mProfileUri != null) {
             // establish the path where the profile pic will be stored in the bucket
             // include timestamp (so glide does not load the incorrect image)
-            final String path = Const.PROFILE_PIC_PATH + "/" + mUser.getUid() + "/" + Const.PROFILE_PIC_NAME +
+            mNewPath = Const.PROFILE_PIC_PATH + "/" + mUser.getUid() + "/" + Const.PROFILE_PIC_NAME +
                     new Date().getTime() + Const.PIC_JPG;
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        // open an input stream from the photo Uri and upload to the bucket
-                        InputStream is = getContentResolver().openInputStream(mProfileUri);
-                        AccessBucket.uploadPicture(path, is);
-                        // if there is an old profile photo, delete it from storage
-                        if (mOldPath != null) AccessBucket.deleteFromStorage(mOldPath);
-                    } catch (IOException e) {
-                        Log.d(Const.TAG, Log.getStackTraceString(e));
-                    }
-                }
-            }).start();
-
-            // add the storage path to data
-            data.put(Const.USER_PROFILE_PIC_KEY, path);
-
-        }
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // update the profile in the database
-                Task<Void> updateTask = AccessDB.updateUserProfile(mUser.getUid(), data);
-                updateTask.addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            // inform the user that their profile has been updated
-                            Toast t = Toast.makeText(RegisterActivity.this,
-                                    R.string.string_update_profile, Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                            // finish the activity
-                            finish();
-                        } else {
-                            // inform that their data could not be updated
-                            Toast t = Toast.makeText(RegisterActivity.this,
-                                    R.string.update_profile_fail, Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                        }
-                    }
-                });
+            try {
+                // open an input stream from the photo Uri and upload to the bucket
+                mIs = getContentResolver().openInputStream(mProfileUri);
+                // update the photo in the storage bucket
+                new ProfilePicTask().execute();
+                // add the storage path to the data object
+                mData.put(Const.USER_PROFILE_PIC_KEY, mNewPath);
+            } catch (IOException e) {
+                Log.d(Const.TAG, Log.getStackTraceString(e));
             }
-        }).start();
-    }
-
-    /**
-     * loadProfile()
-     * loads the profile info of a user from the FireStore database
-     */
-    private void loadProfile() {
-        new LoadProfileTask().execute();
-
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                // load data if it exists
-//                AccessDB.loadUserProfile(mUser.getUid())
-//                        .addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<Map<String, Object>> task) {
-//                                if (task.isSuccessful() && task.getResult() != null) {
-//                                    populateFields(task.getResult());
-//                                }
-//                            }
-//                        });
-//            }
-//        }).start();
-
+        }
+        // update this user's data in the db
+        new UpdateUserTask().execute();
     }
 
     /**
@@ -646,13 +549,17 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * LoadProfileTask
+     * loads a user's profile from the db
+     */
     private class LoadProfileTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
             if (mUser == null) return null;
 
-            // load data if it exists
+            // load the data if it exists
             AccessDB.loadUserProfile(mUser.getUid())
                     .addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
                         @Override
@@ -662,6 +569,110 @@ public class RegisterActivity extends AppCompatActivity {
                             }
                         }
                     });
+
+            return null;
+        }
+    }
+
+    /**
+     * NewUserTask
+     * adds a new user to the db
+     */
+    private class NewUserTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null || mData == null) return null;
+
+            // add the user's data to the database
+            AccessDB.addNewUser(mUser.getUid(), mData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        // set the user as registered
+                        new SharedPreference(getApplicationContext()).setRegistered(true);
+
+                        // Inform the user that they were registered successfully
+                        Toast t = Toast.makeText(RegisterActivity.this,
+                                R.string.string_register_success, Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+
+                        // send the user to MainActivity
+                        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                        intent.putExtra(Const.SOURCE_TAG, Const.REGISTER_TAG);
+                        startActivity(intent);
+                        Log.d(Const.TAG, "onComplete: done adding new user");
+                    } else {
+                        // inform that their data could not be added
+                        Toast t = Toast.makeText(RegisterActivity.this,
+                                R.string.string_register_failure, Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                    }
+                }
+            });
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            Log.d(Const.TAG, "onPostExecute: finish the task");
+        }
+    }
+
+    /**
+     * UpdateUserTask
+     * updates a user in the db
+     */
+    private class UpdateUserTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null || mData == null) return null;
+
+            // update the profile in the database
+            AccessDB.updateUserProfile(mUser.getUid(), mData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        // inform the user that their profile has been updated
+                        Toast t = Toast.makeText(RegisterActivity.this,
+                                R.string.string_update_profile, Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                        // finish the activity
+                        finish();
+                    } else {
+                        // inform that their data could not be updated
+                        Toast t = Toast.makeText(RegisterActivity.this,
+                                R.string.update_profile_fail, Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                    }
+                }
+            });
+
+            return null;
+        }
+    }
+
+    /**
+     * ProfilePicTask
+     * uploads a profile pic to the storage bucket and deletes the old one if it exists
+     */
+    private class ProfilePicTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mIs == null || mNewPath == null) return null;
+
+            // add the new picture to the storage bucket
+            AccessBucket.uploadPicture(mNewPath, mIs);
+            // if there is an old picture, delete it from the storage bucket
+            if (mOldPath != null) AccessBucket.deleteFromStorage(mOldPath);
 
             return null;
         }

@@ -1,7 +1,6 @@
 package com.alsaeedcullivan.ourtrips;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -36,7 +35,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<TripSummary> mTrips;
     private List<DocumentSnapshot> mSumDocs = new ArrayList<>();
     private FirebaseUser mUser;
-    private ListView mListView;
     private ProgressBar mSpinner;
     private TextView mLoading;
     private LinearLayout mLayout;
@@ -71,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         mLoading = findViewById(R.id.main_loading);
 
         // get a reference to the list view
-        mListView = findViewById(R.id.main_list);
+        ListView listView = findViewById(R.id.main_list);
 
         // set initial visibility
         showSpinner();
@@ -96,45 +93,20 @@ public class MainActivity extends AppCompatActivity {
             // create the adapter
             mAdapter = new TSAdapter(this, R.layout.activity_main, new ArrayList<TripSummary>());
             mAdapter.addAll(mTrips);
-            mListView.setAdapter(mAdapter);
-            mListView.setOnItemClickListener(getItemListener());
-            mListView.setOnItemLongClickListener(getLongListener());
+            listView.setAdapter(mAdapter);
+            listView.setOnItemClickListener(getItemListener());
+            listView.setOnItemLongClickListener(getLongListener());
             showList();
         }
         else if (mUser != null) {
             // initialize the adapter
             mAdapter = new TSAdapter(this, R.layout.activity_main, new ArrayList<TripSummary>());
             // set the adapter to the list view
-            mListView.setAdapter(mAdapter);
-            mListView.setOnItemClickListener(getItemListener());
-            mListView.setOnItemLongClickListener(getLongListener());
-            // db operation in background
+            listView.setAdapter(mAdapter);
+            listView.setOnItemClickListener(getItemListener());
+            listView.setOnItemLongClickListener(getLongListener());
+            // get the docs of trip summaries, do the db operation in background
             new SumDocsTask().execute();
-
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    // get the list of trip summaries of this user from the db
-//                    Task<QuerySnapshot> task = AccessDB.getTripSummaries(mUser.getUid());
-//                    task.addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                            QuerySnapshot result = task.getResult();
-//                            if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
-//                                // get the documents and start the async task
-//                                mSumDocs = result.getDocuments();
-//                                new SumTask().execute();
-//                            } else {
-//                                Toast t = Toast.makeText(MainActivity.this, "Could not load your trips.",
-//                                        Toast.LENGTH_SHORT);
-//                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-//                                t.show();
-//                                showList();
-//                            }
-//                        }
-//                    });
-//                }
-//            }).start();
         }
 
     }
@@ -179,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(settingsIntent);
                 break;
             case R.id.match_dates:
-                Intent matchIntent = new Intent(MainActivity.this, MatchActivity.class);
+                Intent matchIntent = new Intent(MainActivity.this, MatchOrAddActivity.class);
                 matchIntent.putExtra(Const.SOURCE_TAG, Const.MAIN_TAG);
                 startActivity(matchIntent);
                 break;
@@ -236,49 +208,6 @@ public class MainActivity extends AppCompatActivity {
 
         // db operations in background
         new RemoveTripTask().execute();
-
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                // remove this user from the trip's trippers sub-collection
-//                Task<Void> tripTask = AccessDB.deleteTripper(deleteId, user.getUid())
-//                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<Void> task) {
-//                                if (!task.isSuccessful()) {
-//                                    Log.d(Const.TAG, "onComplete: fail");
-//                                    showList();
-//                                }
-//                            }
-//                        });
-//                // remove this trip from the user's trips sub-collection
-//                Task<Void> userTask = AccessDB.removeUserTrip(user.getUid(), deleteId)
-//                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<Void> task) {
-//                                if (!task.isSuccessful()) {
-//                                    Log.d(Const.TAG, "onComplete: fail 2");
-//                                    showList();
-//                                }
-//                            }
-//                        });
-//                Log.d(Const.TAG, "run: thread " + Thread.currentThread().getId());
-//                // when both are finished redisplay the list without the item that was just deleted
-//                Tasks.whenAll(tripTask, userTask).addOnSuccessListener(new OnSuccessListener<Void>() {
-//                    @Override
-//                    public void onSuccess(Void aVoid) {
-//                        Log.d(Const.TAG, "onSuccess: updated trip sums");
-//                        Log.d(Const.TAG, "when all: thread " + Thread.currentThread().getId());
-//                        if (mPosition < 0 || mPosition >= mTrips.size() || mAdapter == null) return;
-//                        mTrips.remove(mPosition);
-//                        mAdapter.clear();
-//                        mAdapter.addAll(mTrips);
-//                        mAdapter.notifyDataSetChanged();
-//                        showList();
-//                    }
-//                });
-//            }
-//        }).start();
     }
 
     // listeners
@@ -322,37 +251,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * SortTask
-     * task to sort the trips by date
+     * SumDocsTask
+     * gets the documents corresponding to all the trip summaries
      */
-    private class SortTask extends AsyncTask<Void, Void, Void> {
+    private class SumDocsTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            if (mTrips != null && mTrips.size() > 0) {
-                // remove the trip that was deleted if it has not already been removed
-                if (mTripId != null) {
-                    for (int i = 0; i < mTrips.size(); i++) {
-                        if (mTrips.get(i).getId() != null && mTrips.get(i).getId().equals(mTripId)) {
-                            mTrips.remove(i);
-                            break;
-                        }
-                    }
-                }
-                mTrips.sort(new TripDateComparator());
-            }
-            return null;
-        }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            if (mAdapter == null) return;
-            if (mTrips != null) {
-                mAdapter.addAll(mTrips);
-                mAdapter.notifyDataSetChanged();
-            }
-            showList();
+            // get the list of trip summaries of this user from the db
+            AccessDB.getTripSummaries(mUser.getUid())
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            QuerySnapshot result = task.getResult();
+                            if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
+                                // get the documents and start the async task
+                                mSumDocs = result.getDocuments();
+                                mTrips = new ArrayList<>();
+                                new SumTask().execute();
+                            } else {
+                                Toast t = Toast.makeText(MainActivity.this, "Could not load your trips.",
+                                        Toast.LENGTH_SHORT);
+                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                                t.show();
+                                showList();
+                            }
+                        }
+                    });
+
+            return null;
         }
     }
 
@@ -392,36 +320,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * SumDocsTask
-     * gets the documents corresponding to all the trip summaries
+     * SortTask
+     * task to sort the trips by date and then display them
      */
-    private class SumDocsTask extends AsyncTask<Void, Void, Void> {
+    private class SortTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
-
-            // get the list of trip summaries of this user from the db
-            AccessDB.getTripSummaries(mUser.getUid())
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    QuerySnapshot result = task.getResult();
-                    if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
-                        // get the documents and start the async task
-                        mSumDocs = result.getDocuments();
-                        mTrips = new ArrayList<>();
-                        new SumTask().execute();
-                    } else {
-                        Toast t = Toast.makeText(MainActivity.this, "Could not load your trips.",
-                                Toast.LENGTH_SHORT);
-                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                        t.show();
-                        showList();
+            if (mTrips != null && mTrips.size() > 0) {
+                // remove the trip that was deleted if it has not already been removed
+                if (mTripId != null) {
+                    for (int i = 0; i < mTrips.size(); i++) {
+                        if (mTrips.get(i).getId() != null && mTrips.get(i).getId().equals(mTripId)) {
+                            mTrips.remove(i);
+                            break;
+                        }
                     }
                 }
-            });
-
+                mTrips.sort(new TripDateComparator());
+            }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if (mAdapter == null) return;
+            if (mTrips != null) {
+                mAdapter.addAll(mTrips);
+                mAdapter.notifyDataSetChanged();
+            }
+            showList();
         }
     }
 

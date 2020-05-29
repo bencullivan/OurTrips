@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -28,6 +29,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -41,6 +43,10 @@ public class RequestTripActivity extends AppCompatActivity {
     private String mUserName;
     private Date mStart;
     private Date mEnd;
+    private HashMap<String, Object> mData;
+    private FirebaseUser mUser;
+    private String mTripId;
+    private String mTripTitle;
 
     // widgets
     private EditText mTitle;
@@ -147,57 +153,13 @@ public class RequestTripActivity extends AppCompatActivity {
         }
 
         // add the initial trip data to a map
-        final Map<String, Object> data = new HashMap<>();
-        data.put(Const.TRIP_START_DATE_KEY, mFormat.format(mStart));
-        data.put(Const.TRIP_END_DATE_KEY, mFormat.format(mEnd));
-        data.put(Const.TRIP_TITLE_KEY, mTitle.getText().toString());
+        mData = new HashMap<>();
+        mData.put(Const.TRIP_START_DATE_KEY, mFormat.format(mStart));
+        mData.put(Const.TRIP_END_DATE_KEY, mFormat.format(mEnd));
+        mData.put(Const.TRIP_TITLE_KEY, mTitle.getText().toString());
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // add the trip to the db
-                Task<String> tripTask = AccessDB.addTrip(data);
-                tripTask.addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if (task.isSuccessful()) {
-                            final String tripId = task.getResult();
-                            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                            if (tripId == null || tripId.equals("") || mFriend == null || user == null) {
-                                Log.d(Const.TAG, "onComplete: friend or trip fail");
-                                return;
-                            }
-
-                            // update the sub-collections
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    AccessDB.addUserTrip(user.getUid(), tripId,
-                                            mTitle.getText().toString(), mFormat.format(mStart));
-                                    AccessDB.addUserTrip(mFriend.getUserId(),
-                                            tripId, mTitle.getText().toString(), mFormat.format(mStart));
-                                    AccessDB.addTripper(tripId, user.getUid(),
-                                            user.getEmail(), mUserName);
-                                    AccessDB.addTripper(tripId, mFriend.getUserId(),
-                                            mFriend.getEmail(), mFriend.getName());
-                                }
-                            }).start();
-
-                            Log.d(Const.TAG, "onComplete: done yay");
-                            Intent intent = new Intent(RequestTripActivity.this, MainActivity.class);
-                            startActivity(intent);
-                            finishAffinity();
-                        } else {
-                            // toast the user
-                            Toast t = Toast.makeText(RequestTripActivity.this, "This trip could"
-                                    + " not be added.", Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                        }
-                    }
-                });
-            }
-        }).start();
+        // add this trip to the db
+        new AddTripTask().execute();
     }
 
     /**
@@ -244,6 +206,73 @@ public class RequestTripActivity extends AppCompatActivity {
 
     public Date getStart() {
         return mStart;
+    }
+
+    /**
+     * AddTripTask
+     * adds this trip to the db
+     */
+    private class AddTripTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mData == null) return null;
+
+            // add the trip to the db
+            AccessDB.addTrip(mData).addOnCompleteListener(new OnCompleteListener<String>() {
+                @Override
+                public void onComplete(@NonNull Task<String> task) {
+                    if (task.isSuccessful()) {
+                        // get the id of the new trip
+                        mTripId = task.getResult();
+                        // get the current user
+                        mUser = FirebaseAuth.getInstance().getCurrentUser();
+                        // get the trip title
+                        mTripTitle = mTitle.getText().toString();
+                        if (mTripId == null || mTripId.equals("") || mFriend == null || mUser == null) {
+                            Log.d(Const.TAG, "onComplete: friend or trip fail");
+                            return;
+                        }
+                        // update the sub collections
+                        new SubCollectionTask().execute();
+
+                        Log.d(Const.TAG, "onComplete: done yay");
+                        Intent intent = new Intent(RequestTripActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finishAffinity();
+                    } else {
+                        // toast the user
+                        Toast t = Toast.makeText(RequestTripActivity.this, "This trip could"
+                                + " not be added.", Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                    }
+                }
+            });
+
+            return null;
+        }
+    }
+
+    /**
+     * SubCollectionTask
+     * updates the user trips and trip trippers sub collections
+     */
+    private class SubCollectionTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null || mFriend == null || mTripId == null || mTripTitle == null ||
+                    mFormat == null || mStart == null || mUserName == null) return null;
+
+            // update the sub collections
+            AccessDB.addUserTrip(mUser.getUid(), mTripId, mTripTitle, mFormat.format(mStart));
+            AccessDB.addUserTrip(mFriend.getUserId(), mTripId, mTripTitle, mFormat.format(mStart));
+            AccessDB.addTripper(mTripId, mUser.getUid(), mUser.getEmail(), mUserName);
+            AccessDB.addTripper(mTripId, mFriend.getUserId(), mFriend.getEmail(), mFriend.getName());
+
+            return null;
+        }
     }
 
 }

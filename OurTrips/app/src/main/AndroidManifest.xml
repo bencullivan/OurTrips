@@ -40,7 +40,7 @@
         <activity android:name=".ViewPictureActivity" />
         <activity android:name=".GalleryActivity" />
         <activity android:name=".RequestTripActivity" />
-        <activity android:name=".MatchActivity" />
+        <activity android:name=".MatchOrAddActivity" />
         <activity android:name=".FriendActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -228,14 +228,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // save this location to the db
                 if (mTripId == null) return;
                 new AddLocationTask().execute();
-
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        AccessDB.addTripLocation(mTripId, mSelectedLatLng, mLocationName, new Date().getTime());
-//                        mLocationName = null;
-//                    }
-//                }).start();
             }
         });
     }
@@ -267,15 +259,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // save this location to the db
         if (mTripId == null) return;
         new AddLocationTask().execute();
-
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                AccessDB.addTripLocation(mTripId, mSelectedLatLng, mLocationName, new Date().getTime());
-//                mLocationName = null;
-//            }
-//        }).start();
-
     }
 
     /**
@@ -327,20 +310,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                         //delete this place from the db
                         new DeleteLocationTask().execute();
-
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                // remove this place from the database
-//                                AccessDB.deleteTripLocation(mTripId, mHere.getDocId())
-//                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                    @Override
-//                                    public void onSuccess(Void aVoid) {
-//                                        Log.d(Const.TAG, "onSuccess: place deleted");
-//                                    }
-//                                });
-//                            }
-//                        }).start();
                     }
                 });
             }
@@ -414,13 +383,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if (mHere == null || mTripId == null || mHere.getDocId() == null) return null;
 
             // remove this place from the database
-            AccessDB.deleteTripLocation(mTripId, mHere.getDocId())
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Log.d(Const.TAG, "onSuccess: place deleted");
-                        }
-                    });
+            AccessDB.deleteTripLocation(mTripId, mHere.getDocId());
 
             return null;
         }
