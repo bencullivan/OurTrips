@@ -126,7 +126,13 @@ public class EditSummaryActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                if (mTripId == null) {
+                    finish();
+                    return true;
+                }
+                Log.d(Const.TAG, "onOptionsItemSelected: home");
                 Intent intent = new Intent(EditSummaryActivity.this, TripActivity.class);
+                intent.putExtra(Const.TRIP_ID_TAG, mTripId);
                 startActivity(intent);
                 finish();
                 return true;

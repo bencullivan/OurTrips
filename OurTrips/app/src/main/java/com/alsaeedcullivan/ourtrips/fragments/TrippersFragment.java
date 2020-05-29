@@ -103,41 +103,45 @@ public class TrippersFragment extends Fragment {
         // get the trip id
         mTripId = activity.getTripId();
         if (mTripId == null || mAdapter == null) return;
+        // get the trippers documents
+        new GetTrippersTask().execute();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // get the list of trippers and add it to the adapter
-                AccessDB.getTrippers(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        QuerySnapshot result = task.getResult();
-                        if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
-                            // get the list of documents and start the async task
-                            mTripperDocs = result.getDocuments();
-                            new TripperTask().execute();
-                        }
-//                        if (task.isSuccessful() && task.getResult() != null && task.getResult().size() > 0) {
-//                            mTrippers = (ArrayList<UserSummary>) task.getResult();
-//                            mAdapter.clear();
-//                            mAdapter.addAll(mTrippers);
-//                            mAdapter.notifyDataSetChanged();
-//                            Log.d(Const.TAG, "onComplete: trippers frag");
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                // get the list of trippers and add it to the adapter
+//                AccessDB.getTrippers(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        QuerySnapshot result = task.getResult();
+//                        if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
+//                            // get the list of documents and start the async task
+//                            mTripperDocs = result.getDocuments();
+//                            mTrippers = new ArrayList<>();
+//                            new TripperTask().execute();
 //                        }
-                    }
-                });
-            }
-        }).start();
+////                        if (task.isSuccessful() && task.getResult() != null && task.getResult().size() > 0) {
+////                            mTrippers = (ArrayList<UserSummary>) task.getResult();
+////                            mAdapter.clear();
+////                            mAdapter.addAll(mTrippers);
+////                            mAdapter.notifyDataSetChanged();
+////                            Log.d(Const.TAG, "onComplete: trippers frag");
+////                        }
+//                    }
+//                });
+//            }
+//        }).start();
     }
 
+    /**
+     * TripperTask
+     * extracts a tripper from each document and then updates the list view
+     */
     private class TripperTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            if (mTripperDocs == null || mTripperDocs.size() == 0) return null;
-
-            // instantiate the list of trippers
-            mTrippers = new ArrayList<>();
+            if (mTripperDocs == null || mTripperDocs.size() == 0 || mTrippers == null) return null;
 
             // extract a user summary from each document
             for (DocumentSnapshot doc : mTripperDocs) {
@@ -164,6 +168,35 @@ public class TrippersFragment extends Fragment {
                 mAdapter.notifyDataSetChanged();
             }
 
+        }
+    }
+
+    /**
+     * GetTrippersTask
+     * gets the documents corresponding to each tripper on the trip
+     */
+    private class GetTrippersTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripId == null) return null;
+
+            // get the list of documents corresponding to trippers
+            AccessDB.getTrippers(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    Log.d(Const.TAG, "onComplete: " + Thread.currentThread().getId());
+                    QuerySnapshot result = task.getResult();
+                    if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
+                        // get the list of documents and start the async task that will process them
+                        mTripperDocs = result.getDocuments();
+                        mTrippers = new ArrayList<>();
+                        new TripperTask().execute();
+                    }
+                }
+            });
+
+            return null;
         }
     }
 }

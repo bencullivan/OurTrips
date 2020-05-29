@@ -38,10 +38,13 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.UploadTask;
 
+import org.w3c.dom.Document;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -62,6 +65,10 @@ public class MediaFragment extends Fragment {
     private TextView mLoading, mPhotoText;
     private ArrayList<Pic> mPics;
     private List<DocumentSnapshot> mDocs = new ArrayList<>();
+    private long mTimeStamp = -1;
+    private String mTripId;
+    private String mPath;
+    private InputStream mIs;
 
     public MediaFragment() {
         // Required empty public constructor
@@ -138,36 +145,39 @@ public class MediaFragment extends Fragment {
         try {
             mLoading.setText(getString(R.string.adding_to_the_gallery));
             showSpinner();
-            final long timeStamp = new Date().getTime();
-            final String id = ((TripActivity) getActivity()).getTripId();
+            mTimeStamp = new Date().getTime();
+            mTripId = ((TripActivity) getActivity()).getTripId();
             // establish the path where this picture will be stored in the bucket
-            final String path = Const.TRIP_PIC_PATH + "/" + id +
-                    "/" + Const.TRIP_PHOTO_KEY + timeStamp + Const.PIC_JPG;
+            mPath = Const.TRIP_PIC_PATH + "/" + mTripId +
+                    "/" + Const.TRIP_PHOTO_KEY + mTimeStamp + Const.PIC_JPG;
             // open an input stream for the uri
-            final InputStream is = getActivity().getContentResolver().openInputStream(uri);
+            mIs = getActivity().getContentResolver().openInputStream(uri);
             //db operations in background
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    // add this photo to the storage bucket
-                    UploadTask storeTask = AccessBucket.uploadPicture(path, is);
-                    // add this photo to the database and storage
-                    Task<DocumentReference> docTask = AccessDB.addTripPhoto(id, path, timeStamp)
-                            .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentReference> task) {
-                                    hideSpinner();
-                                }
-                            });
-                    // when both tasks are complete, hide the progress bar
-                    Tasks.whenAll(storeTask, docTask).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            hideSpinner();
-                        }
-                    });
-                }
-            }).start();
+            new UploadPicTask().execute();
+
+
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    // add this photo to the storage bucket
+//                    UploadTask storeTask = AccessBucket.uploadPicture(mPath, mIs);
+//                    // add this photo to the database and storage
+//                    Task<DocumentReference> docTask = AccessDB.addTripPhoto(mTripId, mPath, mTimeStamp)
+//                            .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+//                                @Override
+//                                public void onComplete(@NonNull Task<DocumentReference> task) {
+//                                    hideSpinner();
+//                                }
+//                            });
+//                    // when both tasks are complete, hide the progress bar
+//                    Tasks.whenAll(storeTask, docTask).addOnCompleteListener(new OnCompleteListener<Void>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<Void> task) {
+//                            hideSpinner();
+//                        }
+//                    });
+//                }
+//            }).start();
         } catch (IOException e) {
             hideSpinner();
             Log.d(Const.TAG, Log.getStackTraceString(e));
@@ -219,46 +229,52 @@ public class MediaFragment extends Fragment {
             public void onClick(View v) {
                 if (getActivity() == null) return;
                 // get the trip id from the parent activity
-                final String tripId = ((TripActivity)getActivity()).getTripId();
-                if (tripId == null) return;
+                mTripId = ((TripActivity)getActivity()).getTripId();
+                if (mTripId == null) return;
                 mLoading.setText(R.string.loading_photos);
                 showSpinner();
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // load the photo paths associated with this trip
-                        AccessDB.getTripPhotos(tripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                QuerySnapshot result = task.getResult();
-                                if (task.isSuccessful()) {
-                                    if (result != null && result.getDocuments().size() > 0) {
-                                        // get the list of documents and start the async task that
-                                        // will get the list of Pic objects
-                                        mDocs = result.getDocuments();
-                                        new GetPicsTask().execute();
 
-//                                        mPics = (ArrayList<Pic>) task.getResult();
-//                                        Log.d(Const.TAG, "onComplete: " + mPics.get(0).getPicPath());
-//                                        new PicSortTask().execute();
-                                    } else {
-                                        Toast t = Toast.makeText(getActivity(), "There are no photos " +
-                                                "in the photo gallery.", Toast.LENGTH_SHORT);
-                                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                                        t.show();
-                                        hideSpinner();
-                                    }
-                                } else {
-                                    Toast t = Toast.makeText(getActivity(), "The photo gallery could " +
-                                            "not be loaded.", Toast.LENGTH_SHORT);
-                                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                                    t.show();
-                                    hideSpinner();
-                                }
-                            }
-                        });
-                    }
-                }).start();
+                // load the pic documents
+                new LoadPicsTask().execute();
+
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        // load the photo paths associated with this trip
+//                        AccessDB.getTripPhotos(tripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                            @Override
+//                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                                QuerySnapshot result = task.getResult();
+//                                if (task.isSuccessful()) {
+//                                    if (result != null && result.getDocuments().size() > 0) {
+//                                        Log.d(Const.TAG, "onComplete: " + Thread.currentThread().getId());
+//                                        // get the list of documents and start the async task that
+//                                        // will get the list of Pic objects
+//                                        mDocs = result.getDocuments();
+//                                        mPics = new ArrayList<>();
+//                                        new GetPicsTask().execute();
+//
+////                                        mPics = (ArrayList<Pic>) task.getResult();
+////                                        Log.d(Const.TAG, "onComplete: " + mPics.get(0).getPicPath());
+////                                        new PicSortTask().execute();
+//                                    } else {
+//                                        Toast t = Toast.makeText(getActivity(), "There are no photos " +
+//                                                "in the photo gallery.", Toast.LENGTH_SHORT);
+//                                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+//                                        t.show();
+//                                        hideSpinner();
+//                                    }
+//                                } else {
+//                                    Toast t = Toast.makeText(getActivity(), "The photo gallery could " +
+//                                            "not be loaded.", Toast.LENGTH_SHORT);
+//                                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+//                                    t.show();
+//                                    hideSpinner();
+//                                }
+//                            }
+//                        });
+//                    }
+//                }).start();
             }
         };
     }
@@ -302,9 +318,7 @@ public class MediaFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            if (mDocs == null || mDocs.size() == 0) return null;
-
-            mPics = new ArrayList<>();
+            if (mDocs == null || mDocs.size() == 0 || mPics == null) return null;
 
             // extract a pic from each document
             for (DocumentSnapshot doc : mDocs) {
@@ -332,6 +346,82 @@ public class MediaFragment extends Fragment {
                 t.show();
                 hideSpinner();
             }
+        }
+    }
+
+    /**
+     * UploadPicTask
+     * uploads a pic to the storage bucket and adds its path to the db
+     */
+    private class UploadPicTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mPath == null || mIs == null || mTripId == null || mTimeStamp == -1) return null;
+
+            // add this photo to the storage bucket
+            UploadTask storeTask = AccessBucket.uploadPicture(mPath, mIs);
+            // add this photo to the database and storage
+            Task<DocumentReference> docTask = AccessDB.addTripPhoto(mTripId, mPath, mTimeStamp)
+                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentReference> task) {
+                            hideSpinner();
+                        }
+                    });
+            // when both tasks are complete, hide the progress bar
+            Tasks.whenAll(storeTask, docTask).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    hideSpinner();
+                }
+            });
+
+            return null;
+        }
+    }
+
+    /**
+     * LoadPicsTask
+     * loads a list of the documents corresponding to each picture
+     */
+    private class LoadPicsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripId == null) return null;
+
+            // load the photo paths associated with this trip
+            AccessDB.getTripPhotos(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    QuerySnapshot result = task.getResult();
+                    if (task.isSuccessful()) {
+                        if (result != null && result.getDocuments().size() > 0) {
+                            Log.d(Const.TAG, "onComplete: " + Thread.currentThread().getId());
+                            // get the list of documents and start the async task that
+                            // will get the list of Pic objects
+                            mDocs = result.getDocuments();
+                            mPics = new ArrayList<>();
+                            new GetPicsTask().execute();
+                        } else {
+                            Toast t = Toast.makeText(getActivity(), "There are no photos " +
+                                    "in the photo gallery.", Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                            hideSpinner();
+                        }
+                    } else {
+                        Toast t = Toast.makeText(getActivity(), "The photo gallery could " +
+                                "not be loaded.", Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                        hideSpinner();
+                    }
+                }
+            });
+
+            return null;
         }
     }
 }

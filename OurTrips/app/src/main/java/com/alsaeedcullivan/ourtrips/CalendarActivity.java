@@ -162,26 +162,29 @@ public class CalendarActivity extends AppCompatActivity {
         // get the list of dates from the db that the user is available
         else if (mUser != null) {
             // run db operation on background
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    AccessDB.getUserDates(mUser.getUid())
-                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    DocumentSnapshot doc = task.getResult();
-                                    if (task.isSuccessful() && doc != null &&
-                                            doc.contains(Const.DATE_LIST_KEY) &&
-                                            doc.get(Const.DATE_LIST_KEY) instanceof  List) {
-                                        // this will not produce an exception
-                                        sDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
-                                        //convert them to Dates and add them to the calendar
-                                        new AddTask().execute();
-                                    }
-                                }
-                            });
-                }
-            }).start();
+            new GetDatesTask().execute();
+
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    AccessDB.getUserDates(mUser.getUid())
+//                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//                                @Override
+//                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                                    DocumentSnapshot doc = task.getResult();
+//                                    if (task.isSuccessful() && doc != null &&
+//                                            doc.contains(Const.DATE_LIST_KEY) &&
+//                                            doc.get(Const.DATE_LIST_KEY) instanceof  List) {
+//                                        // this will not produce an exception
+//                                        sDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
+//                                        realDates = new ArrayList<>();
+//                                        //convert them to Dates and add them to the calendar
+//                                        new AddTask().execute();
+//                                    }
+//                                }
+//                            });
+//                }
+//            }).start();
         }
     }
 
@@ -328,7 +331,11 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
 
-    // converts a list of strings to dates and adds them to the calendar
+    /**
+     * AddTask
+     * converts the string dates that this user is available to date objects and adds them to the
+     * calendar view
+     */
     private class AddTask extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -367,6 +374,38 @@ public class CalendarActivity extends AppCompatActivity {
             mCalView.setOnDateSelectedListener(maintainRecent());
             // display the calendar
             makeCalAppear();
+        }
+    }
+
+    /**
+     * GetDatesTask
+     * gets the dates that this user is available
+     */
+    private class GetDatesTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null) return null;
+
+            // get the dates this user is available
+            AccessDB.getUserDates(mUser.getUid())
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            DocumentSnapshot doc = task.getResult();
+                            if (task.isSuccessful() && doc != null &&
+                                    doc.contains(Const.DATE_LIST_KEY) &&
+                                    doc.get(Const.DATE_LIST_KEY) instanceof  List) {
+                                // this will not produce an exception
+                                sDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
+                                realDates = new ArrayList<>();
+                                //convert them to Dates and add them to the calendar
+                                new AddTask().execute();
+                            }
+                        }
+                    });
+
+            return null;
         }
     }
 }

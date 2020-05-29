@@ -14,8 +14,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
@@ -96,6 +98,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) ||
 //                !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
 //            CustomDialogFragment.newInstance(CustomDialogFragment.LOCATION_SETTINGS_ID)
+//                    .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
 //                    .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
 //        }
         // start the map with the most recent location on the trip or the user's current location
@@ -200,7 +203,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * adds this location to the database
      */
     public void initiateSelect() {
-        if (mLocationName == null) mLocationName = "";
+        if (mLocationName == null || mLocationName.replaceAll("\\s","").equals("")) {
+            Toast t = Toast.makeText(this, "You must give the location a name.", Toast.LENGTH_SHORT);
+            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+            t.show();
+            cancelAction();
+            return;
+        }
         Log.d(Const.TAG, "initiateAdd: " + mLocationName);
 
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -219,9 +228,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void run() {
                         AccessDB.addTripLocation(mTripId, pos, mLocationName, new Date().getTime());
+                        mLocationName = null;
                     }
                 }).start();
-                mLocationName = null;
             }
         });
     }
@@ -232,7 +241,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * adds this location to the database
      */
     public void useCurrent() {
-        if (mLocationName == null) mLocationName = "";
+        if (mLocationName == null || mLocationName.replaceAll("\\s","").equals("")) {
+            Toast t = Toast.makeText(this, "You must give the location a name.", Toast.LENGTH_SHORT);
+            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+            t.show();
+            cancelAction();
+            return;
+        }
         Log.d(Const.TAG, "initiateAdd: " + mLocationName);
 
         // drop the marker at the current location
@@ -250,9 +265,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void run() {
                 AccessDB.addTripLocation(mTripId, latLng, mLocationName, new Date().getTime());
+                mLocationName = null;
             }
         }).start();
-        mLocationName = null;
+
     }
 
     /**
