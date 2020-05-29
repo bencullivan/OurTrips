@@ -1,7 +1,6 @@
 package com.alsaeedcullivan.ourtrips.cloud;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.models.Pic;
 import com.alsaeedcullivan.ourtrips.models.Place;
@@ -15,7 +14,6 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -205,6 +203,7 @@ public class AccessDB {
         data.put(Const.FRIEND_ID_KEY, userId);
         data.put(Const.USER_EMAIL_KEY, userEmail);
         data.put(Const.USER_NAME_KEY, userName);
+
         // get the friend from the db based on the email that was passed in
         final FirebaseFirestore store = FirebaseFirestore.getInstance();
         return store.collection(Const.USERS_COLLECTION)
@@ -218,28 +217,43 @@ public class AccessDB {
                             DocumentSnapshot doc = q.getDocuments().get(0);
                             final String friendId = doc.getId();
 
-                            // check to see if this user has already sent them a request
-                            store.collection(Const.USERS_COLLECTION)
-                                    .document(friendId)
-                                    .collection(Const.USER_F_REQUESTS_COLLECTION)
-                                    .document(id)
-                                    .get()
-                                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                            DocumentSnapshot doc = task.getResult();
-                                            // if they have not
-                                            if (doc == null || !doc.exists()) {
-                                                // add this user to the other user's friend
-                                                // requests collection
-                                                store.collection(Const.USERS_COLLECTION)
-                                                        .document(friendId)
-                                                        .collection(Const.USER_F_REQUESTS_COLLECTION)
-                                                        .document(id)
-                                                        .set(data);
-                                            }
-                                        }
-                                    });
+                            // db operation on background thread
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Log.d(Const.TAG, "then: continue " + Thread.currentThread().getId());
+                                    // check to see if this user has already sent them a request
+                                    store.collection(Const.USERS_COLLECTION)
+                                            .document(friendId)
+                                            .collection(Const.USER_F_REQUESTS_COLLECTION)
+                                            .document(id)
+                                            .get()
+                                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                    DocumentSnapshot doc = task.getResult();
+                                                    // if they have not
+                                                    if (doc == null || !doc.exists()) {
+                                                        Log.d(Const.TAG, "access db on complete thread id: " + Thread.currentThread().getId());
+                                                        // db operation on background thread
+                                                        new Thread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                Log.d(Const.TAG, "access db on complete thread id: " + Thread.currentThread().getId());
+                                                                // add this user to the other user's friend
+                                                                // requests collection
+                                                                store.collection(Const.USERS_COLLECTION)
+                                                                        .document(friendId)
+                                                                        .collection(Const.USER_F_REQUESTS_COLLECTION)
+                                                                        .document(id)
+                                                                        .set(data);
+                                                            }
+                                                        }).start();
+                                                    }
+                                                }
+                                            });
+                                }
+                            }).start();
                             return "a";
                         } else {
                             return "n";
@@ -275,6 +289,8 @@ public class AccessDB {
         // get a reference to the db
         FirebaseFirestore store = FirebaseFirestore.getInstance();
 
+        Log.d(Const.TAG, "acceptFriendRequest: accedd db " + Thread.currentThread().getId());
+
         // delete the friend request
         store.collection(Const.USERS_COLLECTION)
                 .document(userId)
@@ -299,8 +315,9 @@ public class AccessDB {
      * deleteRequest()
      * deletes a friend request from the db
      */
-    public static Task<Void> deleteRequest(String userId, String friendId) {
-        return FirebaseFirestore.getInstance()
+    public static void deleteRequest(String userId, String friendId) {
+        Log.d(Const.TAG, "deleteRequest: " + Thread.currentThread().getId());
+        FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_F_REQUESTS_COLLECTION)
@@ -464,69 +481,70 @@ public class AccessDB {
      * CalendarView in CalendarActivity
      * @param userId the id of the user
      */
-    public static Task<List<Date>> getUserDatesForCal(String userId) {
+    public static Task<DocumentSnapshot> getUserDatesForCal(String userId) {
+        Log.d(Const.TAG, "getUserDatesForCal: " + Thread.currentThread().getId());
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
-                .get()
-                .continueWith(new Continuation<DocumentSnapshot, List<Date>>() {
-                    @Override
-                    public List<Date> then(@NonNull Task<DocumentSnapshot> task) {
-                        DocumentSnapshot result = task.getResult();
-                        if (result == null || !result.contains(Const.DATE_LIST_KEY) ||
-                                !(result.get(Const.DATE_LIST_KEY) instanceof List))
-                            return new ArrayList<>();
-
-                        // NOTE: if execution makes it past the above if statement this cast will
-                        // not throw an exception
-                        List<String> sDates = (List<String>) result.get(Const.DATE_LIST_KEY);
-                        List<Date> realDates = new ArrayList<>();
-
-                        if (sDates == null) return realDates;
-
-                        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
-                        try {
-                            Date today = format.parse(format.format(new Date()));
-
-                            // convert each string date into a date object
-                            // make sure that none of these dates are before today
-                            for (String date : sDates) {
-                                Date d = format.parse(date);
-                                if (d != null && d.compareTo(today) >= 0) {
-                                    realDates.add(d);
-                                }
-                            }
-                            return realDates;
-                        } catch (ParseException e) {
-                            return realDates;
-                        }
-                    }
-                });
+                .get();
+//                .continueWith(new Continuation<DocumentSnapshot, List<Date>>() {
+//                    @Override
+//                    public List<Date> then(@NonNull Task<DocumentSnapshot> task) {
+//                        DocumentSnapshot result = task.getResult();
+//                        if (result == null || !result.contains(Const.DATE_LIST_KEY) ||
+//                                !(result.get(Const.DATE_LIST_KEY) instanceof List))
+//                            return new ArrayList<>();
+//
+//                        // NOTE: if execution makes it past the above if statement this cast will
+//                        // not throw an exception
+//                        List<String> sDates = (List<String>) result.get(Const.DATE_LIST_KEY);
+//                        List<Date> realDates = new ArrayList<>();
+//
+//                        if (sDates == null) return realDates;
+//
+//                        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+//                        try {
+//                            Date today = format.parse(format.format(new Date()));
+//
+//                            // convert each string date into a date object
+//                            // make sure that none of these dates are before today
+//                            for (String date : sDates) {
+//                                Date d = format.parse(date);
+//                                if (d != null && d.compareTo(today) >= 0) {
+//                                    realDates.add(d);
+//                                }
+//                            }
+//                            return realDates;
+//                        } catch (ParseException e) {
+//                            return realDates;
+//                        }
+//                    }
+//                });
     }
 
-    /**
-     * getUserDatesForMatch()
-     * retrieves the list of the dates the user is available
-     * @param userId the id of the user
-     */
-    public static Task<List<String>> getUserDatesForMatch(String userId) {
-        return FirebaseFirestore.getInstance()
-                .collection(Const.USERS_COLLECTION)
-                .document(userId)
-                .get()
-                .continueWith(new Continuation<DocumentSnapshot, List<String>>() {
-                    @Override
-                    public List<String> then(@NonNull Task<DocumentSnapshot> task) {
-                        DocumentSnapshot result = task.getResult();
-                        if (result == null || !result.contains(Const.DATE_LIST_KEY)
-                                || result.get(Const.DATE_LIST_KEY) == null) return new ArrayList<>();
-
-                        // NOTE: if execution makes it past the above if statement
-                        // this cast will not throw an exception
-                        return (List<String>) result.get(Const.DATE_LIST_KEY);
-                    }
-                });
-    }
+//    /**
+//     * getUserDatesForMatch()
+//     * retrieves the list of the dates the user is available
+//     * @param userId the id of the user
+//     */
+//    public static Task<List<String>> getUserDatesForMatch(String userId) {
+//        return FirebaseFirestore.getInstance()
+//                .collection(Const.USERS_COLLECTION)
+//                .document(userId)
+//                .get()
+//                .continueWith(new Continuation<DocumentSnapshot, List<String>>() {
+//                    @Override
+//                    public List<String> then(@NonNull Task<DocumentSnapshot> task) {
+//                        DocumentSnapshot result = task.getResult();
+//                        if (result == null || !result.contains(Const.DATE_LIST_KEY)
+//                                || result.get(Const.DATE_LIST_KEY) == null) return new ArrayList<>();
+//
+//                        // NOTE: if execution makes it past the above if statement
+//                        // this cast will not throw an exception
+//                        return (List<String>) result.get(Const.DATE_LIST_KEY);
+//                    }
+//                });
+//    }
 
     /**
      * getUserName()
@@ -553,68 +571,68 @@ public class AccessDB {
 
     // DATE MATCHING
 
-    /**
-     * matchDates()
-     * takes in the user's list of dates and the id of a friend they want to match with
-     * returns a list of dates that they are both available that can then be displayed by a calendar
-     * @param dates the dates this user is available
-     * @param friendId the id of the friend they want to match with
-     */
-    public static Task<long[]> matchDates(List<Date> dates, String friendId) {
-        final List<Date> userDates = dates;
-        return FirebaseFirestore.getInstance()
-                .collection(Const.USERS_COLLECTION)
-                .document(friendId)
-                .get()
-                .continueWith(new Continuation<DocumentSnapshot, long[]>() {
-                    @Override
-                    public long[] then(@NonNull Task<DocumentSnapshot> task) {
-                        DocumentSnapshot doc = task.getResult();
-                        if (doc == null || !doc.contains(Const.DATE_LIST_KEY) ||
-                                !(doc.get(Const.DATE_LIST_KEY) instanceof List))
-                            return new long[0];
-
-                        // if execution makes it this far, this cast will not throw an exception
-                        List<String> stringDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
-                        // list of Dates to store the converted friend dates
-                        List<Date> friendDates = new ArrayList<>();
-
-                        if (stringDates == null) return new long[0];
-                        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
-
-                        try {
-                            // convert the strings to dates
-                            for (String date : stringDates) {
-                                friendDates.add(format.parse(date));
-                            }
-                            // initialize a list to hold the matched dates
-                            List<Date> matched = new ArrayList<>();
-
-                            Log.d(Const.TAG, "then: match: userDates: " + userDates);
-                            Log.d(Const.TAG, "then: match: friend: " + friendDates);
-
-                            int a = 0;
-                            int b = 0;
-                            while (a < userDates.size() && b < friendDates.size()) {
-                                int result = userDates.get(a).compareTo(friendDates.get(b));
-                                if (result < 0) a++;
-                                else if (result > 0 ) b++;
-                                else {
-                                    matched.add(userDates.get(a));
-                                    a++;
-                                    b++;
-                                }
-                            }
-                            // return an array of the times of the matched dates
-                            long[] out = new long[matched.size()];
-                            for (int i = 0; i < matched.size(); i++) out[i] = matched.get(i).getTime();
-                            return out;
-                        } catch (ParseException e) {
-                            return new long[0];
-                        }
-                    }
-                });
-    }
+//    /**
+//     * matchDates()
+//     * takes in the user's list of dates and the id of a friend they want to match with
+//     * returns a list of dates that they are both available that can then be displayed by a calendar
+//     * @param dates the dates this user is available
+//     * @param friendId the id of the friend they want to match with
+//     */
+//    public static Task<long[]> matchDates(List<Date> dates, String friendId) {
+//        final List<Date> userDates = dates;
+//        return FirebaseFirestore.getInstance()
+//                .collection(Const.USERS_COLLECTION)
+//                .document(friendId)
+//                .get()
+//                .continueWith(new Continuation<DocumentSnapshot, long[]>() {
+//                    @Override
+//                    public long[] then(@NonNull Task<DocumentSnapshot> task) {
+//                        DocumentSnapshot doc = task.getResult();
+//                        if (doc == null || !doc.contains(Const.DATE_LIST_KEY) ||
+//                                !(doc.get(Const.DATE_LIST_KEY) instanceof List))
+//                            return new long[0];
+//
+//                        // if execution makes it this far, this cast will not throw an exception
+//                        List<String> stringDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
+//                        // list of Dates to store the converted friend dates
+//                        List<Date> friendDates = new ArrayList<>();
+//
+//                        if (stringDates == null) return new long[0];
+//                        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+//
+//                        try {
+//                            // convert the strings to dates
+//                            for (String date : stringDates) {
+//                                friendDates.add(format.parse(date));
+//                            }
+//                            // initialize a list to hold the matched dates
+//                            List<Date> matched = new ArrayList<>();
+//
+//                            Log.d(Const.TAG, "then: match: userDates: " + userDates);
+//                            Log.d(Const.TAG, "then: match: friend: " + friendDates);
+//
+//                            int a = 0;
+//                            int b = 0;
+//                            while (a < userDates.size() && b < friendDates.size()) {
+//                                int result = userDates.get(a).compareTo(friendDates.get(b));
+//                                if (result < 0) a++;
+//                                else if (result > 0 ) b++;
+//                                else {
+//                                    matched.add(userDates.get(a));
+//                                    a++;
+//                                    b++;
+//                                }
+//                            }
+//                            // return an array of the times of the matched dates
+//                            long[] out = new long[matched.size()];
+//                            for (int i = 0; i < matched.size(); i++) out[i] = matched.get(i).getTime();
+//                            return out;
+//                        } catch (ParseException e) {
+//                            return new long[0];
+//                        }
+//                    }
+//                });
+//    }
 
 
     // TRIP SETTERS

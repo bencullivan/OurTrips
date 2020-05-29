@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,12 +20,17 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.squareup.timessquare.CalendarPickerView;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * This library uses the CalendarPickerView from the Times Square open source library.
@@ -52,6 +59,8 @@ public class CalendarActivity extends AppCompatActivity {
     private long[] mMatched;
     private HashSet<Date> mSet;
     private UserSummary mFriend;
+    private List<String> sDates = new ArrayList<>();
+    private List<Date> realDates = new ArrayList<>();
 
 
     @Override
@@ -152,29 +161,27 @@ public class CalendarActivity extends AppCompatActivity {
         }
         // get the list of dates from the db that the user is available
         else if (mUser != null) {
-            Task<List<Date>> datesTask = AccessDB.getUserDatesForCal(mUser.getUid());
-            datesTask.addOnCompleteListener(new OnCompleteListener<List<Date>>() {
+            // run db operation on background
+            new Thread(new Runnable() {
                 @Override
-                public void onComplete(@NonNull Task<List<Date>> task) {
-                    if (task.isSuccessful()) {
-                        // get the list of dates that were retrieved from the database
-                        List<Date> dates = task.getResult();
-                        // if there is a list of dates that the user has already selected,
-                        // then display them
-                        // select the dates in reverse order so that the view focuses on the one
-                        // that is soonest
-                        if (dates != null && dates.size() > 0) {
-                            for (int i = dates.size() - 1; i >= 0; i--) {
-                                mCalView.selectDate(dates.get(i));
-                            }
-                        }
-                        mCalView.setOnInvalidDateSelectedListener(doNothing());
-                        mCalView.setOnDateSelectedListener(maintainRecent());
-                        // display the calendar
-                        makeCalAppear();
-                    }
+                public void run() {
+                    AccessDB.getUserDatesForCal(mUser.getUid())
+                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    DocumentSnapshot doc = task.getResult();
+                                    if (task.isSuccessful() && doc != null &&
+                                            doc.contains(Const.DATE_LIST_KEY) &&
+                                            doc.get(Const.DATE_LIST_KEY) instanceof  List) {
+                                        // this will not produce an exception
+                                        sDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
+                                        //convert them to Dates and add them to the calendar
+                                        new AddTask().execute();
+                                    }
+                                }
+                            });
                 }
-            });
+            }).start();
         }
     }
 
@@ -222,6 +229,7 @@ public class CalendarActivity extends AppCompatActivity {
         // check to make sure there is a user that has has added dates
         if (mUser != null && dates != null) {
             // update the user's available dates
+            // the inner workings of this method are run on a background thread
             AccessDB.setUserDatesFromCal(mUser.getUid(), dates);
         }
         // finish the activity
@@ -317,5 +325,48 @@ public class CalendarActivity extends AppCompatActivity {
         long[] times = new long[dates.size()];
         for (int i = 0; i < dates.size(); i++) times[i] = dates.get(i).getTime();
         return times;
+    }
+
+
+    // converts a list of strings to dates and adds them to the calendar
+    private class AddTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (sDates == null || sDates.size() == 0) return null;
+            SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+            try {
+                Date today = format.parse(format.format(new Date()));
+
+                // convert each string date into a date object
+                // make sure that none of these dates are before today
+                for (String date : sDates) {
+                    Date d = format.parse(date);
+                    if (d != null && d.compareTo(today) >= 0) {
+                        realDates.add(d);
+                    }
+                }
+            } catch (ParseException e) {
+                Log.d(Const.TAG, "doInBackground: " + Log.getStackTraceString(e));
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if (realDates != null && realDates.size() > 0) {
+                // select all the dates
+                for (int i = realDates.size() - 1; i >= 0; i--) {
+                    mCalView.selectDate(realDates.get(i));
+                }
+            }
+
+            mCalView.setOnInvalidDateSelectedListener(doNothing());
+            mCalView.setOnDateSelectedListener(maintainRecent());
+            // display the calendar
+            makeCalAppear();
+        }
     }
 }

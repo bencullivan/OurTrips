@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -29,22 +30,31 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 public class MatchActivity extends AppCompatActivity {
 
     private static final String FRIENDS_KEY = "friends";
     private static final String DATES_KEY = "dates";
     private static final String NAME_KEY = "name";
+    private static final String SELECTED_KEY = "selected";
 
     private FriendAdapter mAdapter;
-    private List<Date> mUserDates;
+    private List<Date> mUserDates = new ArrayList<>();
+    private List<String> sDates = new ArrayList<>();
     private ArrayList<UserSummary> mFriends;
     private HashSet<UserSummary> mTrippers = new HashSet<>();
+    private List<Date> mFriendDates = new ArrayList<>();
+    private List<String> mFriendSDates = new ArrayList<>();
+    private long[] mMatched;
     private String mUserName;
     private String mTripId;
     private String mTripTitle;
@@ -90,6 +100,11 @@ public class MatchActivity extends AppCompatActivity {
         // assign the adapter to the list view
         mListView.setAdapter(mAdapter);
 
+        // if a user has been selected, restore them
+        if (savedInstanceState != null && savedInstanceState.getParcelable(SELECTED_KEY) != null) {
+            mSelected = savedInstanceState.getParcelable(SELECTED_KEY);
+        }
+
         // if this is to add a tripper
         if (mSource != null && mSource.equals(Const.TRIP_ACTIVITY_TAG) && intent
                 .getStringExtra(Const.TRIP_ID_TAG) != null && intent
@@ -120,50 +135,49 @@ public class MatchActivity extends AppCompatActivity {
             }
             // else load the user's friends from the db
             else if (mUser != null) {
-                // load this user's list of friends
-                Task<List<UserSummary>> friendTask = AccessDB.getFriendsList(mUser.getUid())
-                        .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                new Thread(new Runnable() {
                     @Override
-                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
-                        if (task.isSuccessful()) {
-                            // get the list of friends
-                            mFriends = (ArrayList<UserSummary>) task.getResult();
-                        } else {
-                            Toast t = Toast.makeText(MatchActivity.this, "Could not load your friends.",
-                                    Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                        }
-                        // show the list regardless of whether the task was successful
-                        showList();
+                    public void run() {
+                        // load this user's list of friends
+                        Task<List<UserSummary>> friendTask = AccessDB.getFriendsList(mUser.getUid())
+                                .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
+                                        if (task.isSuccessful()) {
+                                            // get the list of friends
+                                            mFriends = (ArrayList<UserSummary>) task.getResult();
+                                        } else {
+                                            Toast t = Toast.makeText(MatchActivity.this,
+                                                    "Could not load your friends.",
+                                                    Toast.LENGTH_SHORT);
+                                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                                    0, 0);
+                                            t.show();
+                                        }
+                                    }
+                                });
+                        // load the list of trippers
+                        Task<List<UserSummary>> tripperTask = AccessDB.getTrippers(mTripId)
+                                .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
+                                        if (task.isSuccessful() && task.getResult() != null) {
+                                            mTrippers.clear();
+                                            mTrippers.addAll(task.getResult());
+                                        }
+                                    }
+                                });
+                        // add the friends that are not part of the trip to the list of friends
+                        Tasks.whenAll(friendTask, tripperTask).continueWith(new Continuation<Void, Object>() {
+                            @Override
+                            public Object then(@NonNull Task<Void> task) {
+                                // display the friends that are not part of the trip
+                                new FriendTask().execute();
+                                return null;
+                            }
+                        });
                     }
-                });
-                Task<List<UserSummary>> tripperTask = AccessDB.getTrippers(mTripId)
-                        .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
-                    @Override
-                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
-                        if (task.isSuccessful() && task.getResult() != null) {
-                            mTrippers.clear();
-                            mTrippers.addAll(task.getResult());
-                        }
-                    }
-                });
-                // add the friends that are not part of the trip to the list of friends
-                Tasks.whenAll(friendTask, tripperTask).continueWith(new Continuation<Void, Object>() {
-                    @Override
-                    public Object then(@NonNull Task<Void> task) {
-                        if (mFriends == null || mTrippers == null) return null;
-                        ArrayList<UserSummary> temp = new ArrayList<>();
-                        for (UserSummary user : mFriends) {
-                            if (!mTrippers.contains(user)) temp.add(user);
-                        }
-                        mFriends = temp;
-                        mAdapter.clear();
-                        mAdapter.addAll(mFriends);
-                        mAdapter.notifyDataSetChanged();
-                        return null;
-                    }
-                });
+                }).start();
             }
         }
         // if this is to match dates
@@ -194,59 +208,66 @@ public class MatchActivity extends AppCompatActivity {
                     showList();
                 }
             }
-            // load the
+            // load the data
             else if (mUser != null) {
-                // load this user's list of friends
-                Task<List<UserSummary>> friendTask = AccessDB.getFriendsList(mUser.getUid());
-                friendTask.addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                new Thread(new Runnable() {
                     @Override
-                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
-                        if (task.isSuccessful()) {
-                            // get the list of friends
-                            mFriends = (ArrayList<UserSummary>) task.getResult();
-                            // add them to the adapter
-                            if (mFriends != null) {
-                                mAdapter.addAll(mFriends);
-                                mAdapter.notifyDataSetChanged();
+                    public void run() {
+                        // load this user's list of friends
+                        AccessDB.getFriendsList(mUser.getUid())
+                                .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
+                                        if (task.isSuccessful()) {
+                                            // get the list of friends
+                                            mFriends = (ArrayList<UserSummary>) task.getResult();
+                                            // add them to the adapter
+                                            if (mFriends != null) {
+                                                mAdapter.addAll(mFriends);
+                                                mAdapter.notifyDataSetChanged();
+                                            }
+                                        } else {
+                                            Toast t = Toast.makeText(MatchActivity.this,
+                                                    "Could not load your friends.",
+                                                    Toast.LENGTH_SHORT);
+                                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                                    0, 0);
+                                            t.show();
+                                        }
+                                    }
+                                });
+                        // get this user's name from the database
+                        AccessDB.getUserName(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<String>() {
+                            @Override
+                            public void onComplete(@NonNull Task<String> task) {
+                                if (task.isSuccessful()) {
+                                    mUserName = task.getResult();
+                                }
                             }
-                        } else {
-                            Toast t = Toast.makeText(MatchActivity.this, "Could not load your friends.",
-                                    Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                        }
+                        });
+                        // load this user's dates from the db
+                        AccessDB.getUserDatesForCal(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                DocumentSnapshot doc = task.getResult();
+                                if (task.isSuccessful() && doc != null &&
+                                        doc.contains(Const.DATE_LIST_KEY) &&
+                                        doc.get(Const.DATE_LIST_KEY) instanceof  List) {
+                                    // this will not produce an exception
+                                    sDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
+                                    //convert the strings to Dates
+                                    new AddTask().execute();
+                                } else {
+                                    Toast t = Toast.makeText(MatchActivity.this, "Could not load your dates.",
+                                            Toast.LENGTH_SHORT);
+                                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                                    t.show();
+                                    showList();
+                                }
+                            }
+                        });
                     }
-                });
-                // get this user's name from the database
-                Task<String> nameTask = AccessDB.getUserName(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if (task.isSuccessful()) {
-                            mUserName = task.getResult();
-                        }
-                    }
-                });
-                // load this user's dates from the db
-                Task<List<Date>> dateTask = AccessDB.getUserDatesForCal(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<List<Date>>() {
-                    @Override
-                    public void onComplete(@NonNull Task<List<Date>> task) {
-                        if (task.isSuccessful()) {
-                            mUserDates = task.getResult();
-                        } else {
-                            Toast t = Toast.makeText(MatchActivity.this, "Could not load your dates.",
-                                    Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                        }
-                    }
-                });
-                // when all the tasks are finished, show the friends list
-                Tasks.whenAll(friendTask, nameTask, dateTask).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        showList();
-                    }
-                });
+                }).start();
             }
         }
     }
@@ -292,6 +313,7 @@ public class MatchActivity extends AppCompatActivity {
         if (mFriends != null) outState.putParcelableArrayList(FRIENDS_KEY, mFriends);
         if (mUserDates != null) outState.putLongArray(DATES_KEY, toLongs(mUserDates));
         if (mUserName != null) outState.putString(NAME_KEY, mUserName);
+        if (mSelected != null) outState.putParcelable(SELECTED_KEY, mSelected);
     }
 
     /**
@@ -365,7 +387,7 @@ public class MatchActivity extends AppCompatActivity {
     public void onMatchClicked() {
         if (mSelected == null) return;
         hideList();
-        match(mUserDates, mSelected.getUserId());
+        match(mSelected.getUserId());
     }
 
     /**
@@ -379,86 +401,119 @@ public class MatchActivity extends AppCompatActivity {
                 mTripStart == null || mTripTitle == null) return;
         hideList();
 
-        // add the friend to the trippers sub collection and add the trip to the friend's trips
-        // sub-collection
-        Task<Void> tripTask = AccessDB.addTripper(mTripId, mSelected.getUserId(), mSelected.getEmail(), mSelected.getName())
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (!task.isSuccessful()) {
-                            Toast t = Toast.makeText(MatchActivity.this, mSelected.getName() +
-                                    " could not be added to the trip.", Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                            showList();
-                        }
-                    }
-                });
-        Task<Void> friendTask = AccessDB.addUserTrip(mSelected.getUserId(), mTripId, mTripTitle, mTripStart)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (!task.isSuccessful()) {
-                            Toast t = Toast.makeText(MatchActivity.this, mSelected.getName() +
-                                    " could not be added to the trip.", Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                            showList();
-                        }
-                    }
-                });
-        // if both the tasks succeed, head back to trip activity
-        Tasks.whenAll(tripTask, friendTask).addOnSuccessListener(new OnSuccessListener<Void>() {
+        // run db operations in background
+        new Thread(new Runnable() {
             @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(Const.TAG, "onSuccess: it worked hell yeah");
-                Intent intent = new Intent(MatchActivity.this, TripActivity.class);
-                intent.putExtra(Const.TRIP_ID_TAG, mTripId);
-                startActivity(intent);
+            public void run() {
+                // add the friend to the trippers sub collection and add the trip to the friend's trips
+                // sub-collection
+                Task<Void> tripTask = AccessDB.addTripper(mTripId, mSelected.getUserId(),
+                        mSelected.getEmail(), mSelected.getName())
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (!task.isSuccessful()) {
+                                    Toast t = Toast.makeText(MatchActivity.this, mSelected.getName() +
+                                            " could not be added to the trip.", Toast.LENGTH_SHORT);
+                                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                                    t.show();
+                                    showList();
+                                }
+                            }
+                        });
+                Task<Void> friendTask = AccessDB.addUserTrip(mSelected.getUserId(), mTripId, mTripTitle, mTripStart)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (!task.isSuccessful()) {
+                                    Toast t = Toast.makeText(MatchActivity.this, mSelected.getName() +
+                                            " could not be added to the trip.", Toast.LENGTH_SHORT);
+                                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                                    t.show();
+                                    showList();
+                                }
+                            }
+                        });
+                // if both the tasks succeed, head back to trip activity
+                Tasks.whenAll(tripTask, friendTask).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(Const.TAG, "onSuccess: it worked hell yeah");
+                        Intent intent = new Intent(MatchActivity.this, TripActivity.class);
+                        intent.putExtra(Const.TRIP_ID_TAG, mTripId);
+                        startActivity(intent);
+                    }
+                });
             }
-        });
+        }).start();
     }
 
     /**
      * match()
      * called when a user selects one of their friends and clicks "match"
      *
-     * @param userDates the dates that this user is available
      * @param friendId  the id of the friend that they selected
      */
-    private void match(List<Date> userDates, String friendId) {
-        // perform a match to see which dates you are both available
-        AccessDB.matchDates(userDates, friendId).addOnCompleteListener(new OnCompleteListener<long[]>() {
+    private void match(String friendId) {
+        final String fId = friendId;
+        new Thread(new Runnable() {
             @Override
-            public void onComplete(@NonNull Task<long[]> task) {
-                if (task.isSuccessful()) {
-                    long[] matched = task.getResult();
-                    if (matched != null && matched.length > 0) {
-                        // start CalendarActivity and pass it an array of all the matched dates
-                        Intent intent = new Intent(MatchActivity.this, CalendarActivity.class);
-                        intent.putExtra(Const.SOURCE_TAG, Const.MATCH_TAG);
-                        intent.putExtra(Const.MATCH_ARR_TAG, matched);
-                        intent.putExtra(Const.SELECTED_FRIEND_TAG, mSelected);
-                        intent.putExtra(Const.USER_NAME_TAG, mUserName);
-                        startActivity(intent);
-                    } else {
-                        // the two users have no dates in common
-                        Toast t = Toast.makeText(MatchActivity.this, "You and " +
-                                mSelected.getName() + " have no dates in common.", Toast.LENGTH_LONG);
-                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                        t.show();
-                        showList();
+            public void run() {
+                AccessDB.getUserDatesForCal(fId).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot doc = task.getResult();
+                        if (task.isSuccessful() && doc != null &&
+                                doc.contains(Const.DATE_LIST_KEY) &&
+                                doc.get(Const.DATE_LIST_KEY) instanceof List) {
+                            // this will not produce an exception
+                            mFriendSDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
+                            //convert the strings to Dates
+                            new MatchTask().execute();
+                        } else {
+                            // unable to be matched
+                            Toast t = Toast.makeText(MatchActivity.this, "You and " +
+                                    mSelected.getName() + " were not able to be matched.", Toast.LENGTH_LONG);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                            showList();
+                        }
                     }
-                } else {
-                    // unable to be matched
-                    Toast t = Toast.makeText(MatchActivity.this, "You and " +
-                            mSelected.getName() + " were not able to be matched.", Toast.LENGTH_LONG);
-                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                    t.show();
-                    showList();
-                }
+                });
             }
-        });
+        }).start();
+//        // perform a match to see which dates you are both available
+//        AccessDB.matchDates(userDates, friendId).addOnCompleteListener(new OnCompleteListener<long[]>() {
+//            @Override
+//            public void onComplete(@NonNull Task<long[]> task) {
+//                if (task.isSuccessful()) {
+//                    long[] matched = task.getResult();
+//                    if (matched != null && matched.length > 0) {
+//                        // start CalendarActivity and pass it an array of all the matched dates
+//                        Intent intent = new Intent(MatchActivity.this, CalendarActivity.class);
+//                        intent.putExtra(Const.SOURCE_TAG, Const.MATCH_TAG);
+//                        intent.putExtra(Const.MATCH_ARR_TAG, matched);
+//                        intent.putExtra(Const.SELECTED_FRIEND_TAG, mSelected);
+//                        intent.putExtra(Const.USER_NAME_TAG, mUserName);
+//                        startActivity(intent);
+//                    } else {
+//                        // the two users have no dates in common
+//                        Toast t = Toast.makeText(MatchActivity.this, "You and " +
+//                                mSelected.getName() + " have no dates in common.", Toast.LENGTH_LONG);
+//                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+//                        t.show();
+//                        showList();
+//                    }
+//                } else {
+//                    // unable to be matched
+//                    Toast t = Toast.makeText(MatchActivity.this, "You and " +
+//                            mSelected.getName() + " were not able to be matched.", Toast.LENGTH_LONG);
+//                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+//                    t.show();
+//                    showList();
+//                }
+//            }
+//        });
     }
 
     // returns an onClickListener for the list view
@@ -521,5 +576,163 @@ public class MatchActivity extends AppCompatActivity {
 
     public UserSummary getFriend() {
         return mSelected;
+    }
+
+
+    /**
+     * AddTask
+     * converts a list of strings to a list of dates
+     */
+    private class AddTask extends AsyncTask<Void, Void, Void> {
+
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (sDates == null || sDates.size() == 0) return null;
+            SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+            try {
+                Date today = format.parse(format.format(new Date()));
+
+                // convert each string date into a date object
+                // make sure that none of these dates are before today
+                for (String date : sDates) {
+                    Date d = format.parse(date);
+                    if (d != null && d.compareTo(today) >= 0) {
+                        mUserDates.add(d);
+                    }
+                }
+            } catch (ParseException e) {
+                Log.d(Const.TAG, "doInBackground: " + Log.getStackTraceString(e));
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            // show the list
+            showList();
+        }
+    }
+
+    /**
+     * MatchTask
+     * matches dates between this user and a friend
+     */
+    private class MatchTask extends AsyncTask<Void, String, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mFriendSDates == null || mFriendSDates.size() == 0) {
+                publishProgress("None");
+                return null;
+            }
+
+            // get a date format
+            SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+            try {
+                // convert the strings to dates
+                for (String date : mFriendSDates) {
+                    mFriendDates.add(format.parse(date));
+                }
+            } catch (ParseException e) {
+                Log.d(Const.TAG, "doInBackground: " + Log.getStackTraceString(e));
+            }
+
+            // if there are no friend dates, return
+            if (mFriendDates.size() == 0 || mUserDates == null || mUserDates.size() == 0) {
+                publishProgress("None");
+                return null;
+            }
+
+            // initialize a list to hold the matched dates
+            List<Date> matched = new ArrayList<>();
+
+            Log.d(Const.TAG, "then: match: userDates: " + mUserDates);
+            Log.d(Const.TAG, "then: match: friend: " + mFriendDates);
+
+            int a = 0;
+            int b = 0;
+            while (a < mUserDates.size() && b < mFriendDates.size()) {
+                int result = mUserDates.get(a).compareTo(mFriendDates.get(b));
+                if (result < 0) a++;
+                else if (result > 0 ) b++;
+                else {
+                    matched.add(mUserDates.get(a));
+                    a++;
+                    b++;
+                }
+            }
+            // create an array of the times of the matched dates
+            mMatched = new long[matched.size()];
+            for (int i = 0; i < matched.size(); i++) mMatched[i] = matched.get(i).getTime();
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            if (values != null && mSelected != null && values.length > 0 && values[0].equals("None")) {
+                // the two users have no dates in common
+                Toast t = Toast.makeText(MatchActivity.this, "You and " +
+                        mSelected.getName() + " have no dates in common.", Toast.LENGTH_LONG);
+                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                t.show();
+                showList();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if (mMatched != null && mMatched.length > 0) {
+                // start CalendarActivity and pass it an array of all the matched dates
+                Intent intent = new Intent(MatchActivity.this, CalendarActivity.class);
+                intent.putExtra(Const.SOURCE_TAG, Const.MATCH_TAG);
+                intent.putExtra(Const.MATCH_ARR_TAG, mMatched);
+                intent.putExtra(Const.SELECTED_FRIEND_TAG, mSelected);
+                intent.putExtra(Const.USER_NAME_TAG, mUserName);
+                startActivity(intent);
+            } else {
+                // the two users have no dates in common
+                Toast t = Toast.makeText(MatchActivity.this, "You and " +
+                        mSelected.getName() + " have no dates in common.", Toast.LENGTH_LONG);
+                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                t.show();
+                showList();
+            }
+        }
+    }
+
+
+    /**
+     * FriendTask
+     * adds friends that are not part of the trip to the list view
+     */
+    private class FriendTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            // add the friends to a list that are not part of the trip
+            if (mFriends == null || mTrippers == null) return null;
+            ArrayList<UserSummary> temp = new ArrayList<>();
+            for (UserSummary user : mFriends) {
+                if (!mTrippers.contains(user)) temp.add(user);
+            }
+            mFriends = temp;
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            // add the friends to the list view and show it
+            mAdapter.clear();
+            mAdapter.addAll(mFriends);
+            mAdapter.notifyDataSetChanged();
+            // show the list
+            showList();
+        }
     }
 }

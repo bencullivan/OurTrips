@@ -221,6 +221,7 @@ public class CustomDialogFragment extends DialogFragment {
         if (getActivity() != null) {
             MatchActivity activity = (MatchActivity) getActivity();
             UserSummary friend = activity.getFriend();
+            if (friend == null) return dialog.create();
             // set the message
             dialog.setMessage("Find out which dates you and " + friend.getName() + " are both " +
                     "available to go on a trip.");
