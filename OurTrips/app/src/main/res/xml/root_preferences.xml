@@ -23,12 +23,12 @@
 
         <PreferenceScreen
             android:icon="@mipmap/our_trips_logo"
-            android:summary="https://www.cs.dartmouth.edu/~campbell/cs65/cs65.html"
+            android:summary="wixsite.com/ourtrips"
             android:title="App Website">
 
             <intent
                 android:action="android.intent.action.VIEW"
-                android:data="https://www.cs.dartmouth.edu/~campbell/cs65/cs65.html" />
+                android:data="https://omaralsaeed8.wixsite.com/ourtrips" />
         </PreferenceScreen>
 
     </PreferenceCategory>
