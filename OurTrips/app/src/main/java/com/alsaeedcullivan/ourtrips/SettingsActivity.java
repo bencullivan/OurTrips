@@ -18,7 +18,6 @@ import androidx.preference.PreferenceScreen;
 
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Objects;
 

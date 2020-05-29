@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -18,21 +19,11 @@ import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.adapters.PageAdapter;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
-import com.alsaeedcullivan.ourtrips.models.Place;
-import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.type.LatLng;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -113,7 +104,13 @@ public class TripActivity extends AppCompatActivity {
             showFrags();
         }
         // the trip data has not already been loaded, load it from the database
-        else loadTrip();
+        else {
+            if (mTripId == null) {
+                finish();
+                return;
+            }
+            new LoadTripTask().execute();
+        }
     }
 
     @Override
@@ -205,75 +202,12 @@ public class TripActivity extends AppCompatActivity {
     };
 
     /**
-     * loadTrip()
-     * loads the info of this trip from the db
-     */
-    private void loadTrip() {
-        if (mTripId == null) {
-            finish();
-            return;
-        }
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // load the trip info
-                AccessDB.getTripInfo(mTripId).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Map<String, Object>> task) {
-                                if (task.isSuccessful()) {
-                                    Map<String, Object> data = task.getResult();
-                                    if (data != null) {
-                                        // get the title
-                                        String title = (String) data.get(Const.TRIP_TITLE_KEY);
-                                        if (title != null) mTripTitle = title;
-                                        // get the start date
-                                        String start = (String) data.get(Const.TRIP_START_DATE_KEY);
-                                        if (start != null) mStartDate = start;
-                                        // get the end date
-                                        String end = (String) data.get(Const.TRIP_END_DATE_KEY);
-                                        if (end != null) mEndDate = end;
-                                        // get the overview
-                                        String over = (String) data.get(Const.TRIP_OVERVIEW_KEY);
-                                        if (over != null) mOverview = over;
-                                    }
-                                    showFrags();
-                                } else {
-                                    Toast t = Toast.makeText(TripActivity.this, "The trip info could " +
-                                            "not be loaded", Toast.LENGTH_SHORT);
-                                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                                    t.show();
-                                    finish();
-                                }
-                            }
-                        });
-            }
-        }).start();
-    }
-
-    /**
      * deleteTrip()
      * deletes this trip from the db and from all the user's trips sub-collections
      */
     public void deleteTrip() {
         if (mTripId == null) return;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                AccessDB.deleteTrip(mTripId).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Intent intent = new Intent(TripActivity.this, MainActivity.class);
-                            intent.putExtra(Const.TRIP_ID_TAG, mTripId);
-                            startActivity(intent);
-                            finish();
-                        }
-                        else Log.d(Const.TAG, "onComplete: fuck, it failed to delete");
-                    }
-                });
-            }
-        }).start();
+        new DeleteTripTask().execute();
     }
 
     // hides the progress bar and displays the view pager of fragments
@@ -308,5 +242,81 @@ public class TripActivity extends AppCompatActivity {
     public String getOverview() {
         if (mOverview != null) return mOverview;
         else return "";
+    }
+
+    /**
+     * LoadTripTask
+     * loads this trip's info from the db
+     * updates the instance variables on the UI thread in onComplete()
+     */
+    private class LoadTripTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripId == null) return null;
+
+            // load the trip info
+            AccessDB.getTripInfo(mTripId).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
+                @Override
+                public void onComplete(@NonNull Task<Map<String, Object>> task) {
+                    if (task.isSuccessful()) {
+                        Map<String, Object> data = task.getResult();
+                        if (data != null) {
+                            // get the title
+                            String title = (String) data.get(Const.TRIP_TITLE_KEY);
+                            if (title != null) mTripTitle = title;
+                            // get the start date
+                            String start = (String) data.get(Const.TRIP_START_DATE_KEY);
+                            if (start != null) mStartDate = start;
+                            // get the end date
+                            String end = (String) data.get(Const.TRIP_END_DATE_KEY);
+                            if (end != null) mEndDate = end;
+                            // get the overview
+                            String over = (String) data.get(Const.TRIP_OVERVIEW_KEY);
+                            if (over != null) mOverview = over;
+                        }
+                        showFrags();
+                    } else {
+                        Toast t = Toast.makeText(TripActivity.this, "The trip info could " +
+                                "not be loaded", Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                        finish();
+                    }
+                }
+            });
+
+            return null;
+        }
+    }
+
+    /**
+     * DeleteTripTask
+     * deletes this trip from the db
+     * when this happens the node js function is called and deletes all the sub collections from the db
+     * and all the photos from the bucket
+     */
+    private class DeleteTripTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripId == null) return null;
+
+            // remove the document corresponding to this trip from the db
+            AccessDB.deleteTrip(mTripId).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Intent intent = new Intent(TripActivity.this, MainActivity.class);
+                        intent.putExtra(Const.TRIP_ID_TAG, mTripId);
+                        startActivity(intent);
+                        finish();
+                    }
+                    else Log.d(Const.TAG, "onComplete: fuck, it failed to delete");
+                }
+            });
+
+            return null;
+        }
     }
 }
