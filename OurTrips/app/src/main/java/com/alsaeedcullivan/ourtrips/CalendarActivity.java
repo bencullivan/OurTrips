@@ -60,7 +60,8 @@ public class CalendarActivity extends AppCompatActivity {
     private HashSet<Date> mSet;
     private UserSummary mFriend;
     private List<String> sDates = new ArrayList<>();
-    private List<Date> realDates = new ArrayList<>();
+    private List<Date> mRealDates = new ArrayList<>();
+    private List<Date> mUserSetDates = new ArrayList<>();
 
 
     @Override
@@ -228,15 +229,12 @@ public class CalendarActivity extends AppCompatActivity {
      */
     private void onSaveClicked() {
         // get the list of dates that were selected
-        List<Date> dates = mCalView.getSelectedDates();
+        mUserSetDates = mCalView.getSelectedDates();
         // check to make sure there is a user that has has added dates
-        if (mUser != null && dates != null) {
+        if (mUser != null && mUserSetDates != null) {
             // update the user's available dates
-            // the inner workings of this method are run on a background thread
-            AccessDB.setUserDatesFromCal(mUser.getUid(), dates);
+            new SetDatesTask().execute();
         }
-        // finish the activity
-        finish();
     }
 
     /**
@@ -330,6 +328,10 @@ public class CalendarActivity extends AppCompatActivity {
         return times;
     }
 
+    private void finishAfterAsyncTask() {
+        finish();
+    }
+
 
     /**
      * AddTask
@@ -350,7 +352,7 @@ public class CalendarActivity extends AppCompatActivity {
                 for (String date : sDates) {
                     Date d = format.parse(date);
                     if (d != null && d.compareTo(today) >= 0) {
-                        realDates.add(d);
+                        mRealDates.add(d);
                     }
                 }
             } catch (ParseException e) {
@@ -363,10 +365,10 @@ public class CalendarActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            if (realDates != null && realDates.size() > 0) {
+            if (mRealDates != null && mRealDates.size() > 0) {
                 // select all the dates
-                for (int i = realDates.size() - 1; i >= 0; i--) {
-                    mCalView.selectDate(realDates.get(i));
+                for (int i = mRealDates.size() - 1; i >= 0; i--) {
+                    mCalView.selectDate(mRealDates.get(i));
                 }
             }
 
@@ -398,7 +400,7 @@ public class CalendarActivity extends AppCompatActivity {
                                     doc.get(Const.DATE_LIST_KEY) instanceof  List) {
                                 // this will not produce an exception
                                 sDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
-                                realDates = new ArrayList<>();
+                                mRealDates = new ArrayList<>();
                                 //convert them to Dates and add them to the calendar
                                 new AddTask().execute();
                             }
@@ -406,6 +408,25 @@ public class CalendarActivity extends AppCompatActivity {
                     });
 
             return null;
+        }
+    }
+
+    private class SetDatesTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUserSetDates == null || mUser == null) return null;
+
+            AccessDB.setUserDatesFromCal(mUser.getUid(), mUserSetDates);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            // finish the activity
+            finishAfterAsyncTask();
         }
     }
 }

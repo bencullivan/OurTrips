@@ -66,29 +66,21 @@ public class AccessDB {
      *              format on a background thread before they are added to the database
      */
     public static void setUserDatesFromCal(String userId, List<Date> dates) {
-        // convert the parameters to final constants
-        final List<Date> dDates = dates;
-        final String id = userId;
+        // convert the list of dates to a list of strings in the desired format
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy",
+                Locale.getDefault());
+        List<String> sDates = new ArrayList<>();
+        for (Date date : dates) {
+            sDates.add(format.format(date));
+        }
 
-        // run the conversion from dates to strings on a background thread
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // convert the list of dates to a list of strings in the desired format
-                SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy",
-                        Locale.getDefault());
-                List<String> sDates = new ArrayList<>();
-                for (Date date : dDates) {
-                    sDates.add(format.format(date));
-                }
+        Log.d(Const.TAG, "setUserDatesFromCal: " + Thread.currentThread().getId());
 
-                // add the list of dates to the database
-                FirebaseFirestore.getInstance()
-                        .collection(Const.USERS_COLLECTION)
-                        .document(id)
-                        .update(Const.DATE_LIST_KEY, sDates);
-            }
-        }).start();
+        // add the list of dates to the database
+        FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(userId)
+                .update(Const.DATE_LIST_KEY, sDates);
     }
 
     /**
@@ -282,7 +274,7 @@ public class AccessDB {
         // get a reference to the db
         FirebaseFirestore store = FirebaseFirestore.getInstance();
 
-        Log.d(Const.TAG, "acceptFriendRequest: accedd db " + Thread.currentThread().getId());
+        Log.d(Const.TAG, "acceptFriendRequest: access db " + Thread.currentThread().getId());
 
         // delete the friend request
         store.collection(Const.USERS_COLLECTION)
@@ -657,6 +649,7 @@ public class AccessDB {
      * @param data a map containing the data and fields to be updated
      */
     public static Task<Void> updateTrip(String tripId, Map<String, Object> data) {
+        Log.d(Const.TAG, "updateTrip: " + Thread.currentThread().getId());
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
@@ -832,26 +825,6 @@ public class AccessDB {
                 .document(userId)
                 .collection(Const.USER_TRIPS_COLLECTION)
                 .get();
-//                .continueWith(new Continuation<QuerySnapshot, List<TripSummary>>() {
-//                    @Override
-//                    public List<TripSummary> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-//                        QuerySnapshot result = task.getResult();
-//                        if (result == null || result.getDocuments().size() == 0)
-//                            return new ArrayList<>();
-//
-//                        // extract and return the ids of the documents
-//                        List<DocumentSnapshot> docList = result.getDocuments();
-//                        List<TripSummary> trips = new ArrayList<>();
-//                        for (DocumentSnapshot doc : docList) {
-//                            TripSummary trip = new TripSummary();
-//                            trip.setId(doc.getId());
-//                            trip.setTitle((String)doc.get(Const.TRIP_TITLE_KEY));
-//                            trip.setDate((String)doc.get(Const.TRIP_START_DATE_KEY));
-//                            trips.add(trip);
-//                        }
-//                        return trips;
-//                    }
-//                });
     }
 
     /**

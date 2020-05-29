@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -574,21 +575,23 @@ public class RegisterActivity extends AppCompatActivity {
      * loads the profile info of a user from the FireStore database
      */
     private void loadProfile() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // load data if it exists
-                AccessDB.loadUserProfile(mUser.getUid())
-                        .addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Map<String, Object>> task) {
-                                if (task.isSuccessful() && task.getResult() != null) {
-                                    populateFields(task.getResult());
-                                }
-                            }
-                        });
-            }
-        }).start();
+        new LoadProfileTask().execute();
+
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                // load data if it exists
+//                AccessDB.loadUserProfile(mUser.getUid())
+//                        .addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
+//                            @Override
+//                            public void onComplete(@NonNull Task<Map<String, Object>> task) {
+//                                if (task.isSuccessful() && task.getResult() != null) {
+//                                    populateFields(task.getResult());
+//                                }
+//                            }
+//                        });
+//            }
+//        }).start();
 
     }
 
@@ -640,6 +643,27 @@ public class RegisterActivity extends AppCompatActivity {
                 default:
                     mInputGender.check(R.id.edit_gender_other);
             }
+        }
+    }
+
+    private class LoadProfileTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null) return null;
+
+            // load data if it exists
+            AccessDB.loadUserProfile(mUser.getUid())
+                    .addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Map<String, Object>> task) {
+                            if (task.isSuccessful() && task.getResult() != null) {
+                                populateFields(task.getResult());
+                            }
+                        }
+                    });
+
+            return null;
         }
     }
 }

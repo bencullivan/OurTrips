@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -42,6 +43,7 @@ public class EditSummaryActivity extends AppCompatActivity {
     private SimpleDateFormat mFormat;
     private Date mStartDate, mEndDate;
     private String mTripId;
+    private HashMap<String, Object> mData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,43 +167,45 @@ public class EditSummaryActivity extends AppCompatActivity {
         }
 
         // create a map to hold the data
-        final Map<String, Object> data = new HashMap<>();
-        data.put(Const.TRIP_TITLE_KEY, mTitle.getText().toString());
-        data.put(Const.TRIP_OVERVIEW_KEY, mOver.getText().toString());
-        data.put(Const.TRIP_START_DATE_KEY, mFormat.format(mStartDate));
-        data.put(Const.TRIP_END_DATE_KEY, mFormat.format(mEndDate));
+        mData = new HashMap<>();
+        mData.put(Const.TRIP_TITLE_KEY, mTitle.getText().toString());
+        mData.put(Const.TRIP_OVERVIEW_KEY, mOver.getText().toString());
+        mData.put(Const.TRIP_START_DATE_KEY, mFormat.format(mStartDate));
+        mData.put(Const.TRIP_END_DATE_KEY, mFormat.format(mEndDate));
 
         // update the trip in the db
         // run on background thread
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                AccessDB.updateTrip(mTripId, data).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            // toast the user
-                            Toast t = Toast.makeText(EditSummaryActivity.this, "Trip updated successfully!",
-                                    Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                            // send the user to trip activity
-                            Intent intent = new Intent(EditSummaryActivity.this, TripActivity.class);
-                            intent.putExtra(Const.TRIP_ID_TAG, mTripId);
-                            startActivity(intent);
-                            // finish this activity
-                            finish();
-                        } else {
-                            // toast the user
-                            Toast t = Toast.makeText(EditSummaryActivity.this, "This trip could"
-                                    + " not be updated.", Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                        }
-                    }
-                });
-            }
-        }).start();
+        new UpdateSummaryTask().execute();
+
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                AccessDB.updateTrip(mTripId, mData).addOnCompleteListener(new OnCompleteListener<Void>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<Void> task) {
+//                        if (task.isSuccessful()) {
+//                            // toast the user
+//                            Toast t = Toast.makeText(EditSummaryActivity.this, "Trip updated successfully!",
+//                                    Toast.LENGTH_SHORT);
+//                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+//                            t.show();
+//                            // send the user to trip activity
+//                            Intent intent = new Intent(EditSummaryActivity.this, TripActivity.class);
+//                            intent.putExtra(Const.TRIP_ID_TAG, mTripId);
+//                            startActivity(intent);
+//                            // finish this activity
+//                            finish();
+//                        } else {
+//                            // toast the user
+//                            Toast t = Toast.makeText(EditSummaryActivity.this, "This trip could"
+//                                    + " not be updated.", Toast.LENGTH_SHORT);
+//                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+//                            t.show();
+//                        }
+//                    }
+//                });
+//            }
+//        }).start();
     }
 
     /**
@@ -249,5 +253,46 @@ public class EditSummaryActivity extends AppCompatActivity {
     public Date getEndDate() {
         if (mEndDate != null) return mEndDate;
         else return new Date();
+    }
+
+    /**
+     * UpdateSummaryTask
+     * updates the trip's info in the db
+     */
+    private class UpdateSummaryTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripId == null || mData == null) return null;
+            Log.d(Const.TAG, "doInBackground: update trip");
+            // update the trip
+            AccessDB.updateTrip(mTripId, mData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.d(Const.TAG, "onComplete: " + Thread.currentThread().getId());
+                    if (task.isSuccessful()) {
+                        // toast the user
+                        Toast t = Toast.makeText(EditSummaryActivity.this, "Trip updated successfully!",
+                                Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                        // send the user to trip activity
+                        Intent intent = new Intent(EditSummaryActivity.this, TripActivity.class);
+                        intent.putExtra(Const.TRIP_ID_TAG, mTripId);
+                        startActivity(intent);
+                        // finish this activity
+                        finish();
+                    } else {
+                        // toast the user
+                        Toast t = Toast.makeText(EditSummaryActivity.this, "This trip could"
+                                + " not be updated.", Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                    }
+                }
+            });
+
+            return null;
+        }
     }
 }

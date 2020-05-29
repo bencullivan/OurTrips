@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
     private String mTripId;
     private String deleteId;
     private int mPosition = -1;
-    private int counter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,30 +109,32 @@ public class MainActivity extends AppCompatActivity {
             mListView.setOnItemClickListener(getItemListener());
             mListView.setOnItemLongClickListener(getLongListener());
             // db operation in background
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    // get the list of trip summaries of this user from the db
-                    Task<QuerySnapshot> task = AccessDB.getTripSummaries(mUser.getUid());
-                    task.addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            QuerySnapshot result = task.getResult();
-                            if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
-                                // get the documents and start the async task
-                                mSumDocs = result.getDocuments();
-                                new SumTask().execute();
-                            } else {
-                                Toast t = Toast.makeText(MainActivity.this, "Could not load your trips.",
-                                        Toast.LENGTH_SHORT);
-                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                                t.show();
-                                showList();
-                            }
-                        }
-                    });
-                }
-            }).start();
+            new SumDocsTask().execute();
+
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    // get the list of trip summaries of this user from the db
+//                    Task<QuerySnapshot> task = AccessDB.getTripSummaries(mUser.getUid());
+//                    task.addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                            QuerySnapshot result = task.getResult();
+//                            if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
+//                                // get the documents and start the async task
+//                                mSumDocs = result.getDocuments();
+//                                new SumTask().execute();
+//                            } else {
+//                                Toast t = Toast.makeText(MainActivity.this, "Could not load your trips.",
+//                                        Toast.LENGTH_SHORT);
+//                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+//                                t.show();
+//                                showList();
+//                            }
+//                        }
+//                    });
+//                }
+//            }).start();
         }
 
     }
@@ -227,55 +228,57 @@ public class MainActivity extends AppCompatActivity {
      * removes this user from the selected trip
      */
     public void removeTrip() {
-        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (deleteId == null || user == null) return;
+        mUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (deleteId == null || mUser == null) return;
         Log.d(Const.TAG, "removeTrip: " + deleteId + " " + mPosition);
 
         showSpinner();
 
         // db operations in background
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // remove this user from the trip's trippers sub-collection
-                Task<Void> tripTask = AccessDB.deleteTripper(deleteId, user.getUid())
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (!task.isSuccessful()) {
-                                    Log.d(Const.TAG, "onComplete: fail");
-                                    showList();
-                                }
-                            }
-                        });
-                // remove this trip from the user's trips sub-collection
-                Task<Void> userTask = AccessDB.removeUserTrip(user.getUid(), deleteId)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (!task.isSuccessful()) {
-                                    Log.d(Const.TAG, "onComplete: fail 2");
-                                    showList();
-                                }
-                            }
-                        });
-                Log.d(Const.TAG, "run: thread " + Thread.currentThread().getId());
-                // when both are finished redisplay the list without the item that was just deleted
-                Tasks.whenAll(tripTask, userTask).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(Const.TAG, "onSuccess: updated trip sums");
-                        Log.d(Const.TAG, "when all: thread " + Thread.currentThread().getId());
-                        if (mPosition < 0 || mPosition >= mTrips.size() || mAdapter == null) return;
-                        mTrips.remove(mPosition);
-                        mAdapter.clear();
-                        mAdapter.addAll(mTrips);
-                        mAdapter.notifyDataSetChanged();
-                        showList();
-                    }
-                });
-            }
-        }).start();
+        new RemoveTripTask().execute();
+
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                // remove this user from the trip's trippers sub-collection
+//                Task<Void> tripTask = AccessDB.deleteTripper(deleteId, user.getUid())
+//                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+//                            @Override
+//                            public void onComplete(@NonNull Task<Void> task) {
+//                                if (!task.isSuccessful()) {
+//                                    Log.d(Const.TAG, "onComplete: fail");
+//                                    showList();
+//                                }
+//                            }
+//                        });
+//                // remove this trip from the user's trips sub-collection
+//                Task<Void> userTask = AccessDB.removeUserTrip(user.getUid(), deleteId)
+//                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+//                            @Override
+//                            public void onComplete(@NonNull Task<Void> task) {
+//                                if (!task.isSuccessful()) {
+//                                    Log.d(Const.TAG, "onComplete: fail 2");
+//                                    showList();
+//                                }
+//                            }
+//                        });
+//                Log.d(Const.TAG, "run: thread " + Thread.currentThread().getId());
+//                // when both are finished redisplay the list without the item that was just deleted
+//                Tasks.whenAll(tripTask, userTask).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void aVoid) {
+//                        Log.d(Const.TAG, "onSuccess: updated trip sums");
+//                        Log.d(Const.TAG, "when all: thread " + Thread.currentThread().getId());
+//                        if (mPosition < 0 || mPosition >= mTrips.size() || mAdapter == null) return;
+//                        mTrips.remove(mPosition);
+//                        mAdapter.clear();
+//                        mAdapter.addAll(mTrips);
+//                        mAdapter.notifyDataSetChanged();
+//                        showList();
+//                    }
+//                });
+//            }
+//        }).start();
     }
 
     // listeners
@@ -362,10 +365,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            if (mSumDocs == null || mSumDocs.size() == 0) return null;
-
-            // instantiate the list of trips
-            mTrips = new ArrayList<>();
+            if (mSumDocs == null || mSumDocs.size() == 0 || mTrips == null) return null;
 
             Log.d(Const.TAG, "main   doInBackground: " + Thread.currentThread().getId());
 
@@ -388,6 +388,92 @@ public class MainActivity extends AppCompatActivity {
             // sort the trips and add them to the list view
             if (mTrips != null) new SortTask().execute();
             else showList();
+        }
+    }
+
+    /**
+     * SumDocsTask
+     * gets the documents corresponding to all the trip summaries
+     */
+    private class SumDocsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            // get the list of trip summaries of this user from the db
+            AccessDB.getTripSummaries(mUser.getUid())
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    QuerySnapshot result = task.getResult();
+                    if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
+                        // get the documents and start the async task
+                        mSumDocs = result.getDocuments();
+                        mTrips = new ArrayList<>();
+                        new SumTask().execute();
+                    } else {
+                        Toast t = Toast.makeText(MainActivity.this, "Could not load your trips.",
+                                Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                        showList();
+                    }
+                }
+            });
+
+            return null;
+        }
+    }
+
+    /**
+     * RemoveTripTask
+     * used for help removing a trip
+     */
+    private class RemoveTripTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null || deleteId == null) return null;
+
+            // remove this user from the trip's trippers sub-collection
+            Task<Void> tripTask = AccessDB.deleteTripper(deleteId, mUser.getUid())
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (!task.isSuccessful()) {
+                                Log.d(Const.TAG, "onComplete: fail");
+                                showList();
+                            }
+                        }
+                    });
+            // remove this trip from the user's trips sub-collection
+            Task<Void> userTask = AccessDB.removeUserTrip(mUser.getUid(), deleteId)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (!task.isSuccessful()) {
+                                Log.d(Const.TAG, "onComplete: fail 2");
+                                showList();
+                            }
+                        }
+                    });
+            Log.d(Const.TAG, "run: thread " + Thread.currentThread().getId());
+            // when both are finished redisplay the list without the item that was just deleted
+            Tasks.whenAll(tripTask, userTask).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d(Const.TAG, "onSuccess: updated trip sums");
+                    Log.d(Const.TAG, "when all: thread " + Thread.currentThread().getId());
+                    if (mTrips == null || mPosition < 0 || mPosition >= mTrips.size() || mAdapter == null) return;
+                    mTrips.remove(mPosition);
+                    mAdapter.clear();
+                    mAdapter.addAll(mTrips);
+                    mAdapter.notifyDataSetChanged();
+                    showList();
+                }
+            });
+
+            return null;
         }
     }
 }
