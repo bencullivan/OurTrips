@@ -211,9 +211,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_LEVEL));
                 cancelAction();
 
+                final LatLng pos = latLng;
+
                 // save this location to the db
                 if (mTripId == null) return;
-                AccessDB.addTripLocation(mTripId, latLng, mLocationName, new Date().getTime());
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AccessDB.addTripLocation(mTripId, pos, mLocationName, new Date().getTime());
+                    }
+                }).start();
                 mLocationName = null;
             }
         });
@@ -232,14 +239,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         checkPermission();
         Location here = mLocationManager.getLastKnownLocation(mProvider);
         if (here == null) return;
-        LatLng latLng = new LatLng(here.getLatitude(), here.getLongitude());
+        final LatLng latLng = new LatLng(here.getLatitude(), here.getLongitude());
         mMap.addMarker(new MarkerOptions().position(latLng).title(mLocationName));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_LEVEL));
         cancelAction();
 
         // save this location to the db
         if (mTripId == null) return;
-        AccessDB.addTripLocation(mTripId, latLng, mLocationName, new Date().getTime());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                AccessDB.addTripLocation(mTripId, latLng, mLocationName, new Date().getTime());
+            }
+        }).start();
         mLocationName = null;
     }
 
@@ -287,16 +299,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         cancelAction();
 
                         // get the place corresponding to this location
-                        Place here = mPlaceMap.get(marker.getPosition());
+                        final Place here = mPlaceMap.get(marker.getPosition());
                         if (here == null || mTripId == null || here.getDocId() == null) return;
 
-                        // remove this place from the database
-                        AccessDB.deleteTripLocation(mTripId, here.getDocId()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        new Thread(new Runnable() {
                             @Override
-                            public void onSuccess(Void aVoid) {
-                                Log.d(Const.TAG, "onSuccess: place deleted");
+                            public void run() {
+                                // remove this place from the database
+                                AccessDB.deleteTripLocation(mTripId, here.getDocId())
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Log.d(Const.TAG, "onSuccess: place deleted");
+                                    }
+                                });
                             }
-                        });
+                        }).start();
                     }
                 });
             }

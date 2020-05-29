@@ -11,14 +11,18 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.alsaeedcullivan.ourtrips.utils.SharedPreference;
 import com.alsaeedcullivan.ourtrips.utils.Utilities;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 // activity for email verification
 public class VerifyActivity extends AppCompatActivity {
@@ -86,19 +90,26 @@ public class VerifyActivity extends AppCompatActivity {
 
         // if there is a current user, reload them to check if they have clicked the link in the
         // email that was sent to them
-        if (user != null) user.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                // if they have verified their account, send them to RegisterActivity
-                if (user.isEmailVerified()) {
-                    Intent intent = new Intent(VerifyActivity.this,
-                            RegisterActivity.class);
-                    intent.putExtra(Const.SOURCE_TAG, Const.VERIFY_TAG);
-                    startActivity(intent);
-                    finish();
+        if (user != null) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    user.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            // if they have verified their account, send them to RegisterActivity
+                            if (user.isEmailVerified()) {
+                                Intent intent = new Intent(VerifyActivity.this,
+                                        RegisterActivity.class);
+                                intent.putExtra(Const.SOURCE_TAG, Const.VERIFY_TAG);
+                                startActivity(intent);
+                                finish();
+                            }
+                        }
+                    });
                 }
-            }
-        });
+            }).start();
+        }
     }
 
     // on click listener //
@@ -121,80 +132,132 @@ public class VerifyActivity extends AppCompatActivity {
             return;
         }
 
-
         // get a reference to the FirebaseAuth
         final FirebaseAuth auth = FirebaseAuth.getInstance();
 
-        // try to sign the user in, if there is no account, create one
-        auth.signInWithEmailAndPassword(mEmail, mPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+        new Thread(new Runnable() {
             @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                    if (user == null || !user.isEmailVerified()) {
-                        // inform the user they are not verified
-                        Toast t = Toast.makeText(VerifyActivity.this, "Please follow " +
-                                "the link that we sent to you in order to verify your account",
-                                Toast.LENGTH_SHORT);
-                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                        t.show();
-                        return;
-                    }
-                    // allow them to proceed to register activity if they are verified
-                    Intent intent = new Intent(VerifyActivity.this, RegisterActivity.class);
-                    intent.putExtra(Const.SOURCE_TAG, Const.VERIFY_TAG);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    // create a new user with the input credentials
-                    auth.createUserWithEmailAndPassword(mEmail, mPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                // send a verification email to the user
-                                if (auth.getCurrentUser() != null)
-                                    auth.getCurrentUser().sendEmailVerification()
-                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    if (task.isSuccessful()) {
-                                                        // set that the user has not registered
-                                                        new SharedPreference(getApplicationContext())
-                                                                .setRegistered(false);
+            public void run() {
+                // try to sign the user in, if there is no account, create one
+                auth.signInWithEmailAndPassword(mEmail, mPassword)
+                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                            if (user == null || !user.isEmailVerified()) {
+                                // inform the user they are not verified
+                                Toast t = Toast.makeText(VerifyActivity.this, "Please follow " +
+                                                "the link that we sent to you in order to verify your account",
+                                        Toast.LENGTH_SHORT);
+                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                                t.show();
+                                return;
+                            }
 
-                                                        // inform the user that an email has been sent
-                                                        Toast t = Toast.makeText(
-                                                                VerifyActivity.this,
-                                                                "A verification email has been sent to " +
-                                                                        mEmail, Toast.LENGTH_SHORT);
-                                                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                                                                0, 0);
-                                                        t.show();
-                                                    } else {
-                                                        // inform the user that an email was not sent
-                                                        Toast t = Toast.makeText(
-                                                                VerifyActivity.this,
-                                                                "We were not able to send a verification email" +
-                                                                        " to " + mEmail + ", are you sure this is " +
-                                                                        "your correct email address?",
-                                                                        Toast.LENGTH_SHORT);
-                                                        t.setGravity(Gravity.TOP |
-                                                                Gravity.CENTER_HORIZONTAL, 0,
+                            // check if the user is registered
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    FirebaseFirestore.getInstance()
+                                            .collection(Const.USERS_COLLECTION)
+                                            .document(user.getUid())
+                                            .get()
+                                            .continueWith(new Continuation<DocumentSnapshot, Object>() {
+                                                @Override
+                                                public Object then(@NonNull Task<DocumentSnapshot> task) {
+                                                    DocumentSnapshot doc = task.getResult();
+
+                                                    // if they are registered
+                                                    if (doc != null && doc.exists()) {
+                                                        // inform the user that they have already registered
+                                                        Toast t = Toast.makeText(VerifyActivity.this,
+                                                                "You are already registered.",
+                                                                Toast.LENGTH_SHORT);
+                                                        t.setGravity(Gravity.TOP | Gravity
+                                                                .CENTER_HORIZONTAL, 0,
                                                                 0);
                                                         t.show();
                                                     }
+                                                    // they are not registered
+                                                    else {
+                                                        // allow them to proceed to register activity
+                                                        // if they are verified
+                                                        Intent intent = new Intent(
+                                                                VerifyActivity.this,
+                                                                RegisterActivity.class);
+                                                        intent.putExtra(Const.SOURCE_TAG, Const.VERIFY_TAG);
+                                                        startActivity(intent);
+                                                        finish();
+                                                    }
+                                                    return null;
                                                 }
                                             });
-                                    } else {
-                                        // inform the user that the email was not valid
-                                        mEmailText.setError(getString(R.string.email_not_valid));
-                                        mEmailText.requestFocus();
-                                    }
                                 }
-                            });
-                }
+                            }).start();
+                        } else {
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // create a new user with the input credentials
+                                    auth.createUserWithEmailAndPassword(mEmail, mPassword)
+                                            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<AuthResult> task) {
+                                            if (task.isSuccessful()) {
+                                                if (auth.getCurrentUser() != null)
+                                                    // send a verification email to the user
+                                                    new Thread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            auth.getCurrentUser().sendEmailVerification()
+                                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                @Override
+                                                                public void onComplete(@NonNull Task<Void> task) {
+                                                                    if (task.isSuccessful()) {
+                                                                        // set that the user has not registered
+                                                                        new SharedPreference(getApplicationContext())
+                                                                                .setRegistered(false);
+
+                                                                        // inform the user that an email has been sent
+                                                                        Toast t = Toast.makeText(
+                                                                                VerifyActivity.this,
+                                                                                "A verification email has been sent to " +
+                                                                                        mEmail, Toast.LENGTH_SHORT);
+                                                                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                                                                0, 0);
+                                                                        t.show();
+                                                                    } else {
+                                                                        // inform the user that an email was not sent
+                                                                        Toast t = Toast.makeText(
+                                                                                VerifyActivity.this,
+                                                                                "We were not able to send a verification email" +
+                                                                                        " to " + mEmail + ", are you sure this is " +
+                                                                                        "your correct email address?",
+                                                                                Toast.LENGTH_SHORT);
+                                                                        t.setGravity(Gravity.TOP |
+                                                                                        Gravity.CENTER_HORIZONTAL, 0,
+                                                                                0);
+                                                                        t.show();
+                                                                    }
+                                                                }
+                                                            });
+                                                        }
+                                                    }).start();
+                                            } else {
+                                                // inform the user that the email was not valid
+                                                mEmailText.setError(getString(R.string.email_not_valid));
+                                                mEmailText.requestFocus();
+                                            }
+                                        }
+                                    });
+                                }
+                            }).start();
+                        }
+                    }
+                });
             }
-        });
+        }).start();
     }
 
     /**

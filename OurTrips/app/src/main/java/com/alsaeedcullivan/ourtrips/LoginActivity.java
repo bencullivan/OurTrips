@@ -71,7 +71,157 @@ public class LoginActivity extends AppCompatActivity {
         mPasswordEditText = findViewById(R.id.password);
 
         // set the OnClickListener for the sign in button
-        signInButton.setOnClickListener(new View.OnClickListener() {
+        signInButton.setOnClickListener(signInListener());
+
+        // set the OnClickListener for the sign up button
+        signUpButton.setOnClickListener(signUpListener());
+    }
+
+    // handle lifecycle //
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // set errors to null
+        mUsernameEditText.setError(null);
+        mPasswordEditText.setError(null);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // get input email & password
+        String inputEmail = mUsernameEditText.getText().toString();
+        String inputPassword = mPasswordEditText.getText().toString();
+        // save input email & password
+        if (!inputEmail.equals("")) outState.putString(Const.USER_ID_KEY, inputEmail);
+        if (!inputPassword.equals("")) outState.putString(Const.USER_PASSWORD_KEY, inputPassword);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // get input email & password if entered
+        mUsernameEditText.setText(savedInstanceState.getString(Const.USER_ID_KEY));
+        mPasswordEditText.setText(savedInstanceState.getString(Const.USER_PASSWORD_KEY));
+    }
+
+    //  ******************************* private helper methods ******************************* //
+
+    /**
+     * signIn
+     * attempts to sign in a user with a given email and password
+     *
+     * @param email    the input email
+     * @param password the input password
+     */
+    private void signIn(String email, String password) {
+        final String e = email;
+        final String p = password;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // attempt to sign in with the given email and password
+                FirebaseAuth.getInstance().signInWithEmailAndPassword(e, p)
+                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    // get the user
+                                    final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                                    if (user == null || !user.isEmailVerified()) {
+                                        // tell the user that the email has not been verified
+                                        Toast t = Toast.makeText(LoginActivity.this,
+                                                R.string.need_to_verify, Toast.LENGTH_LONG);
+                                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                                0, 0);
+                                        t.show();
+                                        // sign the user out
+                                        FirebaseAuth.getInstance().signOut();
+                                        hideBar();
+                                        return;
+                                    }
+                                    // check to see if the user is registered
+                                    new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            FirebaseFirestore.getInstance()
+                                                    .collection(Const.USERS_COLLECTION)
+                                                    .document(user.getUid())
+                                                    .get()
+                                                    .continueWith(new Continuation<DocumentSnapshot, Object>() {
+                                                        @Override
+                                                        public Object then(@NonNull Task<DocumentSnapshot> task) {
+                                                            DocumentSnapshot doc = task.getResult();
+                                                            if (doc != null && doc.exists()) {
+                                                                // save that this user is registered
+                                                                new SharedPreference(getApplicationContext())
+                                                                        .setRegistered(true);
+
+                                                                // the user can proceed to main activity
+                                                                startActivity(new Intent(
+                                                                        LoginActivity.this,
+                                                                        MainActivity.class));
+
+                                                                // hide the progress bar
+                                                                hideBar();
+                                                                // finish the activity
+                                                                finish();
+                                                            } else {
+                                                                // tell the user that they have not registered
+                                                                Toast t = Toast.makeText(LoginActivity.this,
+                                                                        R.string.not_registered, Toast.LENGTH_LONG);
+                                                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                                                        0, 0);
+                                                                t.show();
+
+                                                                // set that they have not registered
+                                                                new SharedPreference(getApplicationContext())
+                                                                        .setRegistered(false);
+                                                                // sign the user out
+                                                                FirebaseAuth.getInstance().signOut();
+
+                                                                // hide the progress bar
+                                                                hideBar();
+                                                            }
+                                                            return doc;
+                                                        }
+                                                    });
+                                        }
+                                    }).start();
+                                } else {
+                                    // there is no account with this name
+                                    // inform user they are wrong
+                                    Toast message = Toast.makeText(LoginActivity.this,
+                                            R.string.login_failed, Toast.LENGTH_SHORT);
+                                    message.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                            0, 0);
+                                    message.show();
+
+                                    // hide the progress bar
+                                    hideBar();
+                                }
+                            }
+                        });
+            }
+        }).start();
+    }
+
+    /**
+     * hideBar()
+     * helper method that hides the progress bar
+     */
+    private void hideBar() {
+        // hide progress bar & show buttons
+        mProgressBar.setVisibility(View.GONE);
+        signInButton.setVisibility(View.VISIBLE);
+        signUpButton.setVisibility(View.VISIBLE);
+    }
+
+    // listeners
+
+    private View.OnClickListener signInListener() {
+        return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(Const.TAG, "onClick: sign in");
@@ -120,10 +270,10 @@ public class LoginActivity extends AppCompatActivity {
                 // attempt to sign in
                 signIn(inputEmail, inputPassword);
             }
-        });
-
-        // set the OnClickListener for the sign up button
-        signUpButton.setOnClickListener(new View.OnClickListener() {
+        };
+    }
+    private View.OnClickListener signUpListener() {
+        return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(Const.TAG, "onClick: sign up");
@@ -137,137 +287,7 @@ public class LoginActivity extends AppCompatActivity {
                 intent.putExtra(Const.USER_PASSWORD_KEY, mPasswordEditText.getText().toString());
                 startActivity(intent);
             }
-        });
-    }
-
-    // handle lifecycle //
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // set errors to null
-        mUsernameEditText.setError(null);
-        mPasswordEditText.setError(null);
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // get input email & password
-        String inputEmail = mUsernameEditText.getText().toString();
-        String inputPassword = mPasswordEditText.getText().toString();
-        // save input email & password
-        if (!inputEmail.equals("")) outState.putString(Const.USER_ID_KEY, inputEmail);
-        if (!inputPassword.equals("")) outState.putString(Const.USER_PASSWORD_KEY, inputPassword);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        // get input email & password if entered
-        mUsernameEditText.setText(savedInstanceState.getString(Const.USER_ID_KEY));
-        mPasswordEditText.setText(savedInstanceState.getString(Const.USER_PASSWORD_KEY));
-    }
-
-    //  ******************************* private helper methods ******************************* //
-
-    /**
-     * signIn
-     * attempts to sign in a user with a given email and password
-     *
-     * @param email    the input email
-     * @param password the input password
-     */
-    private void signIn(String email, String password) {
-        // attempt to sign in with the given email and password
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // get the user
-                            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                            if (user == null || !user.isEmailVerified()) {
-                                // tell the user that the email has not been verified
-                                Toast t = Toast.makeText(LoginActivity.this,
-                                        R.string.need_to_verify, Toast.LENGTH_LONG);
-                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                                        0, 0);
-                                t.show();
-                                // sign the user out
-                                FirebaseAuth.getInstance().signOut();
-                                hideBar();
-                                return;
-                            }
-                            // check to see if the user is registered
-                            FirebaseFirestore.getInstance()
-                                    .collection(Const.USERS_COLLECTION)
-                                    .document(user.getUid())
-                                    .get()
-                                    .continueWith(new Continuation<DocumentSnapshot, Object>() {
-                                        @Override
-                                        public Object then(@NonNull Task<DocumentSnapshot> task) {
-                                            DocumentSnapshot doc = task.getResult();
-                                            if (doc != null && doc.exists()) {
-                                                // save that this user is registered
-                                                new SharedPreference(getApplicationContext())
-                                                        .setRegistered(true);
-
-                                                // the user can proceed to main activity
-                                                startActivity(new Intent(
-                                                        LoginActivity.this,
-                                                        MainActivity.class));
-
-                                                // hide the progress bar
-                                                hideBar();
-                                                // finish the activity
-                                                finish();
-                                            } else {
-                                                // tell the user that they have not registered
-                                                Toast t = Toast.makeText(LoginActivity.this,
-                                                        R.string.not_registered, Toast.LENGTH_LONG);
-                                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                                                        0, 0);
-                                                t.show();
-
-                                                // set that they have not registered
-                                                new SharedPreference(getApplicationContext())
-                                                        .setRegistered(false);
-                                                // sign the user out
-                                                FirebaseAuth.getInstance().signOut();
-
-                                                // hide the progress bar
-                                                hideBar();
-                                            }
-                                            return doc;
-                                        }
-                                    });
-                        } else {
-                            // there is no account with this name
-
-                            // inform user they are wrong
-                            Toast message = Toast.makeText(LoginActivity.this,
-                                    R.string.login_failed, Toast.LENGTH_SHORT);
-                            message.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                                    0, 0);
-                            message.show();
-
-                            // hide the progress bar
-                            hideBar();
-                        }
-                    }
-                });
-    }
-
-    /**
-     * hideBar()
-     * helper method that hides the progress bar
-     */
-    private void hideBar() {
-        // hide progress bar & show buttons
-        mProgressBar.setVisibility(View.GONE);
-        signInButton.setVisibility(View.VISIBLE);
-        signUpButton.setVisibility(View.VISIBLE);
+        };
     }
 }
 

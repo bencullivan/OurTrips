@@ -133,40 +133,30 @@ public class FriendActivity extends AppCompatActivity {
                             makeListAppear();
                         }
                     });
-                }
-            }).start();
-            // get the emails of all of this user's friends
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
+                    // get the emails of all of this user's friends
                     AccessDB.getFriendEmails(mUser.getUid())
                             .addOnCompleteListener(new OnCompleteListener<List<String>>() {
-                        @Override
-                        public void onComplete(@NonNull Task<List<String>> task) {
-                            Log.d(Const.TAG, "onComplete: email"  + Thread.currentThread().getId());
-                            if (task.isSuccessful() && task.getResult() != null) {
-                                mFriendEmailsList = (ArrayList<String>) task.getResult();
-                                mFriendEmailsSet.clear();
-                                mFriendEmailsSet.addAll(mFriendEmailsList);
-                            }
-                        }
-                    });
-                }
-            }).start();
-            // get the name of this user
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
+                                @Override
+                                public void onComplete(@NonNull Task<List<String>> task) {
+                                    Log.d(Const.TAG, "onComplete: email"  + Thread.currentThread().getId());
+                                    if (task.isSuccessful() && task.getResult() != null) {
+                                        mFriendEmailsList = (ArrayList<String>) task.getResult();
+                                        mFriendEmailsSet.clear();
+                                        mFriendEmailsSet.addAll(mFriendEmailsList);
+                                    }
+                                }
+                            });
+                    // get the name of this user
                     Log.d(Const.TAG, "run: name " + Thread.currentThread().getId());
                     AccessDB.getUserName(mUser.getUid())
                             .addOnCompleteListener(new OnCompleteListener<String>() {
-                        @Override
-                        public void onComplete(@NonNull Task<String> task) {
-                            Log.d(Const.TAG, "onComplete: name" +  + Thread.currentThread().getId());
-                            if (task.isSuccessful()) mName = task.getResult();
-                            else mName = "";
-                        }
-                    });
+                                @Override
+                                public void onComplete(@NonNull Task<String> task) {
+                                    Log.d(Const.TAG, "onComplete: name" +  + Thread.currentThread().getId());
+                                    if (task.isSuccessful()) mName = task.getResult();
+                                    else mName = "";
+                                }
+                            });
                 }
             }).start();
         }

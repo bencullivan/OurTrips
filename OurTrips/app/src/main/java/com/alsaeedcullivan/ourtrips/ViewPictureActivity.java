@@ -104,20 +104,26 @@ public class ViewPictureActivity extends AppCompatActivity {
         showSpinner();
         // remove this photo from the list
         mPics.remove(mPosition);
-        // remove the photo from the db and storage
-        Task<Void> dbTask = AccessDB.deleteTripPhoto(mTripId, mPhoto.getDocId());
-        Task<Void> storeTask = AccessBucket.deleteFromStorage(mPhoto.getPicPath());
-        // when the photo is deleted, finish the activity
-        Tasks.whenAll(dbTask, storeTask).addOnCompleteListener(new OnCompleteListener<Void>() {
+
+        new Thread(new Runnable() {
             @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                Intent intent = new Intent(ViewPictureActivity.this, GalleryActivity.class);
-                intent.putExtra(Const.GALLERY_TAG, mPics);
-                intent.putExtra(Const.TRIP_ID_TAG, mTripId);
-                startActivity(intent);
-                finish();
+            public void run() {
+                // remove the photo from the db and storage
+                Task<Void> dbTask = AccessDB.deleteTripPhoto(mTripId, mPhoto.getDocId());
+                Task<Void> storeTask = AccessBucket.deleteFromStorage(mPhoto.getPicPath());
+                // when the photo is deleted, finish the activity
+                Tasks.whenAll(dbTask, storeTask).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Intent intent = new Intent(ViewPictureActivity.this, GalleryActivity.class);
+                        intent.putExtra(Const.GALLERY_TAG, mPics);
+                        intent.putExtra(Const.TRIP_ID_TAG, mTripId);
+                        startActivity(intent);
+                        finish();
+                    }
+                });
             }
-        });
+        }).start();
     }
 
     /**

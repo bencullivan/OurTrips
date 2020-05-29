@@ -66,21 +66,27 @@ public class ViewUserActivity extends AppCompatActivity {
      * @param userId the id of the selected user
      */
     private void loadProfile(String userId) {
-        AccessDB.loadUserProfile(userId).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
+        final String uId = userId;
+        new Thread(new Runnable() {
             @Override
-            public void onComplete(@NonNull Task<Map<String, Object>> task) {
-                if (task.isSuccessful()) {
-                    Map<String, Object> data = task.getResult();
-                    if (data != null) populateFields(data);
-                } else {
-                    // tell the user that this tripper's profile could not be loaded
-                    Toast t = Toast.makeText(ViewUserActivity.this, "This tripper's " +
-                            "profile could not be loaded.", Toast.LENGTH_SHORT);
-                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                    t.show();
-                }
+            public void run() {
+                AccessDB.loadUserProfile(uId).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Map<String, Object>> task) {
+                        if (task.isSuccessful()) {
+                            Map<String, Object> data = task.getResult();
+                            if (data != null) populateFields(data);
+                        } else {
+                            // tell the user that this tripper's profile could not be loaded
+                            Toast t = Toast.makeText(ViewUserActivity.this, "This tripper's " +
+                                    "profile could not be loaded.", Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                        }
+                    }
+                });
             }
-        });
+        }).start();
     }
 
     /**

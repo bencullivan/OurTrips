@@ -147,40 +147,57 @@ public class RequestTripActivity extends AppCompatActivity {
         }
 
         // add the initial trip data to a map
-        Map<String, Object> data = new HashMap<>();
+        final Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_START_DATE_KEY, mFormat.format(mStart));
         data.put(Const.TRIP_END_DATE_KEY, mFormat.format(mEnd));
         data.put(Const.TRIP_TITLE_KEY, mTitle.getText().toString());
 
-        // add the trip to the db
-        Task<String> tripTask = AccessDB.addTrip(data);
-        tripTask.addOnCompleteListener(new OnCompleteListener<String>() {
+        new Thread(new Runnable() {
             @Override
-            public void onComplete(@NonNull Task<String> task) {
-                if (task.isSuccessful()) {
-                    String tripId = task.getResult();
-                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                    if (tripId == null || mFriend == null || user == null) {
-                        Log.d(Const.TAG, "onComplete: friend or trip fail");
-                        return;
+            public void run() {
+                // add the trip to the db
+                Task<String> tripTask = AccessDB.addTrip(data);
+                tripTask.addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (task.isSuccessful()) {
+                            final String tripId = task.getResult();
+                            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                            if (tripId == null || tripId.equals("") || mFriend == null || user == null) {
+                                Log.d(Const.TAG, "onComplete: friend or trip fail");
+                                return;
+                            }
+
+                            // update the sub-collections
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AccessDB.addUserTrip(user.getUid(), tripId,
+                                            mTitle.getText().toString(), mFormat.format(mStart));
+                                    AccessDB.addUserTrip(mFriend.getUserId(),
+                                            tripId, mTitle.getText().toString(), mFormat.format(mStart));
+                                    AccessDB.addTripper(tripId, user.getUid(),
+                                            user.getEmail(), mUserName);
+                                    AccessDB.addTripper(tripId, mFriend.getUserId(),
+                                            mFriend.getEmail(), mFriend.getName());
+                                }
+                            }).start();
+
+                            Log.d(Const.TAG, "onComplete: done yay");
+                            Intent intent = new Intent(RequestTripActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finishAffinity();
+                        } else {
+                            // toast the user
+                            Toast t = Toast.makeText(RequestTripActivity.this, "This trip could"
+                                    + " not be added.", Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                        }
                     }
-                    AccessDB.addUserTrip(user.getUid(), tripId, mTitle.getText().toString(), mFormat.format(mStart));
-                    AccessDB.addUserTrip(mFriend.getUserId(), tripId, mTitle.getText().toString(), mFormat.format(mStart));
-                    AccessDB.addTripper(tripId, user.getUid(), user.getEmail(), mUserName);
-                    AccessDB.addTripper(tripId, mFriend.getUserId(), mFriend.getEmail(), mFriend.getName());
-                    Log.d(Const.TAG, "onComplete: done yay");
-                    Intent intent = new Intent(RequestTripActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    finishAffinity();
-                } else {
-                    // toast the user
-                    Toast t = Toast.makeText(RequestTripActivity.this, "This trip could"
-                            + " not be added.", Toast.LENGTH_SHORT);
-                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                    t.show();
-                }
+                });
             }
-        });
+        }).start();
     }
 
     /**

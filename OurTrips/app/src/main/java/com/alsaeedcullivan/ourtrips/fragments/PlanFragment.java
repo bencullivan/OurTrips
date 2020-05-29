@@ -74,30 +74,36 @@ public class PlanFragment extends Fragment {
         else {
             // get the trip id and user
             mTripId = ((TripActivity)getActivity()).getTripId();
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             if (mTripId == null || user == null) return;
-            // get this user's name
-            AccessDB.getUserName(user.getUid()).addOnCompleteListener(new OnCompleteListener<String>() {
+            // db operations on background thread
+            new Thread(new Runnable() {
                 @Override
-                public void onComplete(@NonNull Task<String> task) {
-                    Log.d(Const.TAG, "onComplete: name loaded");
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        mUserName = task.getResult();
-                    }
+                public void run() {
+                    // get this user's name
+                    AccessDB.getUserName(user.getUid()).addOnCompleteListener(new OnCompleteListener<String>() {
+                        @Override
+                        public void onComplete(@NonNull Task<String> task) {
+                            Log.d(Const.TAG, "onComplete: name loaded");
+                            if (task.isSuccessful() && task.getResult() != null) {
+                                mUserName = task.getResult();
+                            }
+                        }
+                    });
+                    // get the list of plans, sort them and add them to the adapter
+                    AccessDB.getTripComments(mTripId).addOnCompleteListener(new OnCompleteListener<List<Plan>>() {
+                        @Override
+                        public void onComplete(@NonNull Task<List<Plan>> task) {
+                            Log.d(Const.TAG, "onComplete: plans loaded");
+                            if (task.isSuccessful() && task.getResult() != null && task.getResult().size() > 0) {
+                                // sort the list of plans
+                                mPlans = (ArrayList<Plan>) task.getResult();
+                                new SortPlanTask().execute();
+                            }
+                        }
+                    });
                 }
-            });
-            // get the list of plans, sort them and add them to the adapter
-            AccessDB.getTripComments(mTripId).addOnCompleteListener(new OnCompleteListener<List<Plan>>() {
-                @Override
-                public void onComplete(@NonNull Task<List<Plan>> task) {
-                    Log.d(Const.TAG, "onComplete: plans loaded");
-                    if (task.isSuccessful() && task.getResult() != null && task.getResult().size() > 0) {
-                        // sort the list of plans
-                        mPlans = (ArrayList<Plan>) task.getResult();
-                        new SortPlanTask().execute();
-                    }
-                }
-            });
+            }).start();
         }
     }
 
@@ -140,9 +146,9 @@ public class PlanFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // get this user
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 // get the message
-                String message = mMessageEdit.getText().toString();
+                final String message = mMessageEdit.getText().toString();
                 // if they have not typed anything, do nothing
                 if (mTripId == null || user == null || mUserName == null || message
                         .replaceAll("\\s","").equals("")) return;
@@ -154,26 +160,31 @@ public class PlanFragment extends Fragment {
                 plan.setPlanUserName(mUserName);
                 plan.setPlanUserId(user.getUid());
 
-                // add the plan to the db
-                AccessDB.addTripComment(mTripId, message, mUserName, user.getUid(), new Date().getTime())
-                        .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                            @Override
-                            public void onComplete(@NonNull Task<DocumentReference> task) {
-                                Log.d(Const.TAG, "onComplete: done adding plan to db");
-                                if (task.isSuccessful()) {
-                                    // display this plan
-                                    mPlans.add(plan);
-                                    mAdapter.setData(mPlans);
-                                    mRecycle.scrollToPosition(mPlans.size() - 1);
-                                    if (getActivity() == null) return;
-                                    // hide the keyboard
-                                    InputMethodManager imm = (InputMethodManager) getActivity()
-                                            .getSystemService(Activity.INPUT_METHOD_SERVICE);
-                                    if (imm != null) imm.hideSoftInputFromWindow(mMessageEdit.getWindowToken(),
-                                            InputMethodManager.HIDE_NOT_ALWAYS);
-                                }
-                            }
-                        });
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // add the plan to the db
+                        AccessDB.addTripComment(mTripId, message, mUserName, user.getUid(), new Date().getTime())
+                                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                                        Log.d(Const.TAG, "onComplete: done adding plan to db");
+                                        if (task.isSuccessful()) {
+                                            // display this plan
+                                            mPlans.add(plan);
+                                            mAdapter.setData(mPlans);
+                                            mRecycle.scrollToPosition(mPlans.size() - 1);
+                                            if (getActivity() == null) return;
+                                            // hide the keyboard
+                                            InputMethodManager imm = (InputMethodManager) getActivity()
+                                                    .getSystemService(Activity.INPUT_METHOD_SERVICE);
+                                            if (imm != null) imm.hideSoftInputFromWindow(mMessageEdit.getWindowToken(),
+                                                    InputMethodManager.HIDE_NOT_ALWAYS);
+                                        }
+                                    }
+                                });
+                    }
+                }).start();
             }
         };
     }
