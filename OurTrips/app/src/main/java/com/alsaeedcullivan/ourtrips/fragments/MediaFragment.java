@@ -135,30 +135,36 @@ public class MediaFragment extends Fragment {
         try {
             mLoading.setText(getString(R.string.adding_to_the_gallery));
             showSpinner();
-            long timeStamp = new Date().getTime();
-            String id = ((TripActivity) getActivity()).getTripId();
+            final long timeStamp = new Date().getTime();
+            final String id = ((TripActivity) getActivity()).getTripId();
             // establish the path where this picture will be stored in the bucket
-            String path = Const.TRIP_PIC_PATH + "/" + id +
+            final String path = Const.TRIP_PIC_PATH + "/" + id +
                     "/" + Const.TRIP_PHOTO_KEY + timeStamp + Const.PIC_JPG;
             // open an input stream for the uri
-            InputStream is = getActivity().getContentResolver().openInputStream(uri);
-            // add this photo to the storage bucket
-            UploadTask storeTask = AccessBucket.uploadPicture(path, is);
-            // add this photo to the database and storage
-            Task<DocumentReference> docTask = AccessDB.addTripPhoto(id, path, timeStamp)
-                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+            final InputStream is = getActivity().getContentResolver().openInputStream(uri);
+            //db operations in background
+            new Thread(new Runnable() {
                 @Override
-                public void onComplete(@NonNull Task<DocumentReference> task) {
-                    hideSpinner();
+                public void run() {
+                    // add this photo to the storage bucket
+                    UploadTask storeTask = AccessBucket.uploadPicture(path, is);
+                    // add this photo to the database and storage
+                    Task<DocumentReference> docTask = AccessDB.addTripPhoto(id, path, timeStamp)
+                            .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentReference> task) {
+                                    hideSpinner();
+                                }
+                            });
+                    // when both tasks are complete, hide the progress bar
+                    Tasks.whenAll(storeTask, docTask).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            hideSpinner();
+                        }
+                    });
                 }
-            });
-            // when both tasks are complete, hide the progress bar
-            Tasks.whenAll(storeTask, docTask).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    hideSpinner();
-                }
-            });
+            }).start();
         } catch (IOException e) {
             hideSpinner();
             Log.d(Const.TAG, Log.getStackTraceString(e));
@@ -210,35 +216,40 @@ public class MediaFragment extends Fragment {
             public void onClick(View v) {
                 if (getActivity() == null) return;
                 // get the trip id from the parent activity
-                String tripId = ((TripActivity)getActivity()).getTripId();
+                final String tripId = ((TripActivity)getActivity()).getTripId();
                 if (tripId == null) return;
                 mLoading.setText(R.string.loading_photos);
                 showSpinner();
-                // load the photo paths associated with this trip
-                AccessDB.getTripPhotos(tripId).addOnCompleteListener(new OnCompleteListener<List<Pic>>() {
+                new Thread(new Runnable() {
                     @Override
-                    public void onComplete(@NonNull Task<List<Pic>> task) {
-                        if (task.isSuccessful()) {
-                            if (task.getResult() != null && task.getResult().size() > 0) {
-                                mPics = (ArrayList<Pic>) task.getResult();
-                                Log.d(Const.TAG, "onComplete: " + mPics.get(0).getPicPath());
-                                new PicSortTask().execute();
-                            } else {
-                                Toast t = Toast.makeText(getActivity(), "There are no photos " +
-                                        "in the photo gallery.", Toast.LENGTH_SHORT);
-                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                                t.show();
-                                hideSpinner();
+                    public void run() {
+                        // load the photo paths associated with this trip
+                        AccessDB.getTripPhotos(tripId).addOnCompleteListener(new OnCompleteListener<List<Pic>>() {
+                            @Override
+                            public void onComplete(@NonNull Task<List<Pic>> task) {
+                                if (task.isSuccessful()) {
+                                    if (task.getResult() != null && task.getResult().size() > 0) {
+                                        mPics = (ArrayList<Pic>) task.getResult();
+                                        Log.d(Const.TAG, "onComplete: " + mPics.get(0).getPicPath());
+                                        new PicSortTask().execute();
+                                    } else {
+                                        Toast t = Toast.makeText(getActivity(), "There are no photos " +
+                                                "in the photo gallery.", Toast.LENGTH_SHORT);
+                                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                                        t.show();
+                                        hideSpinner();
+                                    }
+                                } else {
+                                    Toast t = Toast.makeText(getActivity(), "The photo gallery could " +
+                                            "not be loaded.", Toast.LENGTH_SHORT);
+                                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                                    t.show();
+                                    hideSpinner();
+                                }
                             }
-                        } else {
-                            Toast t = Toast.makeText(getActivity(), "The photo gallery could " +
-                                    "not be loaded.", Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                            hideSpinner();
-                        }
+                        });
                     }
-                });
+                }).start();
             }
         };
     }
