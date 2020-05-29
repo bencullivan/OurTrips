@@ -1,6 +1,7 @@
 package com.alsaeedcullivan.ourtrips.fragments;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -22,19 +23,23 @@ import com.alsaeedcullivan.ourtrips.MatchActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.TripActivity;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
+import com.alsaeedcullivan.ourtrips.comparators.PlaceComparator;
 import com.alsaeedcullivan.ourtrips.models.Place;
-import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 public class SummaryFragment extends Fragment {
 
-    private Button addTripper;
+    private List<DocumentSnapshot> mDocs = new ArrayList<>();
+    private List<Place> mPlaces = new ArrayList<>();
+    private String mTripId;
 
     public SummaryFragment() {
         // Required empty public constructor
@@ -101,28 +106,40 @@ public class SummaryFragment extends Fragment {
     private void loadLocations() {
         if (getActivity() == null) return;
         // get the trip id
-        final String tripId = ((TripActivity)getActivity()).getTripId();
-        // get the list of places from the database
-        AccessDB.getTripLocations(tripId).addOnCompleteListener(new OnCompleteListener<List<Place>>() {
+        mTripId = ((TripActivity)getActivity()).getTripId();
+
+        new Thread(new Runnable() {
             @Override
-            public void onComplete(@NonNull Task<List<Place>> task) {
-                if (task.isSuccessful()) {
-                    // get the results
-                    ArrayList<Place> places = (ArrayList<Place>) task.getResult();
-                    if (places == null) places = new ArrayList<>();
-                    Intent intent = new Intent(getActivity(), MapsActivity.class);
-                    intent.putExtra(Const.PLACE_LIST_TAG, places);
-                    intent.putExtra(Const.TRIP_ID_TAG, tripId);
-                    startActivity(intent);
-                } else {
-                    // tell the user that the locations could not be loaded
-                    Toast t = Toast.makeText(getActivity(), "The locations of this trip " +
-                            "could not be loaded.", Toast.LENGTH_SHORT);
-                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                    t.show();
-                }
+            public void run() {
+                // get the list of places from the database
+                AccessDB.getTripLocations(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        QuerySnapshot result = task.getResult();
+                        if (task.isSuccessful()) {
+                            // get the documents and start the async task that will bring the user to
+                            // maps activity
+                            if (result != null) mDocs = result.getDocuments();
+                            new LocationTask().execute();
+
+//                    // get the results
+//                    ArrayList<Place> places = (ArrayList<Place>) task.getResult();
+//                    if (places == null) places = new ArrayList<>();
+//                    Intent intent = new Intent(getActivity(), MapsActivity.class);
+//                    intent.putExtra(Const.PLACE_LIST_TAG, places);
+//                    intent.putExtra(Const.TRIP_ID_TAG, tripId);
+//                    startActivity(intent);
+                        } else {
+                            // tell the user that the locations could not be loaded
+                            Toast t = Toast.makeText(getActivity(), "The locations of this trip " +
+                                    "could not be loaded.", Toast.LENGTH_SHORT);
+                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                            t.show();
+                        }
+                    }
+                });
             }
-        });
+        }).start();
     }
 
     // listeners
@@ -186,5 +203,57 @@ public class SummaryFragment extends Fragment {
                         .show(getParentFragmentManager(), CustomDialogFragment.TAG);
             }
         };
+    }
+
+
+    /**
+     * LocationTask
+     * gets a list of the locations of the trip and send the user to Maps activity
+     */
+    private class LocationTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mDocs == null || mDocs.size() == 0) return null;
+
+            Log.d(Const.TAG, "doInBackground: loc " + Thread.currentThread().getId());
+
+            mPlaces = new ArrayList<>();
+
+            // extract a place from each document and return the list of places
+            for (DocumentSnapshot doc : mDocs) {
+                Place place = new Place();
+                place.setDocId(doc.getId());
+                place.setName((String)doc.get(Const.TRIP_LOCATION_NAME_KEY));
+                String location = (String) doc.get(Const.TRIP_LOCATION_KEY);
+                if (location == null) continue;
+                String[] coordinates = location.split(",");
+                if (coordinates.length < 2) continue;
+                place.setLocation(new LatLng(Double.parseDouble(coordinates[0]),
+                        Double.parseDouble(coordinates[1])));
+                place.setTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+                mPlaces.add(place);
+            }
+
+            // sort the places in the order they were added to the map
+            if (mPlaces.size() > 0) mPlaces.sort(new PlaceComparator());
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            if (mPlaces == null) mPlaces = new ArrayList<>();
+            if (mTripId == null) {
+                if (getActivity() != null) mTripId = ((TripActivity)getActivity()).getTripId();
+                else mTripId = "";
+            }
+            Intent intent = new Intent(getActivity(), MapsActivity.class);
+            intent.putExtra(Const.PLACE_LIST_TAG, (ArrayList<Place>) mPlaces);
+            intent.putExtra(Const.TRIP_ID_TAG, mTripId);
+            startActivity(intent);
+        }
     }
 }

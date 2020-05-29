@@ -165,7 +165,7 @@ public class CalendarActivity extends AppCompatActivity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    AccessDB.getUserDatesForCal(mUser.getUid())
+                    AccessDB.getUserDates(mUser.getUid())
                             .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {

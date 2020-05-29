@@ -30,6 +30,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +43,7 @@ public class PlanFragment extends Fragment {
     private static final String PLANS_KEY = "plans";
 
     private ArrayList<Plan> mPlans = new ArrayList<>();
+    private List<DocumentSnapshot> mDocs = new ArrayList<>();
     private String mTripId;
     private PlanAdapter mAdapter;
     private EditText mMessageEdit;
@@ -91,14 +94,17 @@ public class PlanFragment extends Fragment {
                         }
                     });
                     // get the list of plans, sort them and add them to the adapter
-                    AccessDB.getTripComments(mTripId).addOnCompleteListener(new OnCompleteListener<List<Plan>>() {
+                    AccessDB.getTripComments(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
-                        public void onComplete(@NonNull Task<List<Plan>> task) {
-                            Log.d(Const.TAG, "onComplete: plans loaded");
-                            if (task.isSuccessful() && task.getResult() != null && task.getResult().size() > 0) {
-                                // sort the list of plans
-                                mPlans = (ArrayList<Plan>) task.getResult();
-                                new SortPlanTask().execute();
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            QuerySnapshot result = task.getResult();
+                            if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
+
+                                mDocs = result.getDocuments();
+                                new GetPlansTask().execute();
+//                                // sort the list of plans
+//                                mPlans = (ArrayList<Plan>) task.getResult();
+//                                new SortPlanTask().execute();
                             }
                         }
                     });
@@ -189,10 +195,15 @@ public class PlanFragment extends Fragment {
         };
     }
 
-    class SortPlanTask extends AsyncTask<Void, Void, Void> {
+    /**
+     * SortPlanTask
+     * sorts the plans and adds them to the recycler view
+     */
+    private class SortPlanTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
+            if (mPlans == null || mPlans.size() == 0) return null;
             mPlans.sort(new PlanComparator());
             return null;
         }
@@ -202,9 +213,46 @@ public class PlanFragment extends Fragment {
             super.onPostExecute(aVoid);
             Log.d(Const.TAG, "onPostExecute: done sorting plans");
             // add the list of plans to the adapter
-            if (mAdapter == null || mPlans == null) return;
+            if (mAdapter == null || mPlans == null || mRecycle == null) return;
             mAdapter.setData(mPlans);
             mRecycle.scrollToPosition(mPlans.size() - 1);
         }
+    }
+
+    /**
+     * GetPlansTask
+     * gets the list of plans from a list of documents
+     */
+    private class GetPlansTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mDocs == null || mDocs.size() == 0) return null;
+
+            mPlans = new ArrayList<>();
+
+            // extract a comment from each document
+            for (DocumentSnapshot doc : mDocs) {
+                Plan plan = new Plan();
+                plan.setPlanUserId((String)doc.get(Const.USER_ID_KEY));
+                plan.setPlanUserName((String)doc.get(Const.USER_NAME_KEY));
+                plan.setMessage((String)doc.get(Const.TRIP_COMMENT_KEY));
+                plan.setPlanDocId(doc.getId());
+                plan.setPlanTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+                mPlans.add(plan);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            // if there are plans, start the async task that will sort them
+            if (mPlans != null && mPlans.size() > 0) new SortPlanTask().execute();
+
+        }
+
     }
 }

@@ -31,9 +31,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TSAdapter mAdapter;
     private ArrayList<TripSummary> mTrips;
+    private List<DocumentSnapshot> mSumDocs = new ArrayList<>();
     private FirebaseUser mUser;
     private ListView mListView;
     private ProgressBar mSpinner;
@@ -51,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private String mTripId;
     private String deleteId;
     private int mPosition = -1;
+    private int counter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,24 +114,21 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     // get the list of trip summaries of this user from the db
-                    Task<List<TripSummary>> task = AccessDB.getTripSummaries(mUser.getUid());
-                    task.addOnCompleteListener(new OnCompleteListener<List<TripSummary>>() {
+                    Task<QuerySnapshot> task = AccessDB.getTripSummaries(mUser.getUid());
+                    task.addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
-                        public void onComplete(@NonNull Task<List<TripSummary>> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(Const.TAG, "onComplete: loaded summaries");
-                                // get the list of trip summaries
-                                mTrips = (ArrayList<TripSummary>) task.getResult();
-                                Log.d(Const.TAG, "onComplete: " + mTrips);
-                                // add them to the adapter
-                                if (mTrips != null) {
-                                    new SortTask().execute();
-                                }
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            QuerySnapshot result = task.getResult();
+                            if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
+                                // get the documents and start the async task
+                                mSumDocs = result.getDocuments();
+                                new SumTask().execute();
                             } else {
                                 Toast t = Toast.makeText(MainActivity.this, "Could not load your trips.",
                                         Toast.LENGTH_SHORT);
                                 t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                                 t.show();
+                                showList();
                             }
                         }
                     });
@@ -343,9 +345,49 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             if (mAdapter == null) return;
-            mAdapter.addAll(mTrips);
-            mAdapter.notifyDataSetChanged();
+            if (mTrips != null) {
+                mAdapter.addAll(mTrips);
+                mAdapter.notifyDataSetChanged();
+            }
             showList();
+        }
+    }
+
+
+    /**
+     *SumTask
+     * gets a list of trip summaries from a list of document snapshots
+     */
+    private class SumTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mSumDocs == null || mSumDocs.size() == 0) return null;
+
+            // instantiate the list of trips
+            mTrips = new ArrayList<>();
+
+            Log.d(Const.TAG, "main   doInBackground: " + Thread.currentThread().getId());
+
+            // add a trip summary corresponding to each document snapshot to the list of trip summaries
+            for (DocumentSnapshot doc : mSumDocs) {
+                TripSummary trip = new TripSummary();
+                trip.setId(doc.getId());
+                trip.setTitle((String)doc.get(Const.TRIP_TITLE_KEY));
+                trip.setDate((String)doc.get(Const.TRIP_START_DATE_KEY));
+                mTrips.add(trip);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            // sort the trips and add them to the list view
+            if (mTrips != null) new SortTask().execute();
+            else showList();
         }
     }
 }

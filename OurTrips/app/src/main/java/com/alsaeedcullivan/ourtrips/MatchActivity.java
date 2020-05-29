@@ -31,6 +31,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,6 +55,9 @@ public class MatchActivity extends AppCompatActivity {
     private HashSet<UserSummary> mTrippers = new HashSet<>();
     private List<Date> mFriendDates = new ArrayList<>();
     private List<String> mFriendSDates = new ArrayList<>();
+    private List<DocumentSnapshot> mFriendAddDocs = new ArrayList<>();
+    private List<DocumentSnapshot> mFriendMatchDocs = new ArrayList<>();
+    private List<DocumentSnapshot> mTripperDocs = new ArrayList<>();
     private long[] mMatched;
     private String mUserName;
     private String mTripId;
@@ -139,13 +143,18 @@ public class MatchActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         // load this user's list of friends
-                        Task<List<UserSummary>> friendTask = AccessDB.getFriendsList(mUser.getUid())
-                                .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                        Task<QuerySnapshot> friendTask = AccessDB.getFriendsList(mUser.getUid())
+                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                     @Override
-                                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
-                                        if (task.isSuccessful()) {
-                                            // get the list of friends
-                                            mFriends = (ArrayList<UserSummary>) task.getResult();
+                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                        QuerySnapshot result = task.getResult();
+                                        if (task.isSuccessful() && result != null && result
+                                                .getDocuments().size() > 0) {
+                                            // get the list of documents
+                                            mFriendAddDocs = result.getDocuments();
+
+//                                            // get the list of friends
+//                                            mFriends = (ArrayList<UserSummary>) task.getResult();
                                         } else {
                                             Toast t = Toast.makeText(MatchActivity.this,
                                                     "Could not load your friends.",
@@ -157,14 +166,20 @@ public class MatchActivity extends AppCompatActivity {
                                     }
                                 });
                         // load the list of trippers
-                        Task<List<UserSummary>> tripperTask = AccessDB.getTrippers(mTripId)
-                                .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                        Task<QuerySnapshot> tripperTask = AccessDB.getTrippers(mTripId)
+                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                     @Override
-                                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
-                                        if (task.isSuccessful() && task.getResult() != null) {
-                                            mTrippers.clear();
-                                            mTrippers.addAll(task.getResult());
+                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                        QuerySnapshot result = task.getResult();
+                                        if (task.isSuccessful() && result != null && result
+                                                .getDocuments().size() > 0) {
+                                            // get the list of documents
+                                            mTripperDocs = result.getDocuments();
                                         }
+//                                        if (task.isSuccessful() && task.getResult() != null) {
+//                                            mTrippers.clear();
+//                                            mTrippers.addAll(task.getResult());
+//                                        }
                                     }
                                 });
                         // add the friends that are not part of the trip to the list of friends
@@ -172,7 +187,8 @@ public class MatchActivity extends AppCompatActivity {
                             @Override
                             public Object then(@NonNull Task<Void> task) {
                                 // display the friends that are not part of the trip
-                                new FriendTask().execute();
+                                new FriendFilterTask().execute();
+                                //new FriendTask().execute();
                                 return null;
                             }
                         });
@@ -215,17 +231,21 @@ public class MatchActivity extends AppCompatActivity {
                     public void run() {
                         // load this user's list of friends
                         AccessDB.getFriendsList(mUser.getUid())
-                                .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                     @Override
-                                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
-                                        if (task.isSuccessful()) {
-                                            // get the list of friends
-                                            mFriends = (ArrayList<UserSummary>) task.getResult();
-                                            // add them to the adapter
-                                            if (mFriends != null) {
-                                                mAdapter.addAll(mFriends);
-                                                mAdapter.notifyDataSetChanged();
-                                            }
+                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                        QuerySnapshot result = task.getResult();
+                                        if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
+                                            // get the list of documents and begin the async task
+                                            mFriendMatchDocs = result.getDocuments();
+                                            new FriendSetUpTask().execute();
+//                                            // get the list of friends
+//                                            mFriends = (ArrayList<UserSummary>) task.getResult();
+//                                            // add them to the adapter
+//                                            if (mFriends != null) {
+//                                                mAdapter.addAll(mFriends);
+//                                                mAdapter.notifyDataSetChanged();
+//                                            }
                                         } else {
                                             Toast t = Toast.makeText(MatchActivity.this,
                                                     "Could not load your friends.",
@@ -246,7 +266,7 @@ public class MatchActivity extends AppCompatActivity {
                             }
                         });
                         // load this user's dates from the db
-                        AccessDB.getUserDatesForCal(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        AccessDB.getUserDates(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                                 DocumentSnapshot doc = task.getResult();
@@ -459,7 +479,7 @@ public class MatchActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                AccessDB.getUserDatesForCal(fId).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                AccessDB.getUserDates(fId).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         DocumentSnapshot doc = task.getResult();
@@ -727,12 +747,110 @@ public class MatchActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            if (mFriends == null) {
+                showList();
+                return;
+            }
             // add the friends to the list view and show it
             mAdapter.clear();
             mAdapter.addAll(mFriends);
             mAdapter.notifyDataSetChanged();
             // show the list
             showList();
+        }
+    }
+
+
+    /**
+     * FriendSetUpTask
+     * sets up the list of friends and adds it to the list view
+     */
+    private class FriendSetUpTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mFriendMatchDocs == null || mFriendMatchDocs.size() == 0) return null;
+
+            mFriends = new ArrayList<>();
+
+            for (DocumentSnapshot doc : mFriendMatchDocs) {
+                UserSummary u = new UserSummary();
+                u.setUserId(doc.getId());
+                String email = (String)doc.get(Const.USER_EMAIL_KEY);
+                if (email != null) u.setEmail(email);
+                String name = (String)doc.get(Const.USER_NAME_KEY);
+                if (name != null) u.setName(name);
+                mFriends.add(u);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            // update the list view
+            if (mFriends != null && mAdapter != null) {
+                mAdapter.clear();
+                mAdapter.addAll(mFriends);
+                mAdapter.notifyDataSetChanged();
+            }
+
+        }
+    }
+
+
+    /**
+     * FriendFilterTask
+     * creates objects for the documents and adds them to the friends list and trippers set
+     */
+    private class FriendFilterTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mFriendAddDocs == null || mFriendAddDocs.size() == 0) return null;
+
+            mFriends = new ArrayList<>();
+
+            // add all of the friends to the friends list
+            for (DocumentSnapshot doc : mFriendAddDocs) {
+                UserSummary u = new UserSummary();
+                u.setUserId(doc.getId());
+                String email = (String)doc.get(Const.USER_EMAIL_KEY);
+                if (email != null) u.setEmail(email);
+                String name = (String)doc.get(Const.USER_NAME_KEY);
+                if (name != null) u.setName(name);
+                mFriends.add(u);
+            }
+
+            // add all of the trippers to the trippers set
+            if (mTripperDocs != null && mTripperDocs.size() > 0) {
+                List<UserSummary> trippers = new ArrayList<>();
+                // extract a user summary from each document and return the list of trippers
+                for (DocumentSnapshot doc : mTripperDocs) {
+                    UserSummary tripper = new UserSummary();
+                    tripper.setUserId(doc.getId());
+                    String email = (String)doc.get(Const.USER_EMAIL_KEY);
+                    if (email != null) tripper.setEmail(email);
+                    String name = (String)doc.get(Const.USER_NAME_KEY);
+                    if (name != null) tripper.setName(name);
+                    trippers.add(tripper);
+                }
+                // add all the trippers to the trippers set
+                mTrippers.clear();
+                mTrippers.addAll(trippers);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            // start the task that will update the list view
+            new FriendTask().execute();
         }
     }
 }

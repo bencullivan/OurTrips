@@ -2,11 +2,6 @@ package com.alsaeedcullivan.ourtrips.cloud;
 
 import android.util.Log;
 
-import com.alsaeedcullivan.ourtrips.models.Pic;
-import com.alsaeedcullivan.ourtrips.models.Place;
-import com.alsaeedcullivan.ourtrips.models.Plan;
-import com.alsaeedcullivan.ourtrips.models.TripSummary;
-import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 
 import androidx.annotation.NonNull;
@@ -20,8 +15,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.io.InputStream;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -375,35 +368,35 @@ public class AccessDB {
      * gets the friends list of a user
      * @param userId the id of the user
      */
-    public static Task<List<UserSummary>> getFriendsList(String userId) {
+    public static Task<QuerySnapshot> getFriendsList(String userId) {
         // get a list of the friends ids of a user
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_FRIENDS_COLLECTION)
-                .get()
-                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
-                    @Override
-                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) {
-                        QuerySnapshot result = task.getResult();
-                        if (result == null || result.getDocuments().size() == 0)
-                            return new ArrayList<>();
-
-                        // extract and return the info from the documents
-                        List<DocumentSnapshot> docList = result.getDocuments();
-                        List<UserSummary> friends = new ArrayList<>();
-                        for (DocumentSnapshot doc : docList) {
-                            UserSummary u = new UserSummary();
-                            u.setUserId(doc.getId());
-                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
-                            if (email != null) u.setEmail(email);
-                            String name = (String)doc.get(Const.USER_NAME_KEY);
-                            if (name != null) u.setName(name);
-                            friends.add(u);
-                        }
-                        return friends;
-                    }
-                });
+                .get();
+//                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
+//                    @Override
+//                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) {
+//                        QuerySnapshot result = task.getResult();
+//                        if (result == null || result.getDocuments().size() == 0)
+//                            return new ArrayList<>();
+//
+//                        // extract and return the info from the documents
+//                        List<DocumentSnapshot> docList = result.getDocuments();
+//                        List<UserSummary> friends = new ArrayList<>();
+//                        for (DocumentSnapshot doc : docList) {
+//                            UserSummary u = new UserSummary();
+//                            u.setUserId(doc.getId());
+//                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
+//                            if (email != null) u.setEmail(email);
+//                            String name = (String)doc.get(Const.USER_NAME_KEY);
+//                            if (name != null) u.setName(name);
+//                            friends.add(u);
+//                        }
+//                        return friends;
+//                    }
+//                });
     }
 
     /**
@@ -411,31 +404,31 @@ public class AccessDB {
      * gets a list of the emails of all of a user's friends
      * @param userId the id of this user
      */
-    public static Task<List<String>> getFriendEmails(String userId) {
+    public static Task<QuerySnapshot> getFriendEmails(String userId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_FRIENDS_COLLECTION)
-                .get()
-                .continueWith(new Continuation<QuerySnapshot, List<String>>() {
-                    @Override
-                    public List<String> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-                        QuerySnapshot q = task.getResult();
-                        if (q == null) return new ArrayList<>();
-                        // get the documents in the sub collection
-                        List<DocumentSnapshot> docs = q.getDocuments();
-
-                        // a list to hold the emails of all the friends
-                        ArrayList<String> emails = new ArrayList<>();
-
-                        // add the emails to the list
-                        for (DocumentSnapshot doc : docs) {
-                            if (doc.get(Const.USER_EMAIL_KEY) != null)
-                                emails.add((String)doc.get(Const.USER_EMAIL_KEY));
-                        }
-                        return emails;
-                    }
-                });
+                .get();
+//                .continueWith(new Continuation<QuerySnapshot, List<String>>() {
+//                    @Override
+//                    public List<String> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+//                        QuerySnapshot q = task.getResult();
+//                        if (q == null) return new ArrayList<>();
+//                        // get the documents in the sub collection
+//                        List<DocumentSnapshot> docs = q.getDocuments();
+//
+//                        // a list to hold the emails of all the friends
+//                        ArrayList<String> emails = new ArrayList<>();
+//
+//                        // add the emails to the list
+//                        for (DocumentSnapshot doc : docs) {
+//                            if (doc.get(Const.USER_EMAIL_KEY) != null)
+//                                emails.add((String)doc.get(Const.USER_EMAIL_KEY));
+//                        }
+//                        return emails;
+//                    }
+//                });
     }
 
     /**
@@ -443,35 +436,35 @@ public class AccessDB {
      * gets a list of the emails of the users that sent this user a friend request
      * @param userId the id of the user
      */
-    public static Task<List<UserSummary>> getFriendRequests(String userId) {
+    public static Task<QuerySnapshot> getFriendRequests(String userId) {
         // get a list of the friend requests of a user
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_F_REQUESTS_COLLECTION)
-                .get()
-                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
-                    @Override
-                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-                        QuerySnapshot result = task.getResult();
-                        if (result == null || result.getDocuments().size() == 0)
-                            return new ArrayList<>();
-
-                        // extract and return a user summary for each document
-                        List<DocumentSnapshot> docList = result.getDocuments();
-                        List<UserSummary> friends = new ArrayList<>();
-                        for (DocumentSnapshot doc : docList) {
-                            UserSummary u = new UserSummary();
-                            u.setUserId(doc.getId());
-                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
-                            if (email != null) u.setEmail(email);
-                            String name = (String)doc.get(Const.USER_NAME_KEY);
-                            if (name != null) u.setName(name);
-                            friends.add(u);
-                        }
-                        return friends;
-                    }
-                });
+                .get();
+//                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
+//                    @Override
+//                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+//                        QuerySnapshot result = task.getResult();
+//                        if (result == null || result.getDocuments().size() == 0)
+//                            return new ArrayList<>();
+//
+//                        // extract and return a user summary for each document
+//                        List<DocumentSnapshot> docList = result.getDocuments();
+//                        List<UserSummary> friends = new ArrayList<>();
+//                        for (DocumentSnapshot doc : docList) {
+//                            UserSummary u = new UserSummary();
+//                            u.setUserId(doc.getId());
+//                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
+//                            if (email != null) u.setEmail(email);
+//                            String name = (String)doc.get(Const.USER_NAME_KEY);
+//                            if (name != null) u.setName(name);
+//                            friends.add(u);
+//                        }
+//                        return friends;
+//                    }
+//                });
     }
 
     /**
@@ -481,7 +474,7 @@ public class AccessDB {
      * CalendarView in CalendarActivity
      * @param userId the id of the user
      */
-    public static Task<DocumentSnapshot> getUserDatesForCal(String userId) {
+    public static Task<DocumentSnapshot> getUserDates(String userId) {
         Log.d(Const.TAG, "getUserDatesForCal: " + Thread.currentThread().getId());
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
@@ -833,32 +826,32 @@ public class AccessDB {
      * returns a list of trip summaries of all the trips that this user has been on
      * @param userId the id of this user
      */
-    public static Task<List<TripSummary>> getTripSummaries(String userId) {
+    public static Task<QuerySnapshot> getTripSummaries(String userId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .collection(Const.USER_TRIPS_COLLECTION)
-                .get()
-                .continueWith(new Continuation<QuerySnapshot, List<TripSummary>>() {
-                    @Override
-                    public List<TripSummary> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-                        QuerySnapshot result = task.getResult();
-                        if (result == null || result.getDocuments().size() == 0)
-                            return new ArrayList<>();
-
-                        // extract and return the ids of the documents
-                        List<DocumentSnapshot> docList = result.getDocuments();
-                        List<TripSummary> trips = new ArrayList<>();
-                        for (DocumentSnapshot doc : docList) {
-                            TripSummary trip = new TripSummary();
-                            trip.setId(doc.getId());
-                            trip.setTitle((String)doc.get(Const.TRIP_TITLE_KEY));
-                            trip.setDate((String)doc.get(Const.TRIP_START_DATE_KEY));
-                            trips.add(trip);
-                        }
-                        return trips;
-                    }
-                });
+                .get();
+//                .continueWith(new Continuation<QuerySnapshot, List<TripSummary>>() {
+//                    @Override
+//                    public List<TripSummary> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+//                        QuerySnapshot result = task.getResult();
+//                        if (result == null || result.getDocuments().size() == 0)
+//                            return new ArrayList<>();
+//
+//                        // extract and return the ids of the documents
+//                        List<DocumentSnapshot> docList = result.getDocuments();
+//                        List<TripSummary> trips = new ArrayList<>();
+//                        for (DocumentSnapshot doc : docList) {
+//                            TripSummary trip = new TripSummary();
+//                            trip.setId(doc.getId());
+//                            trip.setTitle((String)doc.get(Const.TRIP_TITLE_KEY));
+//                            trip.setDate((String)doc.get(Const.TRIP_START_DATE_KEY));
+//                            trips.add(trip);
+//                        }
+//                        return trips;
+//                    }
+//                });
     }
 
     /**
@@ -886,36 +879,36 @@ public class AccessDB {
      * gets a list of all the trippers of a given trip
      * @param tripId the id of the trip
      */
-    public static Task<List<UserSummary>> getTrippers(String tripId) {
+    public static Task<QuerySnapshot> getTrippers(String tripId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_TRIPPERS_COLLECTION)
-                .get()
-                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
-                    @Override
-                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) {
-                        // get the documents
-                        QuerySnapshot q = task.getResult();
-                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
-                        List<DocumentSnapshot> docs = q.getDocuments();
-
-                        // create a list to hold the user summaries
-                        List<UserSummary> trippers = new ArrayList<>();
-
-                        // extract a user summary from each document and return the list of trippers
-                        for (DocumentSnapshot doc : docs) {
-                            UserSummary tripper = new UserSummary();
-                            tripper.setUserId(doc.getId());
-                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
-                            if (email != null) tripper.setEmail(email);
-                            String name = (String)doc.get(Const.USER_NAME_KEY);
-                            if (name != null) tripper.setName(name);
-                            trippers.add(tripper);
-                        }
-                        return trippers;
-                    }
-                });
+                .get();
+//                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
+//                    @Override
+//                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) {
+//                        // get the documents
+//                        QuerySnapshot q = task.getResult();
+//                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
+//                        List<DocumentSnapshot> docs = q.getDocuments();
+//
+//                        // create a list to hold the user summaries
+//                        List<UserSummary> trippers = new ArrayList<>();
+//
+//                        // extract a user summary from each document and return the list of trippers
+//                        for (DocumentSnapshot doc : docs) {
+//                            UserSummary tripper = new UserSummary();
+//                            tripper.setUserId(doc.getId());
+//                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
+//                            if (email != null) tripper.setEmail(email);
+//                            String name = (String)doc.get(Const.USER_NAME_KEY);
+//                            if (name != null) tripper.setName(name);
+//                            trippers.add(tripper);
+//                        }
+//                        return trippers;
+//                    }
+//                });
     }
 
     /**
@@ -923,36 +916,36 @@ public class AccessDB {
      * gets all of the comments of a given trip
      * @param tripId the id of the trip
      */
-    public static Task<List<Plan>> getTripComments(String tripId) {
+    public static Task<QuerySnapshot> getTripComments(String tripId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_COMMENTS_COLLECTION)
-                .get()
-                .continueWith(new Continuation<QuerySnapshot, List<Plan>>() {
-                    @Override
-                    public List<Plan> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-                        // get the documents
-                        QuerySnapshot q = task.getResult();
-                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
-                        List<DocumentSnapshot> docs = q.getDocuments();
-
-                        // create a list to hold the comments
-                        List<Plan> plans = new ArrayList<>();
-
-                        // extract a comment from each document and return the list of comments
-                        for (DocumentSnapshot doc : docs) {
-                            Plan plan = new Plan();
-                            plan.setPlanUserId((String)doc.get(Const.USER_ID_KEY));
-                            plan.setPlanUserName((String)doc.get(Const.USER_NAME_KEY));
-                            plan.setMessage((String)doc.get(Const.TRIP_COMMENT_KEY));
-                            plan.setPlanDocId(doc.getId());
-                            plan.setPlanTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
-                            plans.add(plan);
-                        }
-                        return plans;
-                    }
-                });
+                .get();
+//                .continueWith(new Continuation<QuerySnapshot, List<Plan>>() {
+//                    @Override
+//                    public List<Plan> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+//                        // get the documents
+//                        QuerySnapshot q = task.getResult();
+//                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
+//                        List<DocumentSnapshot> docs = q.getDocuments();
+//
+//                        // create a list to hold the comments
+//                        List<Plan> plans = new ArrayList<>();
+//
+//                        // extract a comment from each document and return the list of comments
+//                        for (DocumentSnapshot doc : docs) {
+//                            Plan plan = new Plan();
+//                            plan.setPlanUserId((String)doc.get(Const.USER_ID_KEY));
+//                            plan.setPlanUserName((String)doc.get(Const.USER_NAME_KEY));
+//                            plan.setMessage((String)doc.get(Const.TRIP_COMMENT_KEY));
+//                            plan.setPlanDocId(doc.getId());
+//                            plan.setPlanTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+//                            plans.add(plan);
+//                        }
+//                        return plans;
+//                    }
+//                });
     }
 
     /**
@@ -960,35 +953,35 @@ public class AccessDB {
      * gets the paths and timestamps of all the photos associated with a given trip
      * @param tripId the id of the trip
      */
-    public static Task<List<Pic>> getTripPhotos(String tripId) {
+    public static Task<QuerySnapshot> getTripPhotos(String tripId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_PHOTO_PATHS_COLLECTION)
-                .get()
-                .continueWith(new Continuation<QuerySnapshot, List<Pic>>() {
-                    @Override
-                    public List<Pic> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-                        // get the documents
-                        QuerySnapshot q = task.getResult();
-                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
-                        List<DocumentSnapshot> docs = q.getDocuments();
-
-                        // create a list to hold the pics
-                        List<Pic> pics = new ArrayList<>();
-
-                        // extract a pic from each document and return the list of pics
-                        for (DocumentSnapshot doc : docs) {
-                            Pic p = new Pic();
-                            p.setDate((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
-                            p.setDocId(doc.getId());
-                            p.setPath((String)doc.get(Const.TRIP_PHOTO_KEY));
-                            pics.add(p);
-                            Log.d(Const.TAG, "then: " + p.getPicPath());
-                        }
-                        return pics;
-                    }
-                });
+                .get();
+//                .continueWith(new Continuation<QuerySnapshot, List<Pic>>() {
+//                    @Override
+//                    public List<Pic> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+//                        // get the documents
+//                        QuerySnapshot q = task.getResult();
+//                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
+//                        List<DocumentSnapshot> docs = q.getDocuments();
+//
+//                        // create a list to hold the pics
+//                        List<Pic> pics = new ArrayList<>();
+//
+//                        // extract a pic from each document and return the list of pics
+//                        for (DocumentSnapshot doc : docs) {
+//                            Pic p = new Pic();
+//                            p.setDate((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+//                            p.setDocId(doc.getId());
+//                            p.setPath((String)doc.get(Const.TRIP_PHOTO_KEY));
+//                            pics.add(p);
+//                            Log.d(Const.TAG, "then: " + p.getPicPath());
+//                        }
+//                        return pics;
+//                    }
+//                });
     }
 
     /**
@@ -996,39 +989,39 @@ public class AccessDB {
      * get all the locations from this trip
      * @param tripId the id of the trip
      */
-    public static Task<List<Place>> getTripLocations(String tripId) {
+    public static Task<QuerySnapshot> getTripLocations(String tripId) {
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_LOCATIONS_COLLECTION)
-                .get()
-                .continueWith(new Continuation<QuerySnapshot, List<Place>>() {
-                    @Override
-                    public List<Place> then(@NonNull Task<QuerySnapshot> task) {
-                        // get the documents
-                        QuerySnapshot q = task.getResult();
-                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
-                        List<DocumentSnapshot> docs = q.getDocuments();
-
-                        // create the list to hold the places
-                        List<Place> places = new ArrayList<>();
-
-                        // extract a place from each document and return the list of places
-                        for (DocumentSnapshot doc : docs) {
-                            Place place = new Place();
-                            place.setDocId(doc.getId());
-                            place.setName((String)doc.get(Const.TRIP_LOCATION_NAME_KEY));
-                            String location = (String) doc.get(Const.TRIP_LOCATION_KEY);
-                            if (location == null) continue;
-                            String[] coordinates = location.split(",");
-                            if (coordinates.length < 2) continue;
-                            place.setLocation(new LatLng(Double.parseDouble(coordinates[0]),
-                                    Double.parseDouble(coordinates[1])));
-                            place.setTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
-                            places.add(place);
-                        }
-                        return places;
-                    }
-                });
+                .get();
+//                .continueWith(new Continuation<QuerySnapshot, List<Place>>() {
+//                    @Override
+//                    public List<Place> then(@NonNull Task<QuerySnapshot> task) {
+//                        // get the documents
+//                        QuerySnapshot q = task.getResult();
+//                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
+//                        List<DocumentSnapshot> docs = q.getDocuments();
+//
+//                        // create the list to hold the places
+//                        List<Place> places = new ArrayList<>();
+//
+//                        // extract a place from each document and return the list of places
+//                        for (DocumentSnapshot doc : docs) {
+//                            Place place = new Place();
+//                            place.setDocId(doc.getId());
+//                            place.setName((String)doc.get(Const.TRIP_LOCATION_NAME_KEY));
+//                            String location = (String) doc.get(Const.TRIP_LOCATION_KEY);
+//                            if (location == null) continue;
+//                            String[] coordinates = location.split(",");
+//                            if (coordinates.length < 2) continue;
+//                            place.setLocation(new LatLng(Double.parseDouble(coordinates[0]),
+//                                    Double.parseDouble(coordinates[1])));
+//                            place.setTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+//                            places.add(place);
+//                        }
+//                        return places;
+//                    }
+//                });
     }
 }

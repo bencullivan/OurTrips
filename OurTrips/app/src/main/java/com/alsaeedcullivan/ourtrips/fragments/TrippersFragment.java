@@ -1,6 +1,7 @@
 package com.alsaeedcullivan.ourtrips.fragments;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -23,6 +24,8 @@ import com.alsaeedcullivan.ourtrips.models.UserSummary;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +36,7 @@ public class TrippersFragment extends Fragment {
     private String mTripId;
     private ArrayList<UserSummary> mTrippers;
     private TripperAdapter mAdapter;
+    private List<DocumentSnapshot> mTripperDocs;
 
     public TrippersFragment() {
         // Required empty public constructor
@@ -104,19 +108,62 @@ public class TrippersFragment extends Fragment {
             @Override
             public void run() {
                 // get the list of trippers and add it to the adapter
-                AccessDB.getTrippers(mTripId).addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                AccessDB.getTrippers(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<List<UserSummary>> task) {
-                        if (task.isSuccessful() && task.getResult() != null && task.getResult().size() > 0) {
-                            mTrippers = (ArrayList<UserSummary>) task.getResult();
-                            mAdapter.clear();
-                            mAdapter.addAll(mTrippers);
-                            mAdapter.notifyDataSetChanged();
-                            Log.d(Const.TAG, "onComplete: trippers frag");
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        QuerySnapshot result = task.getResult();
+                        if (task.isSuccessful() && result != null && result.getDocuments().size() > 0) {
+                            // get the list of documents and start the async task
+                            mTripperDocs = result.getDocuments();
+                            new TripperTask().execute();
                         }
+//                        if (task.isSuccessful() && task.getResult() != null && task.getResult().size() > 0) {
+//                            mTrippers = (ArrayList<UserSummary>) task.getResult();
+//                            mAdapter.clear();
+//                            mAdapter.addAll(mTrippers);
+//                            mAdapter.notifyDataSetChanged();
+//                            Log.d(Const.TAG, "onComplete: trippers frag");
+//                        }
                     }
                 });
             }
         }).start();
+    }
+
+    private class TripperTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripperDocs == null || mTripperDocs.size() == 0) return null;
+
+            // instantiate the list of trippers
+            mTrippers = new ArrayList<>();
+
+            // extract a user summary from each document
+            for (DocumentSnapshot doc : mTripperDocs) {
+                UserSummary tripper = new UserSummary();
+                tripper.setUserId(doc.getId());
+                String email = (String)doc.get(Const.USER_EMAIL_KEY);
+                if (email != null) tripper.setEmail(email);
+                String name = (String)doc.get(Const.USER_NAME_KEY);
+                if (name != null) tripper.setName(name);
+                mTrippers.add(tripper);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            // update the list view
+            if (mTrippers != null && mTrippers.size() > 0) {
+                mAdapter.clear();
+                mAdapter.addAll(mTrippers);
+                mAdapter.notifyDataSetChanged();
+            }
+
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.alsaeedcullivan.ourtrips;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -26,6 +27,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -51,6 +54,8 @@ public class FriendActivity extends AppCompatActivity {
     private TextView mMessage;
     private HashSet<String> mFriendEmailsSet = new HashSet<>();
     private ArrayList<String> mFriendEmailsList = new ArrayList<>();
+    private List<DocumentSnapshot> mEmailDocs = new ArrayList<>();
+    private List<DocumentSnapshot> mRequestDocs = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,37 +118,46 @@ public class FriendActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     AccessDB.getFriendRequests(mUser.getUid())
-                            .addOnCompleteListener(new OnCompleteListener<List<UserSummary>>() {
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
-                        public void onComplete(@NonNull Task<List<UserSummary>> task) {
-                            Log.d(Const.TAG, "onComplete: list"  + Thread.currentThread().getId());
-                            if (task.isSuccessful()) {
-                                mList = (ArrayList<UserSummary>) task.getResult();
-                                mRequestSet.clear();
-                                if (mList != null) mRequestSet.addAll(mList);
-                                Log.d(Const.TAG, "onComplete: " + mList);
-                                // add them to an adapter
-                                if (mList != null) {
-                                    mAdapter.addAll(mList);
-                                    mAdapter.notifyDataSetChanged();
-                                    if (mList.size() == 0) mMessage.setText(R.string.no_req);
-                                    else mMessage.setText(R.string.pending_requests);
-                                }
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            QuerySnapshot result = task.getResult();
+                            if (result != null && result.getDocuments().size() > 0) {
+                                // get  the documents and start the async task
+                                mRequestDocs = result.getDocuments();
+                                new RequestTask().execute();
+                            } else {
+                                mMessage.setText(R.string.no_req);
+                                makeListAppear();
                             }
-                            makeListAppear();
+
+//                            Log.d(Const.TAG, "onComplete: list"  + Thread.currentThread().getId());
+//                            if (task.isSuccessful()) {
+//                                mList = (ArrayList<UserSummary>) task.getResult();
+//                                mRequestSet.clear();
+//                                if (mList != null) mRequestSet.addAll(mList);
+//                                Log.d(Const.TAG, "onComplete: " + mList);
+//                                // add them to an adapter
+//                                if (mList != null) {
+//                                    mAdapter.addAll(mList);
+//                                    mAdapter.notifyDataSetChanged();
+//                                    if (mList.size() == 0) mMessage.setText(R.string.no_req);
+//                                    else mMessage.setText(R.string.pending_requests);
+//                                }
+//                            }
+//                            makeListAppear();
                         }
                     });
                     // get the emails of all of this user's friends
                     AccessDB.getFriendEmails(mUser.getUid())
-                            .addOnCompleteListener(new OnCompleteListener<List<String>>() {
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                 @Override
-                                public void onComplete(@NonNull Task<List<String>> task) {
-                                    Log.d(Const.TAG, "onComplete: email"  + Thread.currentThread().getId());
-                                    if (task.isSuccessful() && task.getResult() != null) {
-                                        mFriendEmailsList = (ArrayList<String>) task.getResult();
-                                        mFriendEmailsSet.clear();
-                                        mFriendEmailsSet.addAll(mFriendEmailsList);
-                                    }
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    QuerySnapshot q = task.getResult();
+                                    if (q == null) return;
+                                    // get the documents in the sub collection
+                                    mEmailDocs = q.getDocuments();
+                                    new EmailTask().execute();
                                 }
                             });
                     // get the name of this user
@@ -366,4 +380,85 @@ public class FriendActivity extends AppCompatActivity {
     public UserSummary getSelectedFriend() {
         return selectedFriend;
     }
+
+
+    /**
+     * EmailTask
+     * adds the friend emails to the email list and email set
+     */
+    private class EmailTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            if (mEmailDocs == null || mEmailDocs.size() == 0) return null;
+
+            // add the emails to the list
+            for (DocumentSnapshot doc : mEmailDocs) {
+                if (doc.get(Const.USER_EMAIL_KEY) != null)
+                    mFriendEmailsList.add((String)doc.get(Const.USER_EMAIL_KEY));
+            }
+            // add the emails to the set
+            mFriendEmailsSet.clear();
+            mFriendEmailsSet.addAll(mFriendEmailsList);
+
+            return null;
+        }
+    }
+
+
+    /**
+     * RequestTask
+     * creates list of user summaries for all of the users that have sent this user a friend request
+     */
+    private class RequestTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            if (mRequestDocs == null || mRequestDocs.size() == 0) return null;
+
+            // instantiate the list of friend requests
+            mList = new ArrayList<>();
+
+            // create a user summary for each document
+            for (DocumentSnapshot doc : mRequestDocs) {
+                UserSummary u = new UserSummary();
+                u.setUserId(doc.getId());
+                String email = (String)doc.get(Const.USER_EMAIL_KEY);
+                if (email != null) u.setEmail(email);
+                String name = (String)doc.get(Const.USER_NAME_KEY);
+                if (name != null) u.setName(name);
+                mList.add(u);
+            }
+
+            // add all the user summaries to the request set
+            mRequestSet.clear();
+            mRequestSet.addAll(mList);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            // set up the list view
+            if (mList != null && mAdapter != null) {
+                mAdapter.addAll(mList);
+                mAdapter.notifyDataSetChanged();
+                if (mList.size() == 0) mMessage.setText(R.string.no_req);
+                else mMessage.setText(R.string.pending_requests);
+            }
+            makeListAppear();
+
+        }
+    }
 }
+
+//                                    Log.d(Const.TAG, "onComplete: email"  + Thread.currentThread().getId());
+//                                    if (task.isSuccessful() && task.getResult() != null) {
+//                                        mFriendEmailsList = (ArrayList<String>) task.getResult();
+//                                        mFriendEmailsSet.clear();
+//                                        mFriendEmailsSet.addAll(mFriendEmailsList);
+//                                    }

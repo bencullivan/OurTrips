@@ -34,6 +34,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
@@ -59,6 +61,7 @@ public class MediaFragment extends Fragment {
     private ProgressBar mSpinner;
     private TextView mLoading, mPhotoText;
     private ArrayList<Pic> mPics;
+    private List<DocumentSnapshot> mDocs = new ArrayList<>();
 
     public MediaFragment() {
         // Required empty public constructor
@@ -224,14 +227,20 @@ public class MediaFragment extends Fragment {
                     @Override
                     public void run() {
                         // load the photo paths associated with this trip
-                        AccessDB.getTripPhotos(tripId).addOnCompleteListener(new OnCompleteListener<List<Pic>>() {
+                        AccessDB.getTripPhotos(tripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                             @Override
-                            public void onComplete(@NonNull Task<List<Pic>> task) {
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                QuerySnapshot result = task.getResult();
                                 if (task.isSuccessful()) {
-                                    if (task.getResult() != null && task.getResult().size() > 0) {
-                                        mPics = (ArrayList<Pic>) task.getResult();
-                                        Log.d(Const.TAG, "onComplete: " + mPics.get(0).getPicPath());
-                                        new PicSortTask().execute();
+                                    if (result != null && result.getDocuments().size() > 0) {
+                                        // get the list of documents and start the async task that
+                                        // will get the list of Pic objects
+                                        mDocs = result.getDocuments();
+                                        new GetPicsTask().execute();
+
+//                                        mPics = (ArrayList<Pic>) task.getResult();
+//                                        Log.d(Const.TAG, "onComplete: " + mPics.get(0).getPicPath());
+//                                        new PicSortTask().execute();
                                     } else {
                                         Toast t = Toast.makeText(getActivity(), "There are no photos " +
                                                 "in the photo gallery.", Toast.LENGTH_SHORT);
@@ -265,6 +274,10 @@ public class MediaFragment extends Fragment {
     }
 
 
+    /**
+     * PicSortTask
+     * sorts the list of pictures and then allows the user to go to the gallery
+     */
     private class PicSortTask extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -277,6 +290,48 @@ public class MediaFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             goToGallery();
+        }
+    }
+
+
+    /**
+     * GetPicsTask
+     * gets a list of the pics from a list of their documents
+     */
+    private class GetPicsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mDocs == null || mDocs.size() == 0) return null;
+
+            mPics = new ArrayList<>();
+
+            // extract a pic from each document
+            for (DocumentSnapshot doc : mDocs) {
+                Pic p = new Pic();
+                p.setDate((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+                p.setDocId(doc.getId());
+                p.setPath((String)doc.get(Const.TRIP_PHOTO_KEY));
+                mPics.add(p);
+                Log.d(Const.TAG, "then: " + p.getPicPath());
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            if (mPics != null && mPics.size() > 0) {
+                new PicSortTask().execute();
+            } else {
+                Toast t = Toast.makeText(getActivity(), "There are no photos " +
+                        "in the photo gallery.", Toast.LENGTH_SHORT);
+                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                t.show();
+                hideSpinner();
+            }
         }
     }
 }
