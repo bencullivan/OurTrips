@@ -101,7 +101,7 @@
     <string name="edit">Edit Trip Info</string>
     <string name="overview">Overview:</string>
     <string name="change">Change</string>
-    <string name="locations">View Locations</string>
+    <string name="view_map">View Map</string>
     <string name="adding_to_the_gallery" tools:ignore="TypographyEllipsis">Adding to the gallery...</string>
     <string name="loading_photos" tools:ignore="TypographyEllipsis">Loading photos...</string>
     <string name="delete">Delete</string>
@@ -143,4 +143,7 @@
     <string name="app_website">App Website</string>
     <string name="are_you_sure_profile">Are you sure you want to delete your profile? This action is not reversible.</string>
     <string name="enter_creds">Enter your email and password</string>
+    <string name="recognize_location">Recognize Location</string>
+    <string name="press_a_pic_to_view_it">Press a pic to view it</string>
+    <string name="long_press_pic">Long-press a pic for location recognition</string>
 </resources>

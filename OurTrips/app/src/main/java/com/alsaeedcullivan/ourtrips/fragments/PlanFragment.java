@@ -41,6 +41,7 @@ public class PlanFragment extends Fragment {
 
     private static final String TRIP_ID_KEY = "trip_id";
     private static final String PLANS_KEY = "plans";
+    private static final String NAME_KEY = "name";
 
     private ArrayList<Plan> mPlans = new ArrayList<>();
     private List<DocumentSnapshot> mDocs = new ArrayList<>();
@@ -71,10 +72,12 @@ public class PlanFragment extends Fragment {
 
         // if instance state has been saved
         if (savedInstanceState != null && savedInstanceState.getString(TRIP_ID_KEY) != null &&
-                savedInstanceState.getParcelableArrayList(PLANS_KEY) != null) {
+                savedInstanceState.getParcelableArrayList(PLANS_KEY) != null &&
+                savedInstanceState.getString(NAME_KEY) != null) {
             mTripId = savedInstanceState.getString(TRIP_ID_KEY);
             mPlans = savedInstanceState.getParcelableArrayList(PLANS_KEY);
             mAdapter.setData(mPlans);
+            mUserName = savedInstanceState.getString(NAME_KEY);
         }
         // if instance state has not been saved
         else {
@@ -92,6 +95,9 @@ public class PlanFragment extends Fragment {
         super.onSaveInstanceState(outState);
         if (mTripId != null) outState.putString(TRIP_ID_KEY, mTripId);
         if (mPlans.size() > 0) outState.putParcelableArrayList(PLANS_KEY, mPlans);
+        if (mUserName != null) outState.putString(NAME_KEY, mUserName);
+
+        Log.d(Const.TAG, "onSaveInstanceState: plan fragment ");
     }
 
     @Override
@@ -129,6 +135,11 @@ public class PlanFragment extends Fragment {
                 mUser = FirebaseAuth.getInstance().getCurrentUser();
                 // get the message
                 mMessage = mMessageEdit.getText().toString();
+
+                Log.d(Const.TAG, "onClick: user " + mUser);
+                Log.d(Const.TAG, "onClick: tripId " + mTripId);
+                Log.d(Const.TAG, "onClick: name " + mUserName);
+                Log.d(Const.TAG, "onClick: message " + mMessage);
                 // if they have not typed anything, do nothing
                 if (mTripId == null || mUser == null || mUserName == null || mMessage
                         .replaceAll("\\s","").equals("")) return;

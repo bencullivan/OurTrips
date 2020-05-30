@@ -21,6 +21,7 @@ import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -198,9 +199,11 @@ public class SettingsActivity extends AppCompatActivity {
             if (mUser == null) return null;
 
             // delete the user from the database
-            AccessDB.deleteUser(mUser.getUid());
+            Task<Void> dataTask = AccessDB.deleteUser(mUser.getUid());
             // delete the user from authentication
-            mUser.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            Task<Void> authTask = mUser.delete();
+            // when both are finished, return to login
+            Tasks.whenAll(dataTask, authTask).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     // send user back to login

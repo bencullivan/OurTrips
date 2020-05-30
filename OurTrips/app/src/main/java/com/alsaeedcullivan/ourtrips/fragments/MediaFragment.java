@@ -108,6 +108,7 @@ public class MediaFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d(Const.TAG, "onActivityResult: " + (requestCode == Activity.RESULT_OK));
         if (resultCode == Activity.RESULT_OK && data != null) {
             // get the uri
             File file = ImagePicker.Companion.getFile(data);

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +26,7 @@ import com.alsaeedcullivan.ourtrips.RegisterActivity;
 import com.alsaeedcullivan.ourtrips.RequestTripActivity;
 import com.alsaeedcullivan.ourtrips.SettingsActivity;
 import com.alsaeedcullivan.ourtrips.TripActivity;
+import com.alsaeedcullivan.ourtrips.ViewPictureActivity;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 
 import java.util.Calendar;
@@ -54,6 +56,7 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int REMOVE_USER_TRIP_ID = 16;
     public static final int DELETE_PROFILE_ID = 17;
     public static final int AUTHENTICATE_ID = 18;
+    public static final int RECOGNIZE_LOC_ID = 19;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -125,6 +128,8 @@ public class CustomDialogFragment extends DialogFragment {
                 return deleteProfileDialog();
             case AUTHENTICATE_ID:
                 return authenticateDialog();
+            case RECOGNIZE_LOC_ID:
+                return recognizeLocationDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -588,7 +593,7 @@ public class CustomDialogFragment extends DialogFragment {
     private AlertDialog authenticateDialog() {
         // create alert dialog
         AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
-        // set title
+        // set title and view
         dialog.setTitle(R.string.enter_creds);
         final View dialogView = View.inflate(getContext(), R.layout.double_input, null);
         dialog.setView(dialogView);
@@ -610,6 +615,46 @@ public class CustomDialogFragment extends DialogFragment {
                 }
             }
         });
+        return dialog.create();
+    }
+
+    // returns a dialog that informs the user of the location that was recognized
+    private AlertDialog recognizeLocationDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
+        if (getActivity() == null) return dialog.create();
+
+        // set the title and set up the view with the data of the location that was recognized
+        dialog.setTitle("Recognized Location");
+        View dialogView = View.inflate(getContext(), R.layout.recognize_dialog, null);
+        dialog.setView(dialogView);
+        TextView name = dialogView.findViewById(R.id.recognized_name);
+        TextView confidence = dialogView.findViewById(R.id.recognized_confidence);
+        String locName = ((ViewPictureActivity)getActivity()).getLocationName();
+        if (locName == null) locName = "";
+        Float floatConfidence = ((ViewPictureActivity)getActivity()).getLocationConfidence();
+        if (floatConfidence == null) floatConfidence = (float) 0.0;
+        String locConfidence = "Confidence: " + floatConfidence;
+        name.setText(locName);
+        confidence.setText(locConfidence);
+
+        // set listeners
+        dialog.setPositiveButton("Add to map", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (getActivity() == null) return;
+
+
+
+                dismiss();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dismiss();
+            }
+        });
+
         return dialog.create();
     }
 }

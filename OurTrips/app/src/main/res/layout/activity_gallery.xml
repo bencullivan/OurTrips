@@ -8,6 +8,15 @@
     android:orientation="vertical"
     android:background="@color/colorPrimary">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/press_a_pic_to_view_it"
+        android:textSize="20sp"
+        android:textColor="#FFFFFF"
+        android:textAlignment="center"
+        android:textStyle="italic" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycle_gallery"
         android:layout_width="match_parent"

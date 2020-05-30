@@ -393,13 +393,6 @@ public class MatchOrAddActivity extends AppCompatActivity {
                                     .getDocuments().size() > 0) {
                                 // get the list of documents
                                 mFriendAddDocs = result.getDocuments();
-                            } else {
-                                Toast t = Toast.makeText(MatchOrAddActivity.this,
-                                        "Could not load your friends.",
-                                        Toast.LENGTH_SHORT);
-                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                                        0, 0);
-                                t.show();
                             }
                         }
                     });

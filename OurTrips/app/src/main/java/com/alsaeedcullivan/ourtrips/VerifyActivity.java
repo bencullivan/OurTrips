@@ -148,13 +148,10 @@ public class VerifyActivity extends AppCompatActivity {
             mUser.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
-                    // if they have verified their account, send them to RegisterActivity
+                    // if they have verified their account, send them to RegisterActivity if they
+                    // have not registered yet
                     if (mUser.isEmailVerified()) {
-                        Intent intent = new Intent(VerifyActivity.this,
-                                RegisterActivity.class);
-                        intent.putExtra(Const.SOURCE_TAG, Const.VERIFY_TAG);
-                        startActivity(intent);
-                        finish();
+                        new CheckRegisterTask().execute();
                     }
                 }
             });
@@ -225,7 +222,7 @@ public class VerifyActivity extends AppCompatActivity {
                             if (doc != null && doc.exists()) {
                                 // inform the user that they have already registered
                                 Toast t = Toast.makeText(VerifyActivity.this,
-                                        "You are already registered.",
+                                        "You are already verified and registered.",
                                         Toast.LENGTH_SHORT);
                                 t.setGravity(Gravity.TOP | Gravity
                                                 .CENTER_HORIZONTAL, 0,
