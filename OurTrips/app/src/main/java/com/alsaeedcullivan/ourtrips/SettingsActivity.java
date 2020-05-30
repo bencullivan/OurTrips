@@ -200,7 +200,19 @@ public class SettingsActivity extends AppCompatActivity {
             // delete the user from the database
             AccessDB.deleteUser(mUser.getUid());
             // delete the user from authentication
-            mUser.delete();
+            mUser.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    // send user back to login
+                    Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+                    intent.putExtra(Const.SOURCE_TAG, Const.SETTINGS_TAG);
+                    startActivity(intent);
+                    Log.d(Const.TAG, "onComplete: done deleting user from auth");
+                    // at this point the async task is finished
+                    // finish this activity and others in stack -> user logged out because profile was deleted
+                    finishAffinity();
+                }
+            });
 
             return null;
         }
@@ -208,12 +220,7 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            // send user back to login
-            Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
-            intent.putExtra(Const.SOURCE_TAG, Const.SETTINGS_TAG);
-            startActivity(intent);
-            // finish this activity and others in stack -> user logged out because profile was deleted
-            finishAffinity();
+            Log.d(Const.TAG, "onPostExecute: done settings delete async");
         }
     }
 }

@@ -270,13 +270,7 @@ public class MainActivity extends AppCompatActivity {
                                 mSumDocs = result.getDocuments();
                                 mTrips = new ArrayList<>();
                                 new SumTask().execute();
-                            } else {
-                                Toast t = Toast.makeText(MainActivity.this, "Could not load your trips.",
-                                        Toast.LENGTH_SHORT);
-                                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                                t.show();
-                                showList();
-                            }
+                            } else showList();
                         }
                     });
 

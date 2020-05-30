@@ -602,7 +602,9 @@ public class RegisterActivity extends AppCompatActivity {
                         Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
                         intent.putExtra(Const.SOURCE_TAG, Const.REGISTER_TAG);
                         startActivity(intent);
-                        Log.d(Const.TAG, "onComplete: done adding new user");
+                        // at this point the async task has finished executing and it is okay to
+                        // finish the activity
+                        finish();
                     } else {
                         // inform that their data could not be added
                         Toast t = Toast.makeText(RegisterActivity.this,
@@ -614,12 +616,6 @@ public class RegisterActivity extends AppCompatActivity {
             });
 
             return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            Log.d(Const.TAG, "onPostExecute: finish the task");
         }
     }
 
