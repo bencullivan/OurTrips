@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".fragments.MediaFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:background="@color/colorSecondaryDark">
+
+        <ProgressBar
+            android:id="@+id/gallery_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias=".3"/>
+
+        <TextView
+            android:id="@+id/gallery_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/gallery_spinner"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="50dp"
+            android:text="@string/adding_to_the_gallery"
+            android:textStyle="bold"
+            android:textSize="28sp"
+            android:textColor="@color/colorSecondary"
+            android:shadowColor="@color/colorSecondary"/>
+
+        <ImageButton
+            android:id="@+id/go_to_gallery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/colorSecondaryDark"
+            android:contentDescription="@string/pictures"
+            android:padding="@dimen/padding_dp"
+            android:src="@drawable/photo_icon_foreground"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias=".2"/>
+
+        <TextView
+            android:id="@+id/photo_gallery_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintBottom_toBottomOf="@+id/go_to_gallery"
+            app:layout_constraintStart_toStartOf="@+id/go_to_gallery"
+            app:layout_constraintEnd_toEndOf="@+id/go_to_gallery"
+            android:text="@string/photo_gallery"
+            android:textAlignment="center"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorSecondary" />
+
+        <Button
+            android:id="@+id/add_photo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingVertical="15dp"
+            android:paddingHorizontal="15dp"
+            android:text="@string/add_photo"
+            android:textSize="25sp"
+            android:fontFamily="sans-serif-medium"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            android:textColor="@color/colorSecondaryDark"
+            android:background="@drawable/rounded_secondary_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias=".6"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias=".8"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

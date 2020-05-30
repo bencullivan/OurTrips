@@ -1,13 +1,16 @@
 package com.alsaeedcullivan.ourtrips.fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -64,6 +67,7 @@ public class MediaFragment extends Fragment {
     private String mTripId;
     private String mPath;
     private InputStream mIs;
+    private boolean mPermission;
 
     public MediaFragment() {
         // Required empty public constructor
@@ -118,6 +122,50 @@ public class MediaFragment extends Fragment {
     public void onStart() {
         super.onStart();
         hideSpinner();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    /**
+     * selectOrRequest()
+     * if permission has been granted, allow the user to select a photo
+     * if not, request permissions
+     */
+    private void selectOrRequest() {
+        if (getActivity() == null) return;
+        // request read/write permissions from user if not given
+        if (getActivity().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) ==
+                PackageManager.PERMISSION_GRANTED &&
+                getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                        PackageManager.PERMISSION_GRANTED &&
+                getActivity().checkSelfPermission(Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_GRANTED) {
+            // permission has been granted, select the pic
+            selectPic();
+        } else {
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission
+                            .WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
+                    Const.GALLERY_PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == Const.GALLERY_PERMISSION_REQUEST_CODE && grantResults.length >= 3) {
+            // check permissions status
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                    grantResults[1] == PackageManager.PERMISSION_GRANTED && grantResults[2] ==
+                    PackageManager.PERMISSION_GRANTED) {
+                // permission has been granted, select the photo
+                selectPic();
+            }
+        }
     }
 
     /**
@@ -216,7 +264,7 @@ public class MediaFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selectPic();
+                selectOrRequest();
             }
         };
     }

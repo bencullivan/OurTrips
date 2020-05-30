@@ -151,6 +151,7 @@ public class RegisterActivity extends AppCompatActivity {
         // update permissions
         updatePermission();
         // get the user that is signed in or null if there is no user signed in
+        if (mAuth == null) return;
         mUser = mAuth.getCurrentUser();
     }
 

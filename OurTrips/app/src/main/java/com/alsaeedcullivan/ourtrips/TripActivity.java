@@ -255,6 +255,7 @@ public class TripActivity extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             if (mTripId == null) return null;
 
+            Log.d(Const.TAG, "doInBackground: " + mTripId);
             // load the trip info
             AccessDB.getTripInfo(mTripId).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
                 @Override
