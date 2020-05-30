@@ -107,44 +107,8 @@ public class SummaryFragment extends Fragment {
         if (getActivity() == null) return;
         // get the trip id
         mTripId = ((TripActivity)getActivity()).getTripId();
-
+        // load the locations
         new LocationDocsTask().execute();
-
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                // get the list of places from the database
-//                AccessDB.getTripLocations(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                        QuerySnapshot result = task.getResult();
-//                        if (task.isSuccessful()) {
-//                            Log.d(Const.TAG, "onComplete: " + Thread.currentThread().getId());
-//                            // get the documents and start the async task that will bring the user to
-//                            // maps activity
-//                            if (result != null) mDocs = result.getDocuments();
-//                            mPlaces = new ArrayList<>();
-//                            new LocationTask().execute();
-//
-////                    // get the results
-////                    ArrayList<Place> places = (ArrayList<Place>) task.getResult();
-////                    if (places == null) places = new ArrayList<>();
-////                    Intent intent = new Intent(getActivity(), MapsActivity.class);
-////                    intent.putExtra(Const.PLACE_LIST_TAG, places);
-////                    intent.putExtra(Const.TRIP_ID_TAG, tripId);
-////                    startActivity(intent);
-//                        } else {
-//                            // tell the user that the locations could not be loaded
-//                            Toast t = Toast.makeText(getActivity(), "The locations of this trip " +
-//                                    "could not be loaded.", Toast.LENGTH_SHORT);
-//                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-//                            t.show();
-//                        }
-//                    }
-//                });
-//
-//            }
-//        }).start();
     }
 
     // listeners
@@ -210,17 +174,47 @@ public class SummaryFragment extends Fragment {
         };
     }
 
-    // getters
-    public String getTripId() {
-        return mTripId;
+    /**
+     * LocationDocsTask
+     * gets a list of the documents corresponding to all the locations of this trip
+     */
+    private class LocationDocsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripId == null) return null;
+
+            // get the list of places from the database
+            AccessDB.getTripLocations(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    QuerySnapshot result = task.getResult();
+                    if (task.isSuccessful()) {
+                        Log.d(Const.TAG, "onComplete: " + Thread.currentThread().getId());
+                        // get the documents and start the async task that will bring the user to
+                        // maps activity
+                        if (result != null) mDocs = result.getDocuments();
+                        mPlaces = new ArrayList<>();
+                        new ProcessLocationsTask().execute();
+                    } else {
+                        // tell the user that the locations could not be loaded
+                        Toast t = Toast.makeText(getActivity(), "The locations of this trip " +
+                                "could not be loaded.", Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                    }
+                }
+            });
+
+            return null;
+        }
     }
 
-
     /**
-     * LocationTask
+     * ProcessLocationTask
      * gets a list of the locations of the trip and sends the user to Maps activity
      */
-    private class LocationTask extends AsyncTask<Void, Void, Void> {
+    private class ProcessLocationsTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -262,42 +256,6 @@ public class SummaryFragment extends Fragment {
             intent.putExtra(Const.PLACE_LIST_TAG, (ArrayList<Place>) mPlaces);
             intent.putExtra(Const.TRIP_ID_TAG, mTripId);
             startActivity(intent);
-        }
-    }
-
-    /**
-     * LocationDocsTask
-     * gets a list of the documents corresponding to all the locations of this trip
-     */
-    private class LocationDocsTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if (mTripId == null) return null;
-
-            // get the list of places from the database
-            AccessDB.getTripLocations(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    QuerySnapshot result = task.getResult();
-                    if (task.isSuccessful()) {
-                        Log.d(Const.TAG, "onComplete: " + Thread.currentThread().getId());
-                        // get the documents and start the async task that will bring the user to
-                        // maps activity
-                        if (result != null) mDocs = result.getDocuments();
-                        mPlaces = new ArrayList<>();
-                        new LocationTask().execute();
-                    } else {
-                        // tell the user that the locations could not be loaded
-                        Toast t = Toast.makeText(getActivity(), "The locations of this trip " +
-                                "could not be loaded.", Toast.LENGTH_SHORT);
-                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                        t.show();
-                    }
-                }
-            });
-
-            return null;
         }
     }
 }

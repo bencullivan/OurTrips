@@ -43,19 +43,6 @@ public class CloudFunctionTests {
     }
 
     @Test
-    public void matchDatesTest() {
-
-        Task<List<String>> testTask = CloudFunctions.matchDates(Arrays.asList(TestVars.dates1),
-                Arrays.asList(TestVars.dates2));
-
-        while (!testTask.isComplete()) { }
-
-        Log.d(Const.TAG, "matchDatesTest: " + testTask.getResult());
-
-        Log.d(Const.TAG, "matchDatesTest: complete");
-    }
-
-    @Test
     public void topicTest() {
 
         String user = "Z0oThyxHsIhuJe3bLVmX2Nynh973";

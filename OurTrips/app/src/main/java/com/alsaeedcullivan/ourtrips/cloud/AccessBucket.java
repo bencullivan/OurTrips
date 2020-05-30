@@ -1,13 +1,9 @@
 package com.alsaeedcullivan.ourtrips.cloud;
 
-import android.net.Uri;
-
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -23,27 +19,6 @@ public class AccessBucket {
      */
     public static UploadTask uploadPicture(String path, InputStream is) {
         return FirebaseStorage.getInstance().getReference().child(path).putStream(is);
-    }
-
-//    /**
-//     * downLoadPicture()
-//     * downloads the picture located at the given path in the storage bucket to the file that is
-//     * provided
-//     * @param path the path of the photo
-//     * @param file the temporary file
-//     */
-//    public static Task<FileDownloadTask.TaskSnapshot> downloadPicture(String path, File file) {
-//        return FirebaseStorage.getInstance().getReference().child(path).getFile(file);
-//    }
-
-    /**
-     * uploadVideo()
-     * uploads a video to the cloud storage bucket
-     * @param path the path where the video will be stored in the storage bucket
-     * @param vidUri the Uri of the video that will be uploaded
-     */
-    public static UploadTask uploadVideo(String path, Uri vidUri) {
-        return FirebaseStorage.getInstance().getReference().child(path).putFile(vidUri);
     }
 
     /**

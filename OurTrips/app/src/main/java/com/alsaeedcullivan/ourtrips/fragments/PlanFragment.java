@@ -82,14 +82,8 @@ public class PlanFragment extends Fragment {
             mTripId = ((TripActivity)getActivity()).getTripId();
             mUser = FirebaseAuth.getInstance().getCurrentUser();
             if (mTripId == null || mUser == null) return;
-            // db operations on background thread
-            Log.d(Const.TAG, "onCreate: about to execute");
+            // get the plans
             new GetPlansTask().execute();
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                }
-//            }).start();
         }
     }
 
@@ -148,83 +142,8 @@ public class PlanFragment extends Fragment {
 
                 // send the plan
                 new SendPlanTask().execute();
-
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        // get the trip id and the user name
-//                        String tripId = getTripId();
-//                        String userName = getUserName();
-//                        if (tripId == null || userName == null) return;
-//
-//                    }
-//                }).start();
             }
         };
-    }
-//
-//    // getters
-//    public String getTripId() {
-//        return mTripId;
-//    }
-//    public String getUserName() {
-//        return mUserName;
-//    }
-
-    /**
-     * SortPlanTask
-     * sorts the plans and adds them to the recycler view
-     */
-    private class SortPlanTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if (mPlans == null || mPlans.size() == 0) return null;
-            mPlans.sort(new PlanComparator());
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            Log.d(Const.TAG, "onPostExecute: done sorting plans");
-            // add the list of plans to the adapter
-            if (mAdapter == null || mPlans == null || mRecycle == null) return;
-            mAdapter.setData(mPlans);
-            mRecycle.scrollToPosition(mPlans.size() - 1);
-        }
-    }
-
-    /**
-     * SetUpPlansTask
-     * gets the list of plans from a list of documents
-     */
-    private class SetUpPlansTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if (mDocs == null || mDocs.size() == 0 || mPlans == null) return null;
-
-            // extract a comment from each document
-            for (DocumentSnapshot doc : mDocs) {
-                Plan plan = new Plan();
-                plan.setPlanUserId((String)doc.get(Const.USER_ID_KEY));
-                plan.setPlanUserName((String)doc.get(Const.USER_NAME_KEY));
-                plan.setMessage((String)doc.get(Const.TRIP_COMMENT_KEY));
-                plan.setPlanDocId(doc.getId());
-                plan.setPlanTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
-                mPlans.add(plan);
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            // if there are plans, start the async task that will sort them
-            if (mPlans != null && mPlans.size() > 0) new SortPlanTask().execute();
-        }
     }
 
     /**
@@ -264,6 +183,62 @@ public class PlanFragment extends Fragment {
                 }
             });
             return null;
+        }
+    }
+
+    /**
+     * SetUpPlansTask
+     * gets the list of plans from a list of documents
+     */
+    private class SetUpPlansTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mDocs == null || mDocs.size() == 0 || mPlans == null) return null;
+
+            // extract a comment from each document
+            for (DocumentSnapshot doc : mDocs) {
+                Plan plan = new Plan();
+                plan.setPlanUserId((String)doc.get(Const.USER_ID_KEY));
+                plan.setPlanUserName((String)doc.get(Const.USER_NAME_KEY));
+                plan.setMessage((String)doc.get(Const.TRIP_COMMENT_KEY));
+                plan.setPlanDocId(doc.getId());
+                plan.setPlanTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+                mPlans.add(plan);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            // if there are plans, start the async task that will sort them
+            if (mPlans != null && mPlans.size() > 0) new SortPlanTask().execute();
+        }
+    }
+
+    /**
+     * SortPlanTask
+     * sorts the plans and adds them to the recycler view
+     */
+    private class SortPlanTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mPlans == null || mPlans.size() == 0) return null;
+            mPlans.sort(new PlanComparator());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            Log.d(Const.TAG, "onPostExecute: done sorting plans");
+            // add the list of plans to the adapter
+            if (mAdapter == null || mPlans == null || mRecycle == null) return;
+            mAdapter.setData(mPlans);
+            mRecycle.scrollToPosition(mPlans.size() - 1);
         }
     }
 

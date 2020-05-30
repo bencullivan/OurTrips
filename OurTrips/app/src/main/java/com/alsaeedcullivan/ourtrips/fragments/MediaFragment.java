@@ -38,13 +38,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.UploadTask;
 
-import org.w3c.dom.Document;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -55,8 +52,6 @@ import java.util.List;
  * The library has been in no way modified, we merely implement it in this fragment for photo picking
  */
 public class MediaFragment extends Fragment {
-
-    private static final int VID_REQUEST = 101;
 
     // widgets
     private ImageButton mPhotoGallery;
@@ -154,30 +149,6 @@ public class MediaFragment extends Fragment {
             mIs = getActivity().getContentResolver().openInputStream(uri);
             //db operations in background
             new UploadPicTask().execute();
-
-
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    // add this photo to the storage bucket
-//                    UploadTask storeTask = AccessBucket.uploadPicture(mPath, mIs);
-//                    // add this photo to the database and storage
-//                    Task<DocumentReference> docTask = AccessDB.addTripPhoto(mTripId, mPath, mTimeStamp)
-//                            .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-//                                @Override
-//                                public void onComplete(@NonNull Task<DocumentReference> task) {
-//                                    hideSpinner();
-//                                }
-//                            });
-//                    // when both tasks are complete, hide the progress bar
-//                    Tasks.whenAll(storeTask, docTask).addOnCompleteListener(new OnCompleteListener<Void>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<Void> task) {
-//                            hideSpinner();
-//                        }
-//                    });
-//                }
-//            }).start();
         } catch (IOException e) {
             hideSpinner();
             Log.d(Const.TAG, Log.getStackTraceString(e));
@@ -236,45 +207,6 @@ public class MediaFragment extends Fragment {
 
                 // load the pic documents
                 new LoadPicsTask().execute();
-
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        // load the photo paths associated with this trip
-//                        AccessDB.getTripPhotos(tripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                                QuerySnapshot result = task.getResult();
-//                                if (task.isSuccessful()) {
-//                                    if (result != null && result.getDocuments().size() > 0) {
-//                                        Log.d(Const.TAG, "onComplete: " + Thread.currentThread().getId());
-//                                        // get the list of documents and start the async task that
-//                                        // will get the list of Pic objects
-//                                        mDocs = result.getDocuments();
-//                                        mPics = new ArrayList<>();
-//                                        new GetPicsTask().execute();
-//
-////                                        mPics = (ArrayList<Pic>) task.getResult();
-////                                        Log.d(Const.TAG, "onComplete: " + mPics.get(0).getPicPath());
-////                                        new PicSortTask().execute();
-//                                    } else {
-//                                        Toast t = Toast.makeText(getActivity(), "There are no photos " +
-//                                                "in the photo gallery.", Toast.LENGTH_SHORT);
-//                                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-//                                        t.show();
-//                                        hideSpinner();
-//                                    }
-//                                } else {
-//                                    Toast t = Toast.makeText(getActivity(), "The photo gallery could " +
-//                                            "not be loaded.", Toast.LENGTH_SHORT);
-//                                    t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-//                                    t.show();
-//                                    hideSpinner();
-//                                }
-//                            }
-//                        });
-//                    }
-//                }).start();
             }
         };
     }
@@ -287,66 +219,6 @@ public class MediaFragment extends Fragment {
                 selectPic();
             }
         };
-    }
-
-
-    /**
-     * PicSortTask
-     * sorts the list of pictures and then allows the user to go to the gallery
-     */
-    private class PicSortTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if (mPics != null && mPics.size() > 0) mPics.sort(new PicComparator());
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            goToGallery();
-        }
-    }
-
-
-    /**
-     * GetPicsTask
-     * gets a list of the pics from a list of their documents
-     */
-    private class GetPicsTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if (mDocs == null || mDocs.size() == 0 || mPics == null) return null;
-
-            // extract a pic from each document
-            for (DocumentSnapshot doc : mDocs) {
-                Pic p = new Pic();
-                p.setDate((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
-                p.setDocId(doc.getId());
-                p.setPath((String)doc.get(Const.TRIP_PHOTO_KEY));
-                mPics.add(p);
-                Log.d(Const.TAG, "then: " + p.getPicPath());
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-
-            if (mPics != null && mPics.size() > 0) {
-                new PicSortTask().execute();
-            } else {
-                Toast t = Toast.makeText(getActivity(), "There are no photos " +
-                        "in the photo gallery.", Toast.LENGTH_SHORT);
-                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                t.show();
-                hideSpinner();
-            }
-        }
     }
 
     /**
@@ -422,6 +294,64 @@ public class MediaFragment extends Fragment {
             });
 
             return null;
+        }
+    }
+
+    /**
+     * GetPicsTask
+     * gets a list of the pics from a list of their documents
+     */
+    private class GetPicsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mDocs == null || mDocs.size() == 0 || mPics == null) return null;
+
+            // extract a pic from each document
+            for (DocumentSnapshot doc : mDocs) {
+                Pic p = new Pic();
+                p.setDate((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
+                p.setDocId(doc.getId());
+                p.setPath((String)doc.get(Const.TRIP_PHOTO_KEY));
+                mPics.add(p);
+                Log.d(Const.TAG, "then: " + p.getPicPath());
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            if (mPics != null && mPics.size() > 0) {
+                new PicSortTask().execute();
+            } else {
+                Toast t = Toast.makeText(getActivity(), "There are no photos " +
+                        "in the photo gallery.", Toast.LENGTH_SHORT);
+                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                t.show();
+                hideSpinner();
+            }
+        }
+    }
+
+    /**
+     * PicSortTask
+     * sorts the list of pictures and then allows the user to go to the gallery
+     */
+    private class PicSortTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mPics != null && mPics.size() > 0) mPics.sort(new PicComparator());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            goToGallery();
         }
     }
 }

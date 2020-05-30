@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -16,7 +17,6 @@ import com.alsaeedcullivan.ourtrips.glide.GlideApp;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -27,6 +27,8 @@ public class ViewUserActivity extends AppCompatActivity {
 
     private ImageView mProfileImageView;
     private TextView mUserName, mUserEmail, mUserBirthday, mUserAffiliation, mUserBio;
+
+    private String mUserId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,27 +68,8 @@ public class ViewUserActivity extends AppCompatActivity {
      * @param userId the id of the selected user
      */
     private void loadProfile(String userId) {
-        final String uId = userId;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                AccessDB.loadUserProfile(uId).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Map<String, Object>> task) {
-                        if (task.isSuccessful()) {
-                            Map<String, Object> data = task.getResult();
-                            if (data != null) populateFields(data);
-                        } else {
-                            // tell the user that this tripper's profile could not be loaded
-                            Toast t = Toast.makeText(ViewUserActivity.this, "This tripper's " +
-                                    "profile could not be loaded.", Toast.LENGTH_SHORT);
-                            t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-                            t.show();
-                        }
-                    }
-                });
-            }
-        }).start();
+        mUserId = userId;
+        new LoadProfileTask().execute();
     }
 
     /**
@@ -118,4 +101,34 @@ public class ViewUserActivity extends AppCompatActivity {
         if (bDay != null) mUserBirthday.setText(bDay);
     }
 
+    /**
+     * LoadProfileTask
+     * loads the profile of the user that was selected
+     */
+    private class LoadProfileTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUserId == null) return null;
+
+            // load the profile
+            AccessDB.loadUserProfile(mUserId).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
+                @Override
+                public void onComplete(@NonNull Task<Map<String, Object>> task) {
+                    if (task.isSuccessful()) {
+                        Map<String, Object> data = task.getResult();
+                        if (data != null) populateFields(data);
+                    } else {
+                        // tell the user that this tripper's profile could not be loaded
+                        Toast t = Toast.makeText(ViewUserActivity.this, "This tripper's " +
+                                "profile could not be loaded.", Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                    }
+                }
+            });
+
+            return null;
+        }
+    }
 }

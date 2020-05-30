@@ -367,28 +367,6 @@ public class AccessDB {
                 .document(userId)
                 .collection(Const.USER_FRIENDS_COLLECTION)
                 .get();
-//                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
-//                    @Override
-//                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) {
-//                        QuerySnapshot result = task.getResult();
-//                        if (result == null || result.getDocuments().size() == 0)
-//                            return new ArrayList<>();
-//
-//                        // extract and return the info from the documents
-//                        List<DocumentSnapshot> docList = result.getDocuments();
-//                        List<UserSummary> friends = new ArrayList<>();
-//                        for (DocumentSnapshot doc : docList) {
-//                            UserSummary u = new UserSummary();
-//                            u.setUserId(doc.getId());
-//                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
-//                            if (email != null) u.setEmail(email);
-//                            String name = (String)doc.get(Const.USER_NAME_KEY);
-//                            if (name != null) u.setName(name);
-//                            friends.add(u);
-//                        }
-//                        return friends;
-//                    }
-//                });
     }
 
     /**
@@ -402,25 +380,6 @@ public class AccessDB {
                 .document(userId)
                 .collection(Const.USER_FRIENDS_COLLECTION)
                 .get();
-//                .continueWith(new Continuation<QuerySnapshot, List<String>>() {
-//                    @Override
-//                    public List<String> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-//                        QuerySnapshot q = task.getResult();
-//                        if (q == null) return new ArrayList<>();
-//                        // get the documents in the sub collection
-//                        List<DocumentSnapshot> docs = q.getDocuments();
-//
-//                        // a list to hold the emails of all the friends
-//                        ArrayList<String> emails = new ArrayList<>();
-//
-//                        // add the emails to the list
-//                        for (DocumentSnapshot doc : docs) {
-//                            if (doc.get(Const.USER_EMAIL_KEY) != null)
-//                                emails.add((String)doc.get(Const.USER_EMAIL_KEY));
-//                        }
-//                        return emails;
-//                    }
-//                });
     }
 
     /**
@@ -435,28 +394,6 @@ public class AccessDB {
                 .document(userId)
                 .collection(Const.USER_F_REQUESTS_COLLECTION)
                 .get();
-//                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
-//                    @Override
-//                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-//                        QuerySnapshot result = task.getResult();
-//                        if (result == null || result.getDocuments().size() == 0)
-//                            return new ArrayList<>();
-//
-//                        // extract and return a user summary for each document
-//                        List<DocumentSnapshot> docList = result.getDocuments();
-//                        List<UserSummary> friends = new ArrayList<>();
-//                        for (DocumentSnapshot doc : docList) {
-//                            UserSummary u = new UserSummary();
-//                            u.setUserId(doc.getId());
-//                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
-//                            if (email != null) u.setEmail(email);
-//                            String name = (String)doc.get(Const.USER_NAME_KEY);
-//                            if (name != null) u.setName(name);
-//                            friends.add(u);
-//                        }
-//                        return friends;
-//                    }
-//                });
     }
 
     /**
@@ -472,64 +409,7 @@ public class AccessDB {
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)
                 .get();
-//                .continueWith(new Continuation<DocumentSnapshot, List<Date>>() {
-//                    @Override
-//                    public List<Date> then(@NonNull Task<DocumentSnapshot> task) {
-//                        DocumentSnapshot result = task.getResult();
-//                        if (result == null || !result.contains(Const.DATE_LIST_KEY) ||
-//                                !(result.get(Const.DATE_LIST_KEY) instanceof List))
-//                            return new ArrayList<>();
-//
-//                        // NOTE: if execution makes it past the above if statement this cast will
-//                        // not throw an exception
-//                        List<String> sDates = (List<String>) result.get(Const.DATE_LIST_KEY);
-//                        List<Date> realDates = new ArrayList<>();
-//
-//                        if (sDates == null) return realDates;
-//
-//                        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
-//                        try {
-//                            Date today = format.parse(format.format(new Date()));
-//
-//                            // convert each string date into a date object
-//                            // make sure that none of these dates are before today
-//                            for (String date : sDates) {
-//                                Date d = format.parse(date);
-//                                if (d != null && d.compareTo(today) >= 0) {
-//                                    realDates.add(d);
-//                                }
-//                            }
-//                            return realDates;
-//                        } catch (ParseException e) {
-//                            return realDates;
-//                        }
-//                    }
-//                });
     }
-
-//    /**
-//     * getUserDatesForMatch()
-//     * retrieves the list of the dates the user is available
-//     * @param userId the id of the user
-//     */
-//    public static Task<List<String>> getUserDatesForMatch(String userId) {
-//        return FirebaseFirestore.getInstance()
-//                .collection(Const.USERS_COLLECTION)
-//                .document(userId)
-//                .get()
-//                .continueWith(new Continuation<DocumentSnapshot, List<String>>() {
-//                    @Override
-//                    public List<String> then(@NonNull Task<DocumentSnapshot> task) {
-//                        DocumentSnapshot result = task.getResult();
-//                        if (result == null || !result.contains(Const.DATE_LIST_KEY)
-//                                || result.get(Const.DATE_LIST_KEY) == null) return new ArrayList<>();
-//
-//                        // NOTE: if execution makes it past the above if statement
-//                        // this cast will not throw an exception
-//                        return (List<String>) result.get(Const.DATE_LIST_KEY);
-//                    }
-//                });
-//    }
 
     /**
      * getUserName()
@@ -552,72 +432,6 @@ public class AccessDB {
                     }
                 });
     }
-
-
-    // DATE MATCHING
-
-//    /**
-//     * matchDates()
-//     * takes in the user's list of dates and the id of a friend they want to match with
-//     * returns a list of dates that they are both available that can then be displayed by a calendar
-//     * @param dates the dates this user is available
-//     * @param friendId the id of the friend they want to match with
-//     */
-//    public static Task<long[]> matchDates(List<Date> dates, String friendId) {
-//        final List<Date> userDates = dates;
-//        return FirebaseFirestore.getInstance()
-//                .collection(Const.USERS_COLLECTION)
-//                .document(friendId)
-//                .get()
-//                .continueWith(new Continuation<DocumentSnapshot, long[]>() {
-//                    @Override
-//                    public long[] then(@NonNull Task<DocumentSnapshot> task) {
-//                        DocumentSnapshot doc = task.getResult();
-//                        if (doc == null || !doc.contains(Const.DATE_LIST_KEY) ||
-//                                !(doc.get(Const.DATE_LIST_KEY) instanceof List))
-//                            return new long[0];
-//
-//                        // if execution makes it this far, this cast will not throw an exception
-//                        List<String> stringDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
-//                        // list of Dates to store the converted friend dates
-//                        List<Date> friendDates = new ArrayList<>();
-//
-//                        if (stringDates == null) return new long[0];
-//                        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
-//
-//                        try {
-//                            // convert the strings to dates
-//                            for (String date : stringDates) {
-//                                friendDates.add(format.parse(date));
-//                            }
-//                            // initialize a list to hold the matched dates
-//                            List<Date> matched = new ArrayList<>();
-//
-//                            Log.d(Const.TAG, "then: match: userDates: " + userDates);
-//                            Log.d(Const.TAG, "then: match: friend: " + friendDates);
-//
-//                            int a = 0;
-//                            int b = 0;
-//                            while (a < userDates.size() && b < friendDates.size()) {
-//                                int result = userDates.get(a).compareTo(friendDates.get(b));
-//                                if (result < 0) a++;
-//                                else if (result > 0 ) b++;
-//                                else {
-//                                    matched.add(userDates.get(a));
-//                                    a++;
-//                                    b++;
-//                                }
-//                            }
-//                            // return an array of the times of the matched dates
-//                            long[] out = new long[matched.size()];
-//                            for (int i = 0; i < matched.size(); i++) out[i] = matched.get(i).getTime();
-//                            return out;
-//                        } catch (ParseException e) {
-//                            return new long[0];
-//                        }
-//                    }
-//                });
-//    }
 
 
     // TRIP SETTERS
@@ -663,7 +477,7 @@ public class AccessDB {
      * @param tripperId the id of the tripper to be added
      */
     public static Task<Void> addTripper(String tripId, String tripperId, String tripperEmail,
-                                                     String tripperName) {
+                                                                    String tripperName) {
         // add the tripper id to a map
         Map<String, Object> data = new HashMap<>();
         data.put(Const.USER_ID_KEY, tripperId);
@@ -685,8 +499,8 @@ public class AccessDB {
      * @param tripId the id of the trip
      * @param comment the comment to be added
      */
-    public static Task<DocumentReference> addTripComment(String tripId, String comment, String userName, String userId,
-                                                         long timestamp) {
+    public static Task<DocumentReference> addTripComment(String tripId, String comment, String userName,
+                                                         String userId, long timestamp) {
         // add the comment to a map
         Map<String, Object> data = new HashMap<>();
         data.put(Const.TRIP_COMMENT_KEY, comment);
@@ -858,30 +672,6 @@ public class AccessDB {
                 .document(tripId)
                 .collection(Const.TRIP_TRIPPERS_COLLECTION)
                 .get();
-//                .continueWith(new Continuation<QuerySnapshot, List<UserSummary>>() {
-//                    @Override
-//                    public List<UserSummary> then(@NonNull Task<QuerySnapshot> task) {
-//                        // get the documents
-//                        QuerySnapshot q = task.getResult();
-//                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
-//                        List<DocumentSnapshot> docs = q.getDocuments();
-//
-//                        // create a list to hold the user summaries
-//                        List<UserSummary> trippers = new ArrayList<>();
-//
-//                        // extract a user summary from each document and return the list of trippers
-//                        for (DocumentSnapshot doc : docs) {
-//                            UserSummary tripper = new UserSummary();
-//                            tripper.setUserId(doc.getId());
-//                            String email = (String)doc.get(Const.USER_EMAIL_KEY);
-//                            if (email != null) tripper.setEmail(email);
-//                            String name = (String)doc.get(Const.USER_NAME_KEY);
-//                            if (name != null) tripper.setName(name);
-//                            trippers.add(tripper);
-//                        }
-//                        return trippers;
-//                    }
-//                });
     }
 
     /**
@@ -895,30 +685,6 @@ public class AccessDB {
                 .document(tripId)
                 .collection(Const.TRIP_COMMENTS_COLLECTION)
                 .get();
-//                .continueWith(new Continuation<QuerySnapshot, List<Plan>>() {
-//                    @Override
-//                    public List<Plan> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-//                        // get the documents
-//                        QuerySnapshot q = task.getResult();
-//                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
-//                        List<DocumentSnapshot> docs = q.getDocuments();
-//
-//                        // create a list to hold the comments
-//                        List<Plan> plans = new ArrayList<>();
-//
-//                        // extract a comment from each document and return the list of comments
-//                        for (DocumentSnapshot doc : docs) {
-//                            Plan plan = new Plan();
-//                            plan.setPlanUserId((String)doc.get(Const.USER_ID_KEY));
-//                            plan.setPlanUserName((String)doc.get(Const.USER_NAME_KEY));
-//                            plan.setMessage((String)doc.get(Const.TRIP_COMMENT_KEY));
-//                            plan.setPlanDocId(doc.getId());
-//                            plan.setPlanTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
-//                            plans.add(plan);
-//                        }
-//                        return plans;
-//                    }
-//                });
     }
 
     /**
@@ -932,29 +698,6 @@ public class AccessDB {
                 .document(tripId)
                 .collection(Const.TRIP_PHOTO_PATHS_COLLECTION)
                 .get();
-//                .continueWith(new Continuation<QuerySnapshot, List<Pic>>() {
-//                    @Override
-//                    public List<Pic> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-//                        // get the documents
-//                        QuerySnapshot q = task.getResult();
-//                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
-//                        List<DocumentSnapshot> docs = q.getDocuments();
-//
-//                        // create a list to hold the pics
-//                        List<Pic> pics = new ArrayList<>();
-//
-//                        // extract a pic from each document and return the list of pics
-//                        for (DocumentSnapshot doc : docs) {
-//                            Pic p = new Pic();
-//                            p.setDate((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
-//                            p.setDocId(doc.getId());
-//                            p.setPath((String)doc.get(Const.TRIP_PHOTO_KEY));
-//                            pics.add(p);
-//                            Log.d(Const.TAG, "then: " + p.getPicPath());
-//                        }
-//                        return pics;
-//                    }
-//                });
     }
 
     /**
@@ -968,33 +711,5 @@ public class AccessDB {
                 .document(tripId)
                 .collection(Const.TRIP_LOCATIONS_COLLECTION)
                 .get();
-//                .continueWith(new Continuation<QuerySnapshot, List<Place>>() {
-//                    @Override
-//                    public List<Place> then(@NonNull Task<QuerySnapshot> task) {
-//                        // get the documents
-//                        QuerySnapshot q = task.getResult();
-//                        if (q == null || q.getDocuments().size() == 0) return new ArrayList<>();
-//                        List<DocumentSnapshot> docs = q.getDocuments();
-//
-//                        // create the list to hold the places
-//                        List<Place> places = new ArrayList<>();
-//
-//                        // extract a place from each document and return the list of places
-//                        for (DocumentSnapshot doc : docs) {
-//                            Place place = new Place();
-//                            place.setDocId(doc.getId());
-//                            place.setName((String)doc.get(Const.TRIP_LOCATION_NAME_KEY));
-//                            String location = (String) doc.get(Const.TRIP_LOCATION_KEY);
-//                            if (location == null) continue;
-//                            String[] coordinates = location.split(",");
-//                            if (coordinates.length < 2) continue;
-//                            place.setLocation(new LatLng(Double.parseDouble(coordinates[0]),
-//                                    Double.parseDouble(coordinates[1])));
-//                            place.setTimeStamp((long)doc.get(Const.TRIP_TIMESTAMP_KEY));
-//                            places.add(place);
-//                        }
-//                        return places;
-//                    }
-//                });
     }
 }

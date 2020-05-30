@@ -72,17 +72,6 @@ public class UserFirebaseTests {
     }
 
     @Test
-    public void saveNewUserTrip() {
-
-        // save the trip to the user's sub-collection
-        Task<Void> testTask = AccessDB.addUserTrip("test_user_id_1", "testTrip2");
-
-        while (!testTask.isComplete()) { }
-        Log.d(Const.TAG, "saveNewUserTrip: successful: " + testTask.isSuccessful());
-
-    }
-
-    @Test
     public void saveNewUserFriend() {
 
         Task<Void> testTask = AccessDB.addUserFriend("test_user_id_5", "test_user_id_1");
@@ -90,17 +79,6 @@ public class UserFirebaseTests {
         while (!testTask.isComplete()) { }
 
         Log.d(Const.TAG, "saveNewUserFriend: complete");
-    }
-
-    @Test
-    public void getFriendsList() {
-        String id = "test_user_id_1";
-
-        Task<List<String>> task = AccessDB.getFriendsList(id);
-
-        while (!task.isComplete()) { }
-
-        Log.d(Const.TAG, "getFriendsList: complete");
     }
 
     @Test
