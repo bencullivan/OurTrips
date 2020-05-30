@@ -9,6 +9,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alsaeedcullivan.ourtrips.cloud.AccessBucket;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
@@ -23,9 +25,11 @@ import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.glide.GlideApp;
 import com.alsaeedcullivan.ourtrips.models.Pic;
 import com.alsaeedcullivan.ourtrips.utils.Const;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.cloud.landmark.FirebaseVisionCloudLandmark;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
@@ -34,6 +38,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +64,7 @@ public class ViewPictureActivity extends AppCompatActivity {
     private String mLocationName;
     private Float mLocationConfidence;
     private List<FirebaseVisionLatLng> mLocationLocations;
+    private LatLng mLatLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,16 +90,14 @@ public class ViewPictureActivity extends AppCompatActivity {
         mLoading = findViewById(R.id.view_loading);
         mSpinner = findViewById(R.id.view_spinner);
         mRecognize = findViewById(R.id.recognize_button);
-        mLoading.setVisibility(View.GONE);
-        mSpinner.setVisibility(View.GONE);
-        mImage.setVisibility(View.VISIBLE);
-        mRecognize.setVisibility(View.VISIBLE);
         mRecognize.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 recognizeLocation();
             }
         });
+
+        hideSpinner();
 
         // load the picture
         StorageReference ref = FirebaseStorage.getInstance().getReference(mPhoto.getPicPath());
@@ -136,8 +140,32 @@ public class ViewPictureActivity extends AppCompatActivity {
         // create a FirebaseVisionImage object from the bitmap
         mVisionImage = FirebaseVisionImage.fromBitmap(bitmap);
 
+        String rec = "Recognizing location...";
+        mLoading.setText(rec);
+        showSpinner();
+
         // detect the landmark
         new DetectLandmarkTask().execute();
+    }
+
+    /**
+     * addToMap()
+     * adds this landmark to the map
+     */
+    public void addToMap() {
+        if (mLocationLocations == null || mLocationLocations.size() == 0 || mLocationName == null ||
+                mTripId == null) return;
+
+        // get the location of the landmark
+        FirebaseVisionLatLng location = mLocationLocations.get(0);
+        if (location == null) return;
+        mLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+        // add this location to the map
+        new AddToMapTask().execute();
+        
+        Log.d(Const.TAG, "addToMap: " + mLatLng);
+        Log.d(Const.TAG, "addToMap: map");
     }
 
     /**
@@ -149,6 +177,8 @@ public class ViewPictureActivity extends AppCompatActivity {
                 mPics == null || mPhoto.getPicPath() == null) return;
         Log.d(Const.TAG, "deletePhoto: " + mPhoto.getDocId());
         Log.d(Const.TAG, "deletePhoto: " + mPhoto.getPicPath());
+        String del = "Deleting...";
+        mLoading.setText(del);
         // show the progress bar
         showSpinner();
         // remove this photo from the list
@@ -163,8 +193,20 @@ public class ViewPictureActivity extends AppCompatActivity {
      */
     private void showSpinner() {
         mImage.setVisibility(View.GONE);
+        mRecognize.setVisibility(View.GONE);
         mSpinner.setVisibility(View.VISIBLE);
         mLoading.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * hideSpinner()
+     * hides the progress bar
+     */
+    private void hideSpinner() {
+        mSpinner.setVisibility(View.GONE);
+        mLoading.setVisibility(View.GONE);
+        mImage.setVisibility(View.VISIBLE);
+        mRecognize.setVisibility(View.VISIBLE);
     }
 
     // GETTERS
@@ -183,6 +225,10 @@ public class ViewPictureActivity extends AppCompatActivity {
 
     // ASYNC TASKS
 
+    /**
+     * DetectLandMarkTask
+     * sends a request to the firebase vision api to detect any landmarks in the current image
+     */
     private class DetectLandmarkTask extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -201,6 +247,7 @@ public class ViewPictureActivity extends AppCompatActivity {
                                 // process the landmarks that were returned
                                 new ProcessLandmarkTask().execute();
                             } else {
+                                hideSpinner();
                                 Log.d(Const.TAG, "onComplete: recognition failure");
                             }
                         }
@@ -210,7 +257,18 @@ public class ViewPictureActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * ProcessLandMarkTasks
+     * handles the results of the request to the firebase vision api and responds accordingly
+     */
     private class ProcessLandmarkTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (mDetectedLocation != null) mDetectedLocation.clear();
+            else mDetectedLocation = new HashMap<>();
+        }
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -247,9 +305,16 @@ public class ViewPictureActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
+            // hide the progress bar
+            hideSpinner();
+
+            // if the location could not be recognized, inform the user
             if (mDetectedLocation == null || !mDetectedLocation.containsKey(LOC_NAME_KEY) || !mDetectedLocation
                     .containsKey(LOC_CONFIDENCE_KEY) || !mDetectedLocation.containsKey(LOC_LOC_KEY)) {
-                // TODO Toast
+                Toast t = Toast.makeText(ViewPictureActivity.this, "This location " +
+                        "could not be recognized", Toast.LENGTH_SHORT);
+                t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                t.show();
                 return;
             }
 
@@ -262,6 +327,39 @@ public class ViewPictureActivity extends AppCompatActivity {
             // show the dialog asking the user if they want to add this location to the map
             CustomDialogFragment.newInstance(CustomDialogFragment.RECOGNIZE_LOC_ID)
                     .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
+        }
+    }
+
+    /**
+     * AddToMapTask
+     * adds the location that was recognized to the map
+     */
+    private class AddToMapTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mLocationName == null || mTripId == null || mLatLng == null) return null;
+
+            // add the location to the trip in the db
+            AccessDB.addTripLocation(mTripId, mLatLng, mLocationName, new Date().getTime())
+                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentReference> task) {
+                    if (task.isSuccessful()) {
+                        Toast t = Toast.makeText(ViewPictureActivity.this, mLocationName
+                                + " was added to the map!", Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                    } else {
+                        Toast t = Toast.makeText(ViewPictureActivity.this, "This " +
+                                "location could not be added to the map", Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+                    }
+                }
+            });
+
+            return null;
         }
     }
 

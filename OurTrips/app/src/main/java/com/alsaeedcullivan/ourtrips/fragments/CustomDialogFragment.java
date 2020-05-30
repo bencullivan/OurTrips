@@ -29,6 +29,7 @@ import com.alsaeedcullivan.ourtrips.TripActivity;
 import com.alsaeedcullivan.ourtrips.ViewPictureActivity;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 
+import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -624,6 +625,8 @@ public class CustomDialogFragment extends DialogFragment {
         AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
         if (getActivity() == null) return dialog.create();
 
+        DecimalFormat format = new DecimalFormat("#.##");
+
         // set the title and set up the view with the data of the location that was recognized
         dialog.setTitle("Recognized Location");
         View dialogView = View.inflate(getContext(), R.layout.recognize_dialog, null);
@@ -634,7 +637,7 @@ public class CustomDialogFragment extends DialogFragment {
         if (locName == null) locName = "";
         Float floatConfidence = ((ViewPictureActivity)getActivity()).getLocationConfidence();
         if (floatConfidence == null) floatConfidence = (float) 0.0;
-        String locConfidence = "Confidence: " + floatConfidence;
+        String locConfidence = "Confidence: " + format.format(floatConfidence);
         name.setText(locName);
         confidence.setText(locConfidence);
 
@@ -644,7 +647,7 @@ public class CustomDialogFragment extends DialogFragment {
             public void onClick(DialogInterface dialog, int which) {
                 if (getActivity() == null) return;
 
-
+                ((ViewPictureActivity)getActivity()).addToMap();
 
                 dismiss();
             }

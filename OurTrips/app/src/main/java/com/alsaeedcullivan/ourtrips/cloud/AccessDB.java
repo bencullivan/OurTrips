@@ -515,7 +515,7 @@ public class AccessDB {
      * @param tripId the id of this trip
      * @param location the Place object representing the location
      */
-    public static void addTripLocation(String tripId, LatLng location, String name, long timeStamp) {
+    public static Task<DocumentReference> addTripLocation(String tripId, LatLng location, String name, long timeStamp) {
         // create a map to hold the data
         Map<String, Object> data = new HashMap<>();
         String coordinate = location.latitude + "," +
@@ -525,7 +525,7 @@ public class AccessDB {
         data.put(Const.TRIP_TIMESTAMP_KEY, timeStamp);
 
         // add the location to the locations sub-collection
-        FirebaseFirestore.getInstance()
+        return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
                 .collection(Const.TRIP_LOCATIONS_COLLECTION)
