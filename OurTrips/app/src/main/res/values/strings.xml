@@ -58,7 +58,6 @@
     <string name="edit_profile_text">"Edit Profile "</string>
     <string name="cal_save">Save</string>
     <string name="header_account_settings">Account Settings</string>
-    <string name="sign_out">Sign Out</string>
     <string name="prompt_data_collect">Posting your data anonymously</string>
     <string name="privacy">Privacy</string>
     <string name="update_dates_text">Select Dates</string>
@@ -134,4 +133,14 @@
     <string name="are_you_sure">Are you sure???</string>
     <string name="long_press_a_trip_to_remove_it">Long-press a trip to remove it</string>
     <string name="remove_self_from_trip">Are you sure you want to remove yourself from this trip? This action is not reversible.</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="profile">Profile</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="delete_profile">Delete Profile</string>
+    <string name="check_out_the_website">Check out the website!</string>
+    <string name="our_trips_logo">Our trips logo</string>
+    <string name="vector">vector</string>
+    <string name="app_website">App Website</string>
+    <string name="are_you_sure_profile">Are you sure you want to delete your profile? This action is not reversible.</string>
+    <string name="enter_creds">Enter your email and password</string>
 </resources>

@@ -23,6 +23,7 @@ import com.alsaeedcullivan.ourtrips.MatchOrAddActivity;
 import com.alsaeedcullivan.ourtrips.R;
 import com.alsaeedcullivan.ourtrips.RegisterActivity;
 import com.alsaeedcullivan.ourtrips.RequestTripActivity;
+import com.alsaeedcullivan.ourtrips.SettingsActivity;
 import com.alsaeedcullivan.ourtrips.TripActivity;
 import com.alsaeedcullivan.ourtrips.models.UserSummary;
 
@@ -51,6 +52,8 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int DELETE_TRIP_ID = 14;
     public static final int ADD_TRIPPER_ID = 15;
     public static final int REMOVE_USER_TRIP_ID = 16;
+    public static final int DELETE_PROFILE_ID = 17;
+    public static final int AUTHENTICATE_ID = 18;
 
     // private constants
     private static final String KEY_ID = "key_id";
@@ -118,6 +121,10 @@ public class CustomDialogFragment extends DialogFragment {
                 return addTripperDialog();
             case REMOVE_USER_TRIP_ID:
                 return removeUserTripDialog();
+            case DELETE_PROFILE_ID:
+                return deleteProfileDialog();
+            case AUTHENTICATE_ID:
+                return authenticateDialog();
         }
 
         // if a dialog has not been returned, return an alert dialog
@@ -537,6 +544,7 @@ public class CustomDialogFragment extends DialogFragment {
         // set the title and message
         dialog.setTitle(R.string.are_you_sure);
         dialog.setMessage(R.string.remove_self_from_trip);
+        // set buttons
         dialog.setPositiveButton("Remove", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -548,6 +556,58 @@ public class CustomDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dismiss();
+            }
+        });
+        return dialog.create();
+    }
+
+    // asks the user if they are sure they want to delete their profile
+    private AlertDialog deleteProfileDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
+        // set the title and message
+        dialog.setTitle(R.string.are_you_sure);
+        dialog.setMessage(R.string.are_you_sure_profile);
+        dialog.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (getActivity() == null) return;
+                ((SettingsActivity) getActivity()).createAuthentication();
+                dismiss();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dismiss();
+            }
+        });
+        return dialog.create();
+    }
+
+    // prompts the user to enter their email and password
+    private AlertDialog authenticateDialog() {
+        // create alert dialog
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogInput);
+        // set title
+        dialog.setTitle(R.string.enter_creds);
+        final View dialogView = View.inflate(getContext(), R.layout.double_input, null);
+        dialog.setView(dialogView);
+
+        dialog.setPositiveButton("Delete Profile Permanently", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                EditText input1 = dialogView.findViewById(R.id.dialog_text_input1);
+                EditText input2 = dialogView.findViewById(R.id.dialog_text_input2);
+                if (getActivity() != null) {
+                    ((SettingsActivity) getActivity()).authenticate(input1.getText().toString(),
+                            input2.getText().toString());
+
+                    // hide the keyboard
+                    InputMethodManager imm = (InputMethodManager) getActivity()
+                            .getSystemService(Activity.INPUT_METHOD_SERVICE);
+                    if (imm != null) imm.hideSoftInputFromWindow(input2.getWindowToken(),
+                            InputMethodManager.HIDE_NOT_ALWAYS);
+                }
             }
         });
         return dialog.create();

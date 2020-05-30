@@ -12,77 +12,6 @@ const db = admin.firestore();
 // get a reference to storage
 const bucket = admin.storage().bucket('gs://our-trips-74b79.appspot.com');
 
-
-// // MATCHING ALGORITHM
-
-// /**
-// * matchDates
-// * custom cloud function to find the dates that two users are both available
-// * @author Ben Cullivan
-// * @param {object} data - a map that contains the user ids of the two users whose dates will be compared
-// * @returns a list of all the dates that the two users have in common
-// */
-// exports.matchDates = functions.https.onCall((data) => {
-//   // get the date lists
-//   const list1 = data.list1;
-//   const list2 = data.list2;
-
-//   // initialize the list to hold the shared dates
-//   let matchedDates = [];
-
-//   // loop over the lists of dates and add the shared dates to the list of shared dates
-//   let a = 0;
-//   let b = 0;
-//   while (a < list1.length && b < list2.length) {
-//     let result = compareDates(list1[a], list2[b]);
-//     if (result === -1) a++;
-//     else if (result === 1) b++;
-//     else {
-//       matchedDates.push(list1[a]);
-//       a++;
-//       b++;
-//     }
-//   }
-
-//   // return the list of shared dates
-//   return matchedDates
-// });
-
-// /**
-//  * compareDates
-//  * helper function to compare two string dates
-//  * @author Ben Cullivan
-//  * @param {string} date1 
-//  * @param {string} date2 
-//  * @returns -1 if date1 < date2, 0 if date1 == date2, 1 if date1 > date2
-//  */
-// function compareDates(date1, date2) {
-//     // get lists of the components of each date mm-dd-YYYY
-//     // they will always be of length 3
-//     let date1nums = date1.split('-');
-//     let date2nums = date2.split('-');
-
-//     // convert the strings to ints
-//     for (let i = 0; i < 3; i++) {
-//       date1nums[i] = parseInt(date1nums[i]);
-//       date2nums[i] = parseInt(date2nums[i]);
-//     }
-
-//     // compare the dates
-//     if (date1nums[2] < date2nums[2]) return -1;
-//     else if (date1nums[2] > date2nums[2]) return 1;
-//     else {
-//       if (date1nums[0] < date2nums[0]) return -1;
-//       else if (date1nums[0] > date2nums[0]) return 1;
-//       else {
-//         if (date1nums[1] < date2nums[1]) return -1;
-//         else if (date1nums[1] > date2nums[1]) return 1;
-//         else return 0;
-//       }
-//     }
-// }
-
-
 // // FIREBASE CLOUD MESSAGING 
 
 /**
@@ -270,8 +199,9 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
     // establish the paths of the sub-collections
     const userFriendsPath = 'users/'+id+'/user_friends';
     const userTripsPath = 'users/'+id+'/user_trips';
+    const userRequestsPath = 'users/'+id+'friend_requests';
 
-    // remove this user from the friends list of all their friends
+    // remove this user from the friends sub-collection of all their friends
     db.collection(userFriendsPath).get()
       .then(snapshot => {
         snapshot.forEach(friend => {
@@ -286,6 +216,22 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
       .catch(err => {
         console.log('Error removing from friends: ' + err);
       });
+
+    // remove this user from the trippers sub-collection of all of their trips
+    db.collection(userTripsPath).get()
+      .then(snapshot => {
+        snapshot.forEach(trip => {
+          db.collection('trips')
+            .doc(trip.id)
+            .collection('trippers')
+            .doc(id)
+            .delete();
+        });
+        return snapshot;
+      })
+      .catch(err => {
+        console.log('Error removing from trips: ' + err);
+      })
 
     // delete the trips sub-collection
     tools.firestore.delete(userTripsPath, {
@@ -318,6 +264,22 @@ exports.onUserDeleted = functions.runWith({timeoutSeconds: 540, memory: '2GB'})
       .catch(err => {
         console.log(err);
       });
+
+    // delete the friend requests sub-collection
+    tools.firestore.delete(userRequestsPath, {
+      project: process.env.GCLOUD_PROJECT,
+      recursive: true,
+      yes: true,
+      token: functions.config().fb.token
+    })
+    .then(() => {
+      return {
+        path: userRequestsPath 
+      };
+    })
+    .catch(err => {
+      console.log(err);
+    });
     
     return 1;
 });

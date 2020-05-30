@@ -1,9 +1,170 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <FrameLayout
-        android:id="@+id/settings"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-</LinearLayout>
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/top_settings_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/profile"
+                android:paddingVertical="12dp"
+                android:paddingHorizontal="20dp"
+                android:textColor="@color/colorAccent"
+                android:textSize="20sp"
+                android:fontFamily="sans-serif-medium"
+                android:textStyle="bold"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="5dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_person"
+                    android:contentDescription="@string/vector"/>
+                <Button
+                    android:id="@+id/edit_profile_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingHorizontal="10dp"
+                    android:text="@string/edit_profile"
+                    android:textAllCaps="false"
+                    android:textColor="@color/colorAccent"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="sans-serif-medium"
+                    android:textSize="20sp"
+                    android:textAlignment="textStart" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="5dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/delete_profile_vector"
+                    android:contentDescription="@string/vector"/>
+                <Button
+                    android:id="@+id/delete_profile_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingHorizontal="10dp"
+                    android:text="@string/delete_profile"
+                    android:textAllCaps="false"
+                    android:textColor="@color/colorAccent"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="sans-serif-medium"
+                    android:textSize="20sp"
+                    android:textAlignment="textStart" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="5dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_arrow_back"
+                    android:contentDescription="@string/vector"/>
+                <Button
+                    android:id="@+id/sign_out_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingHorizontal="10dp"
+                    android:text="@string/sign_out"
+                    android:textAllCaps="false"
+                    android:textColor="@color/colorAccent"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="sans-serif-medium"
+                    android:textSize="20sp"
+                    android:textAlignment="textStart" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/bar_settings"
+            app:layout_constraintTop_toBottomOf="@+id/top_settings_layout"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorAccent"
+            android:layout_marginHorizontal="20dp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/bar_settings"
+            app:layout_constraintStart_toStartOf="parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/check_out_the_website"
+                android:paddingVertical="12dp"
+                android:paddingHorizontal="20dp"
+                android:textColor="@color/colorAccent"
+                android:textSize="20sp"
+                android:fontFamily="sans-serif-medium"
+                android:textStyle="bold"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="5dp">
+
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@mipmap/our_trips_logo"
+                    android:contentDescription="@string/our_trips_logo"/>
+                <Button
+                    android:id="@+id/web_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingHorizontal="10dp"
+                    android:text="@string/app_website"
+                    android:textAllCaps="false"
+                    android:textColor="@color/colorAccent"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="sans-serif-medium"
+                    android:textSize="20sp"
+                    android:textAlignment="textStart"
+                    />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

@@ -15,6 +15,11 @@
             android:key="sign_out"
             android:title="@string/sign_out" />
 
+        <PreferenceScreen
+            android:icon="@drawable/delete_profile_vector"
+            android:key="delete_profile"
+            android:title="Delete Profile" />
+
     </PreferenceCategory>
 
     <PreferenceCategory
