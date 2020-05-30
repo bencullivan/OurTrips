@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -178,73 +177,45 @@ public class AccessDB {
     /**
      * sendFriendRequest()
      * sends a friend request from this user to another user
-     * @param userEmail the email of this user
      * @param friendEmail the email of the person they are sending the request to
      */
-    public static Task<String> sendFriendRequest(String userId, String userEmail, String userName, String friendEmail) {
-        final String id = userId;
-        // store this user's summary data in a map
-        final Map<String, Object> data = new HashMap<>();
-        data.put(Const.FRIEND_ID_KEY, userId);
-        data.put(Const.USER_EMAIL_KEY, userEmail);
-        data.put(Const.USER_NAME_KEY, userName);
+    public static Task<QuerySnapshot> getUserByEmail(String friendEmail) {
 
         // get the friend from the db based on the email that was passed in
-        final FirebaseFirestore store = FirebaseFirestore.getInstance();
-        return store.collection(Const.USERS_COLLECTION)
+        return FirebaseFirestore.getInstance().collection(Const.USERS_COLLECTION)
                 .whereEqualTo(Const.USER_EMAIL_KEY, friendEmail)
-                .get()
-                .continueWith(new Continuation<QuerySnapshot, String>() {
-                    @Override
-                    public String then(@NonNull Task<QuerySnapshot> task) {
-                        QuerySnapshot q = task.getResult();
-                        if (q != null && q.size() > 0) {
-                            DocumentSnapshot doc = q.getDocuments().get(0);
-                            final String friendId = doc.getId();
+                .get();
+    }
 
-                            // db operation on background thread
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Log.d(Const.TAG, "then: continue " + Thread.currentThread().getId());
-                                    // check to see if this user has already sent them a request
-                                    store.collection(Const.USERS_COLLECTION)
-                                            .document(friendId)
-                                            .collection(Const.USER_F_REQUESTS_COLLECTION)
-                                            .document(id)
-                                            .get()
-                                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                                    DocumentSnapshot doc = task.getResult();
-                                                    // if they have not
-                                                    if (doc == null || !doc.exists()) {
-                                                        Log.d(Const.TAG, "access db on complete thread id: " + Thread.currentThread().getId());
-                                                        // db operation on background thread
-                                                        new Thread(new Runnable() {
-                                                            @Override
-                                                            public void run() {
-                                                                Log.d(Const.TAG, "access db on complete thread id: " + Thread.currentThread().getId());
-                                                                // add this user to the other user's friend
-                                                                // requests collection
-                                                                store.collection(Const.USERS_COLLECTION)
-                                                                        .document(friendId)
-                                                                        .collection(Const.USER_F_REQUESTS_COLLECTION)
-                                                                        .document(id)
-                                                                        .set(data);
-                                                            }
-                                                        }).start();
-                                                    }
-                                                }
-                                            });
-                                }
-                            }).start();
-                            return "a";
-                        } else {
-                            return "n";
-                        }
-                    }
-                });
+    /**
+     * getFromRequests()
+     * checks to see if the current user is already in the friend requests sub collection of the
+     * user that they are trying to send a request to
+     * @param friendId the id of the user they are trying to send a request to
+     * @param userId the id of this user
+     */
+    public static Task<DocumentSnapshot> getFromRequests(String friendId, String userId) {
+        return FirebaseFirestore.getInstance().collection(Const.USERS_COLLECTION)
+                .document(friendId)
+                .collection(Const.USER_F_REQUESTS_COLLECTION)
+                .document(userId)
+                .get();
+    }
+
+    /**
+     * sendRequest()
+     * sends a request to the user with the id friendId
+     * @param friendId the id of the user that the request will be sent to
+     * @param userId the id of the user that is sending the request
+     * @param data the info of the user that is sending the request
+     */
+    public static Task<Void> sendRequest(String friendId, String userId, Map<String, Object> data) {
+        return FirebaseFirestore.getInstance()
+                .collection(Const.USERS_COLLECTION)
+                .document(friendId)
+                .collection(Const.USER_F_REQUESTS_COLLECTION)
+                .document(userId)
+                .set(data);
     }
 
     /**
@@ -257,8 +228,8 @@ public class AccessDB {
      * @param friendEmail the email of the user that sent the request
      * @param friendName the name of the user that sent the request
      */
-    public static void acceptFriendRequest(String userId, String userEmail, String userName,
-                                           String friendId, String friendEmail, String friendName) {
+    public static void acceptRequest(String userId, String userEmail, String userName,
+                                     String friendId, String friendEmail, String friendName) {
         // add user data to a map
         Map<String, Object> thisMap = new HashMap<>();
         thisMap.put(Const.FRIEND_ID_KEY, userId);
@@ -596,13 +567,11 @@ public class AccessDB {
 
     /**
      * deleteTripPhoto()
-     * deletes a trip photo from the storage bucket and deletes the info of the trip photo from
-     * the trips sub-collection in the db
+     * deletes the info of the trip photo from the trip photos sub-collection in the db
      * @param tripId the id of the trip
      * @param docId the id of the document that stores the photo's information
      */
     public static Task<Void> deleteTripPhoto(String tripId, String docId) {
-        // delete the document corresponding to the photo from the database
         return FirebaseFirestore.getInstance()
                 .collection(Const.TRIPS_COLLECTION)
                 .document(tripId)
