@@ -286,13 +286,7 @@ public class MediaFragment extends Fragment {
             // add this photo to the storage bucket
             UploadTask storeTask = AccessBucket.uploadPicture(mPath, mIs);
             // add this photo to the database and storage
-            Task<DocumentReference> docTask = AccessDB.addTripPhoto(mTripId, mPath, mTimeStamp)
-                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentReference> task) {
-                            hideSpinner();
-                        }
-                    });
+            Task<DocumentReference> docTask = AccessDB.addTripPhoto(mTripId, mPath, mTimeStamp);
             // when both tasks are complete, hide the progress bar
             Tasks.whenAll(storeTask, docTask).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override

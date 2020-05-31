@@ -640,7 +640,7 @@ public class MatchOrAddActivity extends AppCompatActivity {
                                 new FriendSetUpTask().execute();
                             } else {
                                 Toast t = Toast.makeText(MatchOrAddActivity.this,
-                                        "Could not load your friends.",
+                                        "You have no friends.",
                                         Toast.LENGTH_SHORT);
                                 t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                                         0, 0);
