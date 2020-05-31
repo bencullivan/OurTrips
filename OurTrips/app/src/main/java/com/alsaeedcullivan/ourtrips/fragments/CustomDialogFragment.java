@@ -58,6 +58,8 @@ public class CustomDialogFragment extends DialogFragment {
     public static final int DELETE_PROFILE_ID = 17;
     public static final int AUTHENTICATE_ID = 18;
     public static final int RECOGNIZE_LOC_ID = 19;
+    public static final int DELETE_PIC_ID = 20;
+    public static final int POST_PIC_ID = 21;
 
     // private constants
     private static final String KEY_ID = "key_id";

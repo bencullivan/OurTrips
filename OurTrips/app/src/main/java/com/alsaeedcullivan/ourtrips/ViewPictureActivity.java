@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,9 +35,12 @@ import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.cloud.landmark.FirebaseVisionCloudLandmark;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.common.FirebaseVisionLatLng;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -65,6 +69,8 @@ public class ViewPictureActivity extends AppCompatActivity {
     private Float mLocationConfidence;
     private List<FirebaseVisionLatLng> mLocationLocations;
     private LatLng mLatLng;
+    private StorageReference mRef;
+    private File mFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,8 +106,16 @@ public class ViewPictureActivity extends AppCompatActivity {
         hideSpinner();
 
         // load the picture
-        StorageReference ref = FirebaseStorage.getInstance().getReference(mPhoto.getPicPath());
-        GlideApp.with(this).load(ref).into(mImage);
+        mRef = FirebaseStorage.getInstance().getReference(mPhoto.getPicPath());
+        GlideApp.with(this).load(mRef).into(mImage);
+
+        try {
+            mFile = File.createTempFile("image", ".jpg");
+            // load the uri of the picture
+            new UriTask().execute();
+        } catch (IOException e) {
+            Log.d(Const.TAG, "onCreate: " + Log.getStackTraceString(e));
+        }
     }
 
     @Override
@@ -122,6 +136,9 @@ public class ViewPictureActivity extends AppCompatActivity {
                 return true;
             case R.id.delete_photo:
                 deletePhoto();
+                return true;
+            case R.id.upload_photo:
+                goToIg();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -163,7 +180,7 @@ public class ViewPictureActivity extends AppCompatActivity {
 
         // add this location to the map
         new AddToMapTask().execute();
-        
+
         Log.d(Const.TAG, "addToMap: " + mLatLng);
         Log.d(Const.TAG, "addToMap: map");
     }
@@ -185,6 +202,27 @@ public class ViewPictureActivity extends AppCompatActivity {
         mPics.remove(mPosition);
         // delete this picture
         new DeletePicTask().execute();
+    }
+
+    private void goToIg() {
+        if (mFile == null) return;
+        // Create the new Intent using the 'Send' action.
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setPackage("com.instagram.android");
+        share.setType("images/*");
+        share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(mFile));
+        share.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivity(Intent.createChooser(share, "Share the pic!"));
+
+//        if (mFile == null) {
+//            return;
+//        }
+//        Intent launchIntent = new Intent(Intent.ACTION_SEND);
+//        launchIntent.setPackage("com.instagram.android");
+//        launchIntent.setType("image/*");
+//        launchIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(mFile));
+//        launchIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//        startActivity(Intent.createChooser(launchIntent, "Share the pic!"));
     }
 
     /**
@@ -224,6 +262,23 @@ public class ViewPictureActivity extends AppCompatActivity {
     }
 
     // ASYNC TASKS
+
+    private class UriTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mRef == null || mFile == null) return null;
+
+            mRef.getFile(mFile).addOnCompleteListener(new OnCompleteListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<FileDownloadTask.TaskSnapshot> task) {
+                    Log.d(Const.TAG, "onComplete: downloaded file");
+                }
+            });
+
+            return null;
+        }
+    }
 
     /**
      * DetectLandMarkTask

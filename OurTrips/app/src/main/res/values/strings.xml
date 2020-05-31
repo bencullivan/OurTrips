@@ -146,4 +146,5 @@
     <string name="recognize_location">Recognize Location</string>
     <string name="press_a_pic_to_view_it">Press a pic to view it</string>
     <string name="long_press_pic">Long-press a pic for location recognition</string>
+    <string name="post_photo">Post Photo</string>
 </resources>

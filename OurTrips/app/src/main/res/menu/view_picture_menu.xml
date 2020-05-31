@@ -3,6 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/upload_photo"
+        android:title="@string/post_photo"
+        android:icon="@drawable/upload_vector"
+        app:showAsAction="ifRoom"
+        android:visible="true"/>
+
+    <item
         android:id="@+id/delete_photo"
         android:title="@string/delete"
         android:icon="@drawable/delete_pic_vector"

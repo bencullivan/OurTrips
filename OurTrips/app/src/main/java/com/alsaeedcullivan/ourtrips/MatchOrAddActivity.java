@@ -80,6 +80,8 @@ public class MatchOrAddActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_match);
 
+        Log.d(Const.TAG, "onCreate: match");
+
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
@@ -178,6 +180,24 @@ public class MatchOrAddActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(Const.TAG, "onStart: match");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(Const.TAG, "onResume: match");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(Const.TAG, "onPause: match");
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.match_menu, menu);
         return super.onCreateOptionsMenu(menu);
@@ -206,15 +226,16 @@ public class MatchOrAddActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
+        super.onStop();
         // make sure the list will be displayed if they hit the back button
         showList();
-        super.onStop();
+
+        Log.d(Const.TAG, "onStop: match");
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        Log.d(Const.TAG, "onSaveInstanceState: " + mFriends);
         if (mFriends != null) outState.putParcelableArrayList(FRIENDS_KEY, mFriends);
         if (mUserDates != null) outState.putLongArray(DATES_KEY, toLongs(mUserDates));
         if (mUserName != null) outState.putString(NAME_KEY, mUserName);
@@ -712,6 +733,9 @@ public class MatchOrAddActivity extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             if (mFriendId == null) return null;
 
+            Log.d(Const.TAG, "doInBackground: " + mSelected.getName());
+            Log.d(Const.TAG, "doInBackground: " + mSelected.getUserId() + " " + mFriendId);
+
             AccessDB.getUserDates(mFriendId).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -721,6 +745,7 @@ public class MatchOrAddActivity extends AppCompatActivity {
                             doc.get(Const.DATE_LIST_KEY) instanceof List) {
                         // this will not produce an exception
                         mFriendSDates = (List<String>) doc.get(Const.DATE_LIST_KEY);
+                        mFriendDates = new ArrayList<>();
                         //convert the strings to Dates
                         new MatchTask().execute();
                     } else {
@@ -789,6 +814,8 @@ public class MatchOrAddActivity extends AppCompatActivity {
             // create an array of the times of the matched dates
             mMatched = new long[matched.size()];
             for (int i = 0; i < matched.size(); i++) mMatched[i] = matched.get(i).getTime();
+
+            Log.d(Const.TAG, "doInBackground: " + mMatched.length);
             return null;
         }
 
@@ -810,6 +837,7 @@ public class MatchOrAddActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             if (mMatched != null && mMatched.length > 0) {
+                Log.d(Const.TAG, "onPostExecute: " + mMatched.length);
                 // start CalendarActivity and pass it an array of all the matched dates
                 Intent intent = new Intent(MatchOrAddActivity.this, CalendarActivity.class);
                 intent.putExtra(Const.SOURCE_TAG, Const.MATCH_TAG);
