@@ -45,30 +45,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.alsaeedcullivan.ourtrips.MainActivity" />
         </activity>
-        <!-- THIS SERVICE IS FOR CLOUD MESSAGING, I WILL UPDATE IT AS I WORK ON IMPLEMENTING MESSAGING -->
-        <service
-            android:name=".cloud.MessageService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-
-            <meta-data
-                android:name="com.google.firebase.messaging.default_notification_icon"
-                android:resource="@mipmap/our_trips_logo" />
-            <meta-data
-                android:name="com.google.firebase.messaging.default_notification_color"
-                android:resource="@color/colorPrimary" />
-            <!-- TODO: more meta data? -->
-            <meta-data
-                android:name="com.google.firebase.messaging.default_notification_channel_id"
-                android:value="@string/fcm_notification_channel" />
-        </service>
-
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:theme="@style/PreferenceScreen" />
+            android:label="@string/title_activity_settings" />
         <activity android:name=".VerifyActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -79,7 +58,6 @@
         <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

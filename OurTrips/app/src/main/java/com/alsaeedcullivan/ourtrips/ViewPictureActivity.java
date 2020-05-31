@@ -138,7 +138,6 @@ public class ViewPictureActivity extends AppCompatActivity {
                 deletePhoto();
                 return true;
             case R.id.upload_photo:
-                goToIg();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -202,27 +201,6 @@ public class ViewPictureActivity extends AppCompatActivity {
         mPics.remove(mPosition);
         // delete this picture
         new DeletePicTask().execute();
-    }
-
-    private void goToIg() {
-        if (mFile == null) return;
-        // Create the new Intent using the 'Send' action.
-        Intent share = new Intent(Intent.ACTION_SEND);
-        share.setPackage("com.instagram.android");
-        share.setType("images/*");
-        share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(mFile));
-        share.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(Intent.createChooser(share, "Share the pic!"));
-
-//        if (mFile == null) {
-//            return;
-//        }
-//        Intent launchIntent = new Intent(Intent.ACTION_SEND);
-//        launchIntent.setPackage("com.instagram.android");
-//        launchIntent.setType("image/*");
-//        launchIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(mFile));
-//        launchIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//        startActivity(Intent.createChooser(launchIntent, "Share the pic!"));
     }
 
     /**
