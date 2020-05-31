@@ -15,9 +15,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/our_trips_logo"
+        android:icon="@mipmap/ourTrips_logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/our_trips_logo_round"
+        android:roundIcon="@mipmap/ourTrips_logo_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <!--
