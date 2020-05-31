@@ -244,6 +244,9 @@ public class TripActivity extends AppCompatActivity {
         else return "";
     }
 
+
+    // ASYNC TASKS
+
     /**
      * LoadTripTask
      * loads this trip's info from the db

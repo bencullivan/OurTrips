@@ -157,6 +157,9 @@ public class PlanFragment extends Fragment {
         };
     }
 
+
+    // ASYNC TASKS
+
     /**
      * GetPlansTask
      * gets the plans from the DB

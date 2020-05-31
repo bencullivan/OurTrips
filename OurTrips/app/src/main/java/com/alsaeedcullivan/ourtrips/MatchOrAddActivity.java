@@ -394,6 +394,9 @@ public class MatchOrAddActivity extends AppCompatActivity {
         return mSelected;
     }
 
+
+    // ASYNC TASKS
+
     /**
      * LoadFriendsTask
      * loads the list of friend documents of the current user and tripper documents of the current trip

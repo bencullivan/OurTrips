@@ -107,6 +107,9 @@ public class TrippersFragment extends Fragment {
         new GetTrippersTask().execute();
     }
 
+
+    // ASYNC TASKS
+
     /**
      * GetTrippersTask
      * gets the documents corresponding to each tripper on the trip

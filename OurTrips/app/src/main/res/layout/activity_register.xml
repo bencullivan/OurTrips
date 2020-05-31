@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RegisterActivity">
+    tools:context=".RegisterActivity"
+    android:background="@color/colorPrimary">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -31,7 +32,9 @@
             android:onClick="onChangeClicked"
             android:padding="@dimen/padding_dp"
             android:text="@string/change_pic_text"
-            android:textColor="@color/colorSecondaryDark"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            android:background="@drawable/rounded_primary_button"
             app:layout_constraintHorizontal_bias="0.767"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"

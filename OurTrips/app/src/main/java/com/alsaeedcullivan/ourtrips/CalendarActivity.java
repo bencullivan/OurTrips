@@ -308,6 +308,8 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
 
+    // ASYNC TASKS
+
     /**
      * AddTask
      * converts the string dates that this user is available to date objects and adds them to the

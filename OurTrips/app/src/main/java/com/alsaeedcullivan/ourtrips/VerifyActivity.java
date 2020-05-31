@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.alsaeedcullivan.ourtrips.utils.SharedPreference;
 import com.alsaeedcullivan.ourtrips.utils.Utilities;
@@ -90,7 +89,8 @@ public class VerifyActivity extends AppCompatActivity {
 
         Log.d(Const.TAG, "onResume: verify ");
         // get the current user
-        mUser = FirebaseAuth.getInstance().getCurrentUser();
+        mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
 
         // if there is a current user, reload them to check if they have clicked the link in the
         // email that was sent to them
@@ -107,6 +107,9 @@ public class VerifyActivity extends AppCompatActivity {
         // get the email and password input
         mEmail = mEmailText.getText().toString();
         mPassword = mPasswordText.getText().toString();
+
+        mEmailText.setError(null);
+        mPasswordText.setError(null);
 
         // if the password is not valid, inform the user and do not attempt to register them
         if (!Utilities.isValidPassword(mPassword)) {
@@ -134,6 +137,9 @@ public class VerifyActivity extends AppCompatActivity {
         if (mPasswordExtra != null) mPasswordText.setText(mPasswordExtra);
     }
 
+
+    // ASYNC TASKS
+
     /**
      * ReloadTask
      * reloads the user to check if they are verified
@@ -143,6 +149,8 @@ public class VerifyActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             if (mUser == null) return null;
+
+            Log.d(Const.TAG, "doInBackground: reload");
 
             // reload the user to see if they are verified
             mUser.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -155,6 +163,60 @@ public class VerifyActivity extends AppCompatActivity {
                     }
                 }
             });
+
+            return null;
+        }
+    }
+
+    /**
+     * CheckRegisterTask
+     * checks to see if this user is registered
+     */
+    private class CheckRegisterTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null) return null;
+
+            FirebaseFirestore.getInstance()
+                    .collection(Const.USERS_COLLECTION)
+                    .document(mUser.getUid())
+                    .get()
+                    .continueWith(new Continuation<DocumentSnapshot, Object>() {
+                        @Override
+                        public Object then(@NonNull Task<DocumentSnapshot> task) {
+                            DocumentSnapshot doc = task.getResult();
+
+                            // if they are registered
+                            if (doc != null && doc.exists()) {
+                                // inform the user that they have already registered
+                                Toast t = Toast.makeText(VerifyActivity.this,
+                                        "You are already verified and registered.",
+                                        Toast.LENGTH_SHORT);
+                                t.setGravity(Gravity.TOP | Gravity
+                                                .CENTER_HORIZONTAL, 0,
+                                        0);
+                                t.show();
+
+                                // sign this user out
+                                if (mUser != null && mAuth != null) {
+                                    mAuth.signOut();
+                                }
+
+                            }
+                            // they are not registered
+                            else {
+                                // allow them to proceed to register activity
+                                // if they are verified
+                                Intent intent = new Intent(VerifyActivity.this,
+                                        RegisterActivity.class);
+                                intent.putExtra(Const.SOURCE_TAG, Const.VERIFY_TAG);
+                                startActivity(intent);
+                                finish();
+                            }
+                            return null;
+                        }
+                    });
 
             return null;
         }
@@ -200,54 +262,6 @@ public class VerifyActivity extends AppCompatActivity {
     }
 
     /**
-     * CheckRegisterTask
-     * checks to see if this user is registered
-     */
-    private class CheckRegisterTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if (mUser == null) return null;
-
-            FirebaseFirestore.getInstance()
-                    .collection(Const.USERS_COLLECTION)
-                    .document(mUser.getUid())
-                    .get()
-                    .continueWith(new Continuation<DocumentSnapshot, Object>() {
-                        @Override
-                        public Object then(@NonNull Task<DocumentSnapshot> task) {
-                            DocumentSnapshot doc = task.getResult();
-
-                            // if they are registered
-                            if (doc != null && doc.exists()) {
-                                // inform the user that they have already registered
-                                Toast t = Toast.makeText(VerifyActivity.this,
-                                        "You are already verified and registered.",
-                                        Toast.LENGTH_SHORT);
-                                t.setGravity(Gravity.TOP | Gravity
-                                                .CENTER_HORIZONTAL, 0,
-                                        0);
-                                t.show();
-                            }
-                            // they are not registered
-                            else {
-                                // allow them to proceed to register activity
-                                // if they are verified
-                                Intent intent = new Intent(VerifyActivity.this,
-                                        RegisterActivity.class);
-                                intent.putExtra(Const.SOURCE_TAG, Const.VERIFY_TAG);
-                                startActivity(intent);
-                                finish();
-                            }
-                            return null;
-                        }
-                    });
-
-            return null;
-        }
-    }
-
-    /**
      * CreateUserTask
      * creates a user with the credentials that were input
      */
@@ -263,6 +277,7 @@ public class VerifyActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()) {
+                        Log.d(Const.TAG, "onComplete: created user verify activity");
                         // send a verification email
                         new VerificationTask().execute();
                     } else {

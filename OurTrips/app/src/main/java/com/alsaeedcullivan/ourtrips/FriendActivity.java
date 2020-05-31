@@ -284,6 +284,8 @@ public class FriendActivity extends AppCompatActivity {
     }
 
 
+    // ASYNC TASKS
+
     /**
      * GetRequestsTask
      * handles the db operations that are performed when this activity is first created

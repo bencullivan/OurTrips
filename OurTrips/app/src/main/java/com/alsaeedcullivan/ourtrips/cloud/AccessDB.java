@@ -165,6 +165,7 @@ public class AccessDB {
      * @param userId the id of the user
      */
     public static Task<Void> deleteUser(String userId) {
+        Log.d(Const.TAG, "deleteUser: deleting");
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
                 .document(userId)

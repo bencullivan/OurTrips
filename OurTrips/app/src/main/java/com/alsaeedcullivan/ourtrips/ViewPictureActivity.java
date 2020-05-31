@@ -109,14 +109,6 @@ public class ViewPictureActivity extends AppCompatActivity {
         // load the picture
         mRef = FirebaseStorage.getInstance().getReference(mPhoto.getPicPath());
         GlideApp.with(this).load(mRef).into(mImage);
-
-        try {
-            mFile = File.createTempFile("image", ".jpg");
-            // load the uri of the picture
-            new UriTask().execute();
-        } catch (IOException e) {
-            Log.d(Const.TAG, "onCreate: " + Log.getStackTraceString(e));
-        }
     }
 
     @Override
@@ -236,28 +228,8 @@ public class ViewPictureActivity extends AppCompatActivity {
         return mLocationConfidence;
     }
 
-    public List<FirebaseVisionLatLng> getLocationLocations() {
-        return mLocationLocations;
-    }
 
     // ASYNC TASKS
-
-    private class UriTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if (mRef == null || mFile == null) return null;
-
-            mRef.getFile(mFile).addOnCompleteListener(new OnCompleteListener<FileDownloadTask.TaskSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<FileDownloadTask.TaskSnapshot> task) {
-                    Log.d(Const.TAG, "onComplete: downloaded file");
-                }
-            });
-
-            return null;
-        }
-    }
 
     /**
      * DetectLandMarkTask
@@ -355,7 +327,7 @@ public class ViewPictureActivity extends AppCompatActivity {
             // extract and save the data
             mLocationName = (String) mDetectedLocation.get(LOC_NAME_KEY);
             mLocationConfidence = (Float) mDetectedLocation.get(LOC_CONFIDENCE_KEY);
-            // this will not produce an exception
+            // this cast will not produce an exception
             mLocationLocations = (List<FirebaseVisionLatLng>) mDetectedLocation.get(LOC_LOC_KEY);
 
             // show the dialog asking the user if they want to add this location to the map

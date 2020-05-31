@@ -5,7 +5,8 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LoginActivity">
+    tools:context=".LoginActivity"
+    android:background="@color/colorPrimaryDark">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/username_layout"
@@ -15,7 +16,10 @@
         android:layout_marginTop="@dimen/register_vertical_margin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:textColorHint="@color/colorPrimary"
+        app:hintTextColor="@color/colorPrimary"
+        app:boxStrokeColor="@color/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/username"
@@ -27,7 +31,7 @@
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:textColorHint="@color/colorSecondaryDark" />
+            android:textColor="@color/colorPrimary" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -39,7 +43,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/username_layout"
-        app:passwordToggleEnabled="true">
+        app:boxBackgroundColor="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        app:hintTextColor="@color/colorPrimary"
+        app:boxStrokeColor="@color/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/password"
@@ -52,21 +59,24 @@
             android:inputType="textPassword"
             android:maxLines="1"
             android:singleLine="true"
-            android:textColorHint="@color/colorSecondaryDark" />
+            android:textColor="@color/colorPrimary" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/sign_in"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:layout_marginStart="48dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="48dp"
         android:layout_marginBottom="64dp"
+        android:paddingHorizontal="33dp"
+        android:background="@drawable/rounded_primary_primary"
         android:enabled="true"
         android:text="@string/action_sign_in"
-        android:textColor="@color/colorSecondaryDark"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -75,16 +85,19 @@
 
     <Button
         android:id="@+id/sign_up"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:layout_marginStart="128dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="128dp"
         android:layout_marginBottom="64dp"
+        android:paddingHorizontal="30dp"
+        android:background="@drawable/rounded_primary_primary"
         android:enabled="true"
         android:text="@string/action_sign_up"
-        android:textColor="@color/colorSecondaryDark"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:textAllCaps="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

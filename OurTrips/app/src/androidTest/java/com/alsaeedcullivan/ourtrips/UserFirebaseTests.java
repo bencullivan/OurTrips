@@ -84,7 +84,7 @@ public class UserFirebaseTests {
     @Test
     public void deleteUserTest() {
 
-        Task<Void> task = AccessDB.deleteUser("cFnEWhp1axaB6Rn9AMIzxeemIMk1");
+        Task<Void> task = AccessDB.deleteUser("uEyvhu3aYiRiZOxTVfIxKKP9DZZ2");
 
         while (!task.isComplete()) { }
 

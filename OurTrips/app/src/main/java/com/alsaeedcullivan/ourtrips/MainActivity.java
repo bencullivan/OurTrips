@@ -250,6 +250,9 @@ public class MainActivity extends AppCompatActivity {
         mLoading.setVisibility(View.VISIBLE);
     }
 
+
+    // ASYNC TASKS
+
     /**
      * SumDocsTask
      * gets the documents corresponding to all the trip summaries

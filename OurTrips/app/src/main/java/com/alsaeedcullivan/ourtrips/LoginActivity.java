@@ -42,9 +42,14 @@ public class LoginActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.d(Const.TAG, "onCreate: login");
+
         // determine whether there is a verified user that is logged in
         FirebaseAuth auth = FirebaseAuth.getInstance();
         mUser = auth.getCurrentUser();
+
+        if (mUser != null) Log.d(Const.TAG, "onCreate login user: -> " + mUser.getEmail());
+        else Log.d(Const.TAG, "onCreate: login user -> " + mUser);
 
         // if there is a verified registered user logged in, go straight to main activity
         if (mUser != null && mUser.isEmailVerified() && new SharedPreference(this).getRegistered()) {
@@ -116,6 +121,7 @@ public class LoginActivity extends AppCompatActivity {
     private void signIn(String email, String password) {
         mEmail = email;
         mPassword = password;
+        Log.d(Const.TAG, "signIn: login");
 
         // attempt to sign the user in
         new SignInTask().execute();
@@ -204,6 +210,9 @@ public class LoginActivity extends AppCompatActivity {
         };
     }
 
+
+    // ASYNC TASKS
+
     /**
      * SignInTask
      * signs a user in
@@ -213,6 +222,8 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             if (mEmail == null || mPassword == null) return null;
+
+            Log.d(Const.TAG, "doInBackground: login sign in task");
 
             // attempt to sign in with the given email and password
             FirebaseAuth.getInstance().signInWithEmailAndPassword(mEmail, mPassword)
@@ -279,6 +290,8 @@ public class LoginActivity extends AppCompatActivity {
                             if (doc != null && doc.exists()) {
                                 // save that this user is registered
                                 new SharedPreference(getApplicationContext()).setRegistered(true);
+
+                                Log.d(Const.TAG, "then: user is registered login");
 
                                 // the user can proceed to main activity
                                 startActivity(new Intent(LoginActivity.this, MainActivity.class));

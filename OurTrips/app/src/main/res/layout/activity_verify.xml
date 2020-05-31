@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".VerifyActivity">
+    tools:context=".VerifyActivity"
+    android:background="@color/colorPrimaryDark">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/verify_username_layout"
@@ -15,7 +16,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias=".1">
+        app:layout_constraintVertical_bias=".1"
+        android:textColorHint="@color/colorPrimary"
+        app:hintTextColor="@color/colorPrimary"
+        app:boxStrokeColor="@color/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/verify_username"
@@ -27,7 +31,7 @@
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:textColorHint="@color/colorSecondaryDark" />
+            android:textColor="@color/colorPrimary" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -39,7 +43,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/verify_username_layout"
-        app:passwordToggleEnabled="true">
+        app:passwordToggleEnabled="true"
+        android:textColorHint="@color/colorPrimary"
+        app:hintTextColor="@color/colorPrimary"
+        app:boxStrokeColor="@color/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/verify_password"
@@ -52,22 +59,24 @@
             android:inputType="textPassword"
             android:maxLines="1"
             android:singleLine="true"
-            android:textColorHint="@color/colorSecondaryDark" />
+            android:textColor="@color/colorPrimary" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/verify"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingHorizontal="10dp"
         android:layout_gravity="start"
-        android:layout_marginStart="48dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="48dp"
         android:layout_marginBottom="64dp"
         android:enabled="true"
         android:onClick="onVerifyClicked"
         android:text="@string/verify_email_string"
-        android:textColor="@color/colorSecondaryDark"
+        android:textColor="#FFFFFF"
+        android:textAllCaps="false"
+        android:textStyle="bold"
+        android:background="@drawable/rounded_primary_primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

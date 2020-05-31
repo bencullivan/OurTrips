@@ -346,7 +346,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLocationName = name;
     }
 
-    // Async Tasks
+
+    // ASYNC TASKS
 
     /**
      * AddLocationTask

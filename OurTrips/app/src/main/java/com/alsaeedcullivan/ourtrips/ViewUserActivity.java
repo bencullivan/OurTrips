@@ -101,6 +101,9 @@ public class ViewUserActivity extends AppCompatActivity {
         if (bDay != null) mUserBirthday.setText(bDay);
     }
 
+
+    // ASYNC TASKS
+
     /**
      * LoadProfileTask
      * loads the profile of the user that was selected

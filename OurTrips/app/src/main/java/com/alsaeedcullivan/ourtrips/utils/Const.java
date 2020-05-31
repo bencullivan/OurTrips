@@ -76,43 +76,20 @@ public class Const {
     public static final String TRIP_START_DATE_KEY = "start_date";
     public static final String TRIP_END_DATE_KEY = "end_date";
     public static final String TRIP_TRIPPERS_COLLECTION = "trippers";
-    public static final String TRIP_TRIPPER_KEY = "tripper";
     public static final String TRIP_COMMENTS_COLLECTION = "comments";
     public static final String TRIP_COMMENT_KEY = "comment";
     public static final String TRIP_PHOTO_PATHS_COLLECTION = "photos";
     public static final String TRIP_PHOTO_KEY = "photo";
-    public static final String TRIP_VIDEO_KEY = "video";
     public static final String TRIP_TIMESTAMP_KEY = "timestamp";
     public static final String TRIP_LOCATIONS_COLLECTION = "locations";
     public static final String TRIP_LOCATION_KEY = "location";
     public static final String TRIP_LOCATION_NAME_KEY = "name";
-    public static final String TRIP_TOPIC_KEY = "topic";
-    public static final String TRIP_COLL_UPDATE_TYPE_KEY = "type";
-    public static final String TRIP_NOTIFY_KEY = "notification";
-    public static final String TRIP_INFO_KEY = "info";
     public static final String TRIP_OVERVIEW_KEY = "overview";
-
-    // Cloud function names
-    public static final String FUNC_MATCH_DATES = "matchDates";
-    public static final String FUNC_SUBSCRIBE_TOPICS = "subscribeToTopics";
-    public static final String FUNC_UNSUBSCRIBE_TOPICS = "unsubscribeFromTopics";
-    public static final String FUNC_SUBSCRIBE_TOPIC = "subscribeToTopic";
-    public static final String FUNC_UNSUBSCRIBE_TOPIC = "unsubscribeFromTopic";
-    public static final String FUNC_COLLECTION_UPDATED = "collectionUpdated";
-    public static final String FUNC_TRIP_INFO_UPDATED = "tripInfoUpdated";
-
-    // Cloud Function Keys
-    public static final String LIST_1_KEY = "list1";
-    public static final String LIST_2_KEY = "list2";
-    public static final String UID_KEY = "id";
-    public static final String FRIENDS_LIST_KEY = "friends";
 
     // Cloud Storage paths
     public static final String PROFILE_PIC_PATH = "profile_pictures";
     public static final String TRIP_PIC_PATH = "trip_pictures";
     public static final String PROFILE_PIC_NAME = "profile";
-    public static final String TRIP_VID_PATH = "trip_videos";
     public static final String PIC_JPG = ".jpg";
-    public static final String VID_MP4 = ".mp4";
 
 }

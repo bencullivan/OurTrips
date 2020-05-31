@@ -225,6 +225,9 @@ public class EditSummaryActivity extends AppCompatActivity {
         else return new Date();
     }
 
+
+    // ASYNC TASKS
+
     /**
      * UpdateSummaryTask
      * updates the trip's info in the db

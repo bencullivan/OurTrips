@@ -206,6 +206,9 @@ public class RequestTripActivity extends AppCompatActivity {
         return mStart;
     }
 
+
+    // ASYNC TASKS
+
     /**
      * AddTripTask
      * adds this trip to the db

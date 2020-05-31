@@ -111,8 +111,7 @@ public class SummaryFragment extends Fragment {
         new LocationDocsTask().execute();
     }
 
-    // listeners
-
+    // LISTENERS
     private View.OnClickListener editListener() {
         return new View.OnClickListener() {
             @Override
@@ -173,6 +172,9 @@ public class SummaryFragment extends Fragment {
             }
         };
     }
+
+
+    // ASYNC TASKS
 
     /**
      * LocationDocsTask

@@ -21,7 +21,6 @@ import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -155,6 +154,9 @@ public class SettingsActivity extends AppCompatActivity {
         new AuthenticateTask().execute();
     }
 
+
+    // ASYNC TASKS
+
     /**
      * AuthenticateTask
      * re-authenticates the user
@@ -190,7 +192,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     /**
      * DeleteUserTask
-     * permanently deletes this user
+     * permanently deletes this user from the db
      */
     private class DeleteUserTask extends AsyncTask<Void, Void, Void> {
 
@@ -199,18 +201,44 @@ public class SettingsActivity extends AppCompatActivity {
             if (mUser == null) return null;
 
             // delete the user from the database
-            Task<Void> dataTask = AccessDB.deleteUser(mUser.getUid());
-            // delete the user from authentication
-            Task<Void> authTask = mUser.delete();
-            // when both are finished, return to login
-            Tasks.whenAll(dataTask, authTask).addOnCompleteListener(new OnCompleteListener<Void>() {
+            AccessDB.deleteUser(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        new DeleteFromAuthTask().execute();
+                    } else {
+                        Toast t = Toast.makeText(SettingsActivity.this, "We were " +
+                                "unable to delete your profile", Toast.LENGTH_SHORT);
+                        t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        t.show();
+
+                    }
+                }
+            });
+
+            return null;
+        }
+    }
+
+    /**
+     * DeleteFromAuthTask
+     * permanently deletes this user from firebase auth
+     */
+    private class DeleteFromAuthTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null) return null;
+
+            // delete the user from authentication
+            mUser.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.d(Const.TAG, "onComplete: done deleting user from both");
                     // send user back to login
                     Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
                     intent.putExtra(Const.SOURCE_TAG, Const.SETTINGS_TAG);
                     startActivity(intent);
-                    Log.d(Const.TAG, "onComplete: done deleting user from auth");
                     // at this point the async task is finished
                     // finish this activity and others in stack -> user logged out because profile was deleted
                     finishAffinity();
@@ -218,12 +246,6 @@ public class SettingsActivity extends AppCompatActivity {
             });
 
             return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            Log.d(Const.TAG, "onPostExecute: done settings delete async");
         }
     }
 }

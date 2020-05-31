@@ -32,7 +32,6 @@ import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.glide.GlideApp;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.alsaeedcullivan.ourtrips.utils.SharedPreference;
-import com.alsaeedcullivan.ourtrips.utils.Utilities;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -92,6 +91,8 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
 
+        Log.d(Const.TAG, "onCreate: register user: " + mUser);
+
         // get reference to the ImageView
         mProfileImageView = findViewById(R.id.img_profile);
 
@@ -130,7 +131,7 @@ public class RegisterActivity extends AppCompatActivity {
                 Log.d(Const.TAG, "onCreate: " + ref);
                 GlideApp.with(this).load(ref).into(mProfileImageView);
             }
-            // the profile needs to be loaded
+            // the entire profile needs to be loaded
             else if (mSourceExtra.equalsIgnoreCase(Const.SETTINGS_TAG)) {
                 Log.d(Const.TAG, "onCreate: load");
                 mNameEditText.setEnabled(false);
@@ -142,8 +143,6 @@ public class RegisterActivity extends AppCompatActivity {
         updatePermission();
         requestPermission();
     }
-
-    // handle lifecycle //
 
     @Override
     protected void onResume() {
@@ -161,27 +160,6 @@ public class RegisterActivity extends AppCompatActivity {
         // save picture uri
         if (mProfileUri != null) outState.putParcelable(URI_KEY, mProfileUri);
         if (mGlidePath != null) outState.putString(GLIDE_KEY, mGlidePath);
-    }
-
-    // handle permissions //
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == Const.GALLERY_PERMISSION_REQUEST_CODE) {
-            // check permissions status from dialog fragment & Manifest
-            if (grantResults.length == 3 && (grantResults[0] != PackageManager.PERMISSION_GRANTED ||
-                    grantResults[1] != PackageManager.PERMISSION_GRANTED || grantResults[2] !=
-                    PackageManager.PERMISSION_GRANTED) &&
-                    shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE) &&
-                            shouldShowRequestPermissionRationale(Manifest.permission
-                                    .WRITE_EXTERNAL_STORAGE)) {
-                // permission is important
-                createImportantDialogFragment();
-            } else {
-                updatePermission();
-            }
-        }
     }
 
     // handle menu //
@@ -240,14 +218,12 @@ public class RegisterActivity extends AppCompatActivity {
     public void onRegisterClicked() {
         removeErrors();
 
-        // get name, gender, email, affiliation & birthday
+        // get name, gender, affiliation
         String inputName = mNameEditText.getText().toString();
-        String inputEmail = mEmailEditText.getText().toString();
         String inputAffiliation = mAffiliationEditText.getText().toString();
-        String inputBirthday = mBirthdayEditText.getText().toString();
         int inputGender = -1;
-        if (mMaleRadioButton.isChecked()) inputGender = 1;
-        else if (mFemaleRadioButton.isChecked()) inputGender = 0;
+        if (mFemaleRadioButton.isChecked()) inputGender = 0;
+        else if (mMaleRadioButton.isChecked()) inputGender = 1;
         else if (mOtherRadioButton.isChecked()) inputGender = 2;
 
         // issues -> false --> NOT save & inform user
@@ -255,29 +231,19 @@ public class RegisterActivity extends AppCompatActivity {
         // focus view on incorrect field
         View focusView = null;
 
-        // ensure email validity //
-        if (!Utilities.isValidEmail(inputEmail)) {
-            mEmailEditText.setError(getString(R.string.invalid_username));
-            focusView = mEmailEditText;
+        // ensure name and affiliation are not empty
+        if (inputAffiliation.replaceAll("\\s", "").equals("")) {
+            mAffiliationEditText.setError(getString(R.string.required_field));
+            focusView = mAffiliationEditText;
+            goodProfile = false;
+        }
+        if (inputName.replaceAll("\\s", "").equals("")) {
+            mNameEditText.setError(getString(R.string.required_field));
+            focusView = mNameEditText;
             goodProfile = false;
         }
 
-        // ensure name, gender, email & birthday NOT empty
-        if (inputName.length() == 0) {
-            mEmailEditText.setError(getString(R.string.required_field));
-            focusView = mEmailEditText;
-            goodProfile = false;
-        }
-        if (inputEmail.length() == 0) {
-            mEmailEditText.setError(getString(R.string.required_field));
-            focusView = mEmailEditText;
-            goodProfile = false;
-        }
-        if (inputBirthday.length() == 0) {
-            mBirthdayEditText.setError(getString(R.string.required_field));
-            focusView = mBirthdayEditText;
-            goodProfile = false;
-        }
+        // if there is no gender selected
         if (goodProfile && inputGender == -1) {
             Toast message = Toast.makeText(this, R.string.required_gender,
                     Toast.LENGTH_SHORT);
@@ -290,12 +256,10 @@ public class RegisterActivity extends AppCompatActivity {
         // field has error -> focus
         if (focusView != null) focusView.requestFocus();
 
-        // no errors triggered -> save profile
-        if (goodProfile) {// save || update profile
-
-            // create || update profile
+        // no errors triggered -> register or update profile
+        if (goodProfile) {
             if (mRegistered) updateProfile();
-            else createUser();
+            else registerUser();
         }
     }
 
@@ -381,6 +345,40 @@ public class RegisterActivity extends AppCompatActivity {
                         PackageManager.PERMISSION_GRANTED) &&
                         checkSelfPermission(Manifest.permission.CAMERA)
                                 == PackageManager.PERMISSION_GRANTED;
+        Log.d(Const.TAG, "updatePermission: " + mPermission);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == Const.GALLERY_PERMISSION_REQUEST_CODE) {
+            // check permissions status from dialog fragment & Manifest
+            if (grantResults.length == 3 && (grantResults[0] != PackageManager.PERMISSION_GRANTED ||
+                    grantResults[1] != PackageManager.PERMISSION_GRANTED || grantResults[2] !=
+                    PackageManager.PERMISSION_GRANTED) &&
+                    shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE) &&
+                    shouldShowRequestPermissionRationale(Manifest.permission
+                            .WRITE_EXTERNAL_STORAGE)) {
+                // permission is important
+                createImportantDialogFragment();
+            } else {
+                updatePermission();
+            }
+        }
+    }
+
+    // handle dialog fragments //
+    private void createImportantDialogFragment() {
+        // display dialog fragment
+        DialogFragment dialog = CustomDialogFragment.newInstance(CustomDialogFragment
+                .PERMISSION_IMPORTANT_ID);
+        dialog.show(getSupportFragmentManager(), Const.DIALOG_TAG);
+    }
+    private void createSettingsDialogFragment() {
+        // display dialog fragment
+        DialogFragment dialog = CustomDialogFragment.newInstance(CustomDialogFragment
+                .SETTINGS_DIALOG_ID);
+        dialog.show(getSupportFragmentManager(), Const.DIALOG_TAG);
     }
 
     // takes the user to device settings for this app
@@ -390,23 +388,7 @@ public class RegisterActivity extends AppCompatActivity {
                 .setData(Uri.fromParts("package", this.getPackageName(), null)));
     }
 
-    // handle dialog fragments //
-
-    private void createImportantDialogFragment() {
-        // display dialog fragment
-        DialogFragment dialog = CustomDialogFragment.newInstance(CustomDialogFragment
-                .PERMISSION_IMPORTANT_ID);
-        dialog.show(getSupportFragmentManager(), Const.DIALOG_TAG);
-    }
-
-    private void createSettingsDialogFragment() {
-        // display dialog fragment
-        DialogFragment dialog = CustomDialogFragment.newInstance(CustomDialogFragment
-                .SETTINGS_DIALOG_ID);
-        dialog.show(getSupportFragmentManager(), Const.DIALOG_TAG);
-    }
-
-    // handle profile tasks //
+    // reset widgets //
 
     /**
      * removeErrors()
@@ -418,11 +400,13 @@ public class RegisterActivity extends AppCompatActivity {
         mBirthdayEditText.setError(null);
     }
 
+    // profile methods //
+
     /**
-     * createUser()
+     * registerUser()
      * method to add this user to FireStore
      */
-    private void createUser() {
+    private void registerUser() {
         // create a map with the user's information
         mData = new HashMap<>();
         mData.put(Const.USER_ID_KEY, mUser.getUid());
@@ -550,6 +534,9 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
+
+    // ASYNC TASKS
+
     /**
      * LoadProfileTask
      * loads a user's profile from the db
@@ -585,6 +572,8 @@ public class RegisterActivity extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             if (mUser == null || mData == null) return null;
 
+            Log.d(Const.TAG, "doInBackground: new user task");
+
             // add the user's data to the database
             AccessDB.addNewUser(mUser.getUid(), mData).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
@@ -605,6 +594,7 @@ public class RegisterActivity extends AppCompatActivity {
                         startActivity(intent);
                         // at this point the async task has finished executing and it is okay to
                         // finish the activity
+                        Log.d(Const.TAG, "onComplete: finished new user task");
                         finish();
                     } else {
                         // inform that their data could not be added
@@ -617,6 +607,13 @@ public class RegisterActivity extends AppCompatActivity {
             });
 
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            Log.d(Const.TAG, "onPostExecute: new user task");
         }
     }
 
@@ -641,6 +638,7 @@ public class RegisterActivity extends AppCompatActivity {
                         t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                         t.show();
                         // finish the activity
+                        Log.d(Const.TAG, "onComplete: finished update user task");
                         finish();
                     } else {
                         // inform that their data could not be updated
@@ -654,6 +652,13 @@ public class RegisterActivity extends AppCompatActivity {
 
             return null;
         }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            Log.d(Const.TAG, "onPostExecute: update user task");
+        }
     }
 
     /**
@@ -665,6 +670,8 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             if (mIs == null || mNewPath == null) return null;
+
+            Log.d(Const.TAG, "doInBackground: profile pic task");
 
             // add the new picture to the storage bucket
             AccessBucket.uploadPicture(mNewPath, mIs);

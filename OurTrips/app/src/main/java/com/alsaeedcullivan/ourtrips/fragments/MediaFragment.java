@@ -270,6 +270,9 @@ public class MediaFragment extends Fragment {
         };
     }
 
+
+    // ASYNC TASKS
+
     /**
      * UploadPicTask
      * uploads a pic to the storage bucket and adds its path to the db
