@@ -77,6 +77,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
         };
     }
+
     private View.OnClickListener createSignOutListener() {
         return new View.OnClickListener() {
             @Override
@@ -93,6 +94,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
         };
     }
+
     private View.OnClickListener createDeleteListener() {
         return new View.OnClickListener() {
             @Override
@@ -102,6 +104,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
         };
     }
+
     private View.OnClickListener createWebListener() {
         return new View.OnClickListener() {
             @Override
