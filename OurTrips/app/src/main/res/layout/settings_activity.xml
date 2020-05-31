@@ -145,7 +145,7 @@
                 <ImageView
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:background="@mipmap/our_trips_logo"
+                    android:background="@mipmap/ourTrips_logo"
                     android:contentDescription="@string/our_trips_logo"/>
                 <Button
                     android:id="@+id/web_settings"
