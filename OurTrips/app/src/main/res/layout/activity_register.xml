@@ -45,7 +45,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/img_profile">
+            app:layout_constraintTop_toBottomOf="@id/img_profile"
+            android:textColorHint="#FFFFFF"
+            app:hintTextColor="#FFFFFF"
+            app:boxStrokeColor="#FFFFFF">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_name"
@@ -54,7 +57,7 @@
                 android:hint="@string/name_text"
                 android:inputType="textCapWords"
                 android:singleLine="true"
-                android:textColorHint="@color/colorSecondaryDark" />
+                android:textColor="#FFFFFF" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <RadioGroup
@@ -73,7 +76,7 @@
                 android:checked="false"
                 android:padding="@dimen/padding_dp"
                 android:text="@string/female_text"
-                android:textColor="@color/colorSecondaryDark" />
+                android:textColor="#FFFFFF" />
 
             <RadioButton
                 android:id="@+id/edit_gender_male"
@@ -82,7 +85,7 @@
                 android:checked="false"
                 android:padding="@dimen/padding_dp"
                 android:text="@string/male_text"
-                android:textColor="@color/colorSecondaryDark" />
+                android:textColor="#FFFFFF" />
 
             <RadioButton
                 android:id="@+id/edit_gender_other"
@@ -91,7 +94,7 @@
                 android:checked="false"
                 android:padding="@dimen/padding_dp"
                 android:text="@string/other_text"
-                android:textColor="@color/colorSecondaryDark" />
+                android:textColor="#FFFFFF" />
         </RadioGroup>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -99,7 +102,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/input_gender">
+            app:layout_constraintTop_toBottomOf="@id/input_gender"
+            android:textColorHint="#FFFFFF"
+            app:hintTextColor="#FFFFFF"
+            app:boxStrokeColor="#FFFFFF">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_email"
@@ -108,7 +114,7 @@
                 android:hint="@string/prompt_email"
                 android:inputType="textEmailAddress"
                 android:singleLine="true"
-                android:textColorHint="@color/colorSecondaryDark" />
+                android:textColor="#FFFFFF" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -117,7 +123,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/input_email">
+            app:layout_constraintTop_toBottomOf="@id/input_email"
+            android:textColorHint="#FFFFFF"
+            app:hintTextColor="#FFFFFF"
+            app:boxStrokeColor="#FFFFFF">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_affiliation"
@@ -125,7 +134,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/prompt_affiliation"
                 android:singleLine="true"
-                android:textColorHint="@color/colorSecondaryDark" />
+                android:textColor="#FFFFFF" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -133,7 +142,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/input_affiliation">
+            app:layout_constraintTop_toBottomOf="@id/input_affiliation"
+            android:textColorHint="#FFFFFF"
+            app:hintTextColor="#FFFFFF"
+            app:boxStrokeColor="#FFFFFF">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_birthday"
@@ -142,7 +154,7 @@
                 android:hint="@string/prompt_birthday"
                 android:inputType="date"
                 android:singleLine="true"
-                android:textColorHint="@color/colorSecondaryDark" />
+                android:textColor="#FFFFFF" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -150,7 +162,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_dp"
-            app:layout_constraintTop_toBottomOf="@id/input_birthday">
+            app:layout_constraintTop_toBottomOf="@id/input_birthday"
+            android:textColorHint="#FFFFFF"
+            app:hintTextColor="#FFFFFF"
+            app:boxStrokeColor="#FFFFFF">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_bio"
@@ -158,7 +173,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/bio"
                 android:singleLine="true"
-                android:textColorHint="@color/colorSecondaryDark" />
+                android:textColor="#FFFFFF" />
         </com.google.android.material.textfield.TextInputLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
