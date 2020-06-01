@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RequestTripActivity">
+    tools:context=".RequestTripActivity"
+    android:background="@color/colorPrimaryDark">
 
     <TextView
         android:id="@+id/title_sum"
@@ -14,7 +15,7 @@
         android:layout_marginTop="40dp"
         app:layout_constraintTop_toTopOf="parent"
         android:textSize="20sp"
-        android:textColorHint="@color/colorSecondaryDark"/>
+        android:textColorHint="@color/colorPrimary"/>
 
     <TextView
         android:id="@+id/start_date_sum"
@@ -24,7 +25,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/start_date"
-        android:textSize="20sp"/>
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"/>
 
     <TextView
         android:id="@+id/end_date_sum"
@@ -34,7 +37,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/end_date"
-        android:textSize="20sp"/>
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"/>
 
     <Button
         android:id="@+id/select_end_date"
@@ -44,7 +49,11 @@
         app:layout_constraintTop_toTopOf="@+id/end_date_sum"
         app:layout_constraintBottom_toBottomOf="@+id/end_date_sum"
         app:layout_constraintEnd_toEndOf="parent"
-        android:text="@string/change" />
+        android:text="@string/change"
+        android:background="@drawable/rounded_primary_primary"
+        android:textStyle="bold"
+        android:textAllCaps="false"
+        android:textColor="@color/colorPrimaryDark"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/input_over_sum"
@@ -52,7 +61,10 @@
         android:layout_height="wrap_content"
         android:paddingHorizontal="10dp"
         android:layout_marginTop="40dp"
-        app:layout_constraintTop_toBottomOf="@+id/select_end_date">
+        app:layout_constraintTop_toBottomOf="@+id/select_end_date"
+        android:textColorHint="@color/colorPrimary"
+        app:hintTextColor="@color/colorPrimary"
+        app:boxStrokeColor="@color/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_over_sum"
@@ -61,7 +73,8 @@
             android:hint="@string/overview"
             android:singleLine="false"
             android:textSize="20sp"
-            android:textColorHint="@color/colorSecondaryDark" />
+            android:textColor="@color/colorPrimary"
+            android:textStyle="bold"/>
     </com.google.android.material.textfield.TextInputLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

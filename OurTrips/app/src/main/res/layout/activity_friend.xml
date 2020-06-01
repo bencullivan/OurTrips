@@ -43,7 +43,6 @@
             android:text="@string/pending_requests"
             android:textAlignment="center"
             android:textColor="#FFFFFF"
-            android:textStyle="italic"
             android:textSize="20sp"
             android:fontFamily="sans-serif-medium"
             app:layout_constraintTop_toTopOf="parent"

@@ -12,6 +12,7 @@
         android:fontFamily="sans-serif-medium"
         android:textSize="25sp"
         android:textAlignment="center"
+        android:textStyle="bold"
         android:textColor="@color/colorPrimary"/>
     <TextView
         android:id="@+id/trip_date"

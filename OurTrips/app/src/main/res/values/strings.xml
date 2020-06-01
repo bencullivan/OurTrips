@@ -31,7 +31,7 @@
     <string name="trip_cal_select">Select dates where you are available to go on a trip!</string>
     <string name="not_registered">Your email is verified but you have not registered, please click Sign Up to create an account</string>
     <string name="need_to_verify">Please follow the link that we sent to you in order to verify your email address</string>
-    <string name="available_match">Click on a friend to find dates where you are both available</string>
+    <string name="available_match">Click on a friend to find dates that you are both available</string>
     <!--    prompts  -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>

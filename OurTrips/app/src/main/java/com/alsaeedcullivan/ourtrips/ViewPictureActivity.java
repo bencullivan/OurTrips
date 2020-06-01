@@ -34,14 +34,10 @@ import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.cloud.landmark.FirebaseVisionCloudLandmark;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.common.FirebaseVisionLatLng;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -129,8 +125,6 @@ public class ViewPictureActivity extends AppCompatActivity {
                 return true;
             case R.id.delete_photo:
                 deletePhoto();
-                return true;
-            case R.id.upload_photo:
                 return true;
         }
         return super.onOptionsItemSelected(item);

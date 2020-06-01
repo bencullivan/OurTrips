@@ -56,18 +56,18 @@ import java.util.List;
  */
 public class MediaFragment extends Fragment {
 
-    // widgets
-    private ImageButton mPhotoGallery;
-    private Button mAddPhoto;
-    private ProgressBar mSpinner;
-    private TextView mLoading, mPhotoText;
     private ArrayList<Pic> mPics;
     private List<DocumentSnapshot> mDocs = new ArrayList<>();
     private long mTimeStamp = -1;
     private String mTripId;
     private String mPath;
     private InputStream mIs;
-    private boolean mPermission;
+
+    // widgets
+    private ImageButton mPhotoGallery;
+    private Button mAddPhoto;
+    private ProgressBar mSpinner;
+    private TextView mLoading, mPhotoText;
 
     public MediaFragment() {
         // Required empty public constructor

@@ -47,7 +47,6 @@
             android:textAlignment="center"
             android:textColor="#FFFFFF"
             android:textSize="20sp"
-            android:textStyle="italic"
             android:fontFamily="sans-serif-medium"
             android:background="@color/colorPrimary"/>
 
@@ -59,7 +58,6 @@
             android:textAlignment="center"
             android:textColor="#FFFFFF"
             android:textSize="20sp"
-            android:textStyle="italic"
             android:fontFamily="sans-serif-medium"
             android:background="@color/colorPrimary"/>
 
