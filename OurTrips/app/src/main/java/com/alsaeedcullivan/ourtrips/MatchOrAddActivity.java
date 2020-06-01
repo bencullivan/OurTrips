@@ -312,6 +312,7 @@ public class MatchOrAddActivity extends AppCompatActivity {
      */
     public void onMatchClicked() {
         if (mSelected == null) return;
+        mLoading.setText(R.string.matching);
         hideList();
         mFriendId = mSelected.getUserId();
         // get the friends dates and then match them with this user's dates
@@ -327,6 +328,7 @@ public class MatchOrAddActivity extends AppCompatActivity {
         if (mSelected == null || mTripId == null || mSelected.getUserId() == null ||
                 mSelected.getEmail() == null || mSelected.getName() == null ||
                 mTripStart == null || mTripTitle == null) return;
+        mLoading.setText(R.string.adding_to_trip);
         hideList();
         // add the selected user to the trip
         new AddTripperTask().execute();
@@ -361,7 +363,6 @@ public class MatchOrAddActivity extends AppCompatActivity {
     private void showList() {
         mSpinner.setVisibility(View.GONE);
         mLoading.setVisibility(View.GONE);
-        mLoading.setText(R.string.loading_friends);
         mLayout.setVisibility(View.VISIBLE);
     }
 
@@ -369,7 +370,6 @@ public class MatchOrAddActivity extends AppCompatActivity {
     private void hideList() {
         mLayout.setVisibility(View.GONE);
         mSpinner.setVisibility(View.VISIBLE);
-        mLoading.setText(R.string.matching);
         mLoading.setVisibility(View.VISIBLE);
     }
 

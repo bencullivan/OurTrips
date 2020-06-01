@@ -14,8 +14,7 @@
         android:text="@string/press_a_pic_to_view_it"
         android:textSize="20sp"
         android:textColor="#FFFFFF"
-        android:textAlignment="center"
-        android:textStyle="italic" />
+        android:textAlignment="center" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycle_gallery"
