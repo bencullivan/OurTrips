@@ -148,4 +148,6 @@
     <string name="long_press_pic">Long-press a pic for location recognition</string>
     <string name="post_photo">Post Photo</string>
     <string name="adding_to_trip">Adding to trip...</string>
+    <string name="deleting_your_profile">Deleting your profile...</string>
+    <string name="deleting_trip">Deleting trip...</string>
 </resources>

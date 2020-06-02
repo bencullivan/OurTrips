@@ -115,6 +115,8 @@ public class AccessDB {
         data.put(Const.TRIP_TITLE_KEY, tripTitle);
         data.put(Const.TRIP_START_DATE_KEY, startDate);
 
+        Log.d(Const.TAG, "addUserTrip: " + data);
+
         // add the trip to the user_trips sub-collection
         return FirebaseFirestore.getInstance()
                 .collection(Const.USERS_COLLECTION)
@@ -455,6 +457,8 @@ public class AccessDB {
         data.put(Const.USER_ID_KEY, tripperId);
         data.put(Const.USER_EMAIL_KEY, tripperEmail);
         data.put(Const.USER_NAME_KEY, tripperName);
+
+        Log.d(Const.TAG, "addTripper: " + data);
 
         // add a document to the trippers sub-collection of this trip
         return FirebaseFirestore.getInstance()

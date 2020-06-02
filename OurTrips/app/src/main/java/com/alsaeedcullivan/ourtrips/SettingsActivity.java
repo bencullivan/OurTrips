@@ -10,27 +10,49 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.alsaeedcullivan.ourtrips.cloud.AccessBucket;
 import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.fragments.CustomDialogFragment;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class SettingsActivity extends AppCompatActivity {
 
     private FirebaseUser mUser;
     private String mEmail;
     private String mPassword;
+    private List<DocumentSnapshot> mFriendsList;
+    private List<DocumentSnapshot> mTripsList;
+    private String mPath;
+    LinearLayout mTop;
+    LinearLayout mBottom;
+    TextView mBar;
+    TextView mLoading;
+    ProgressBar mSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +64,15 @@ public class SettingsActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        // widget references
+        mTop = findViewById(R.id.top_settings_layout);
+        mBottom = findViewById(R.id.settings_lower);
+        mBar = findViewById(R.id.bar_settings);
+        mLoading = findViewById(R.id.settings_loading);
+        mSpinner = findViewById(R.id.settings_spinner);
+
+        hideSpinner();
 
         // set on click listeners
         Button editProfile = findViewById(R.id.edit_profile_settings);
@@ -64,6 +95,22 @@ public class SettingsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) finish();
         return super.onOptionsItemSelected(item);
+    }
+
+    // visibility
+    private void showSpinner() {
+        mTop.setVisibility(View.GONE);
+        mBottom.setVisibility(View.GONE);
+        mBar.setVisibility(View.GONE);
+        mSpinner.setVisibility(View.VISIBLE);
+        mLoading.setVisibility(View.VISIBLE);
+    }
+    private void hideSpinner() {
+        mSpinner.setVisibility(View.GONE);
+        mLoading.setVisibility(View.GONE);
+        mTop.setVisibility(View.VISIBLE);
+        mBottom.setVisibility(View.VISIBLE);
+        mBar.setVisibility(View.VISIBLE);
     }
 
     // listeners
@@ -153,6 +200,8 @@ public class SettingsActivity extends AppCompatActivity {
         mEmail = email;
         mPassword = password;
 
+        showSpinner();
+
         // re-authenticate the user
         new AuthenticateTask().execute();
     }
@@ -179,13 +228,157 @@ public class SettingsActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
                         // delete the user
-                        new DeleteUserTask().execute();
+                        new GetFriendsTask().execute();
                     } else {
+                        hideSpinner();
                         Toast t = Toast.makeText(SettingsActivity.this, "The credentials " +
                                 "you gave could not be confirmed", Toast.LENGTH_SHORT);
                         t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                         t.show();
                     }
+                }
+            });
+
+            return null;
+        }
+    }
+
+    // ASYNC TASKS FOR USER DELETION
+
+    private class GetFriendsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null) return null;
+
+            AccessDB.getFriendsList(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        mFriendsList = task.getResult().getDocuments();
+                        if (mFriendsList.size() == 0) new GetTripsTask().execute();
+                        else new DeleteFromFriendsTask().execute();
+                    } else new GetTripsTask().execute();
+                }
+            });
+
+            return null;
+        }
+    }
+
+    private class DeleteFromFriendsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null || mFriendsList == null || mFriendsList.size() == 0) return null;
+
+            List<Task<Void>> taskList = new ArrayList<>();
+
+            for (DocumentSnapshot doc : mFriendsList) {
+                Task<Void> t = FirebaseFirestore.getInstance()
+                        .collection(Const.USERS_COLLECTION)
+                        .document(doc.getId())
+                        .collection(Const.USER_FRIENDS_COLLECTION)
+                        .document(mUser.getUid())
+                        .delete();
+                taskList.add(t);
+            }
+
+            Tasks.whenAll(taskList).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.d(Const.TAG, "onComplete: done deleting from friends");
+                    new GetTripsTask().execute();
+                }
+            });
+
+            return null;
+        }
+    }
+
+    private class GetTripsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null) return null;
+
+            AccessDB.getTripSummaries(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        mTripsList = task.getResult().getDocuments();
+                        if (mTripsList.size() == 0) new GetPicTask().execute();
+                        else new DeleteFromTripsTask().execute();
+                    } else new GetPicTask().execute();
+                }
+            });
+
+            return null;
+        }
+    }
+
+    private class DeleteFromTripsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null || mTripsList == null || mTripsList.size() == 0) return null;
+
+            List<Task<Void>> taskList = new ArrayList<>();
+
+            for (DocumentSnapshot doc : mTripsList) {
+                Task<Void> t = FirebaseFirestore.getInstance()
+                        .collection(Const.TRIPS_COLLECTION)
+                        .document(doc.getId())
+                        .collection(Const.TRIP_TRIPPERS_COLLECTION)
+                        .document(mUser.getUid())
+                        .delete();
+                taskList.add(t);
+            }
+
+            Tasks.whenAll(taskList).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.d(Const.TAG, "onComplete: done removing from trips");
+                    new GetPicTask().execute();
+                }
+            });
+
+            return null;
+        }
+    }
+
+    private class GetPicTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null) return null;
+
+            AccessDB.loadUserProfile(mUser.getUid()).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
+                @Override
+                public void onComplete(@NonNull Task<Map<String, Object>> task) {
+                    if (task.isSuccessful() && task.getResult() != null &&
+                            task.getResult().get(Const.USER_PROFILE_PIC_KEY) != null) {
+                        mPath = (String) task.getResult().get(Const.USER_PROFILE_PIC_KEY);
+                        new DeletePhotoTask().execute();
+                    } else new DeleteUserTask().execute();
+                }
+            });
+
+            return null;
+        }
+    }
+
+    private class DeletePhotoTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mUser == null || mPath == null) return null;
+
+            AccessBucket.deleteFromStorage(mPath).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.d(Const.TAG, "onComplete: profile pic deleted");
+                    new DeleteUserTask().execute();
                 }
             });
 
@@ -210,6 +403,7 @@ public class SettingsActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         new DeleteFromAuthTask().execute();
                     } else {
+                        hideSpinner();
                         Toast t = Toast.makeText(SettingsActivity.this, "We were " +
                                 "unable to delete your profile", Toast.LENGTH_SHORT);
                         t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);

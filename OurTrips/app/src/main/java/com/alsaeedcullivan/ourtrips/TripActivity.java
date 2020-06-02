@@ -1,5 +1,6 @@
 package com.alsaeedcullivan.ourtrips;
 
+import androidx.annotation.ArrayRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,8 +23,15 @@ import com.alsaeedcullivan.ourtrips.cloud.AccessDB;
 import com.alsaeedcullivan.ourtrips.utils.Const;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -43,6 +51,8 @@ public class TripActivity extends AppCompatActivity {
     private ActionBar mActionBar;
     private ProgressBar mSpinner;
     private TextView mLoadingText;
+    private List<DocumentSnapshot> mTrippersList = new ArrayList<>();
+    private List<DocumentSnapshot> mPicsList = new ArrayList<>();
 
     // trip data
     private String mTripId, mTripTitle, mStartDate, mEndDate, mOverview;
@@ -207,15 +217,24 @@ public class TripActivity extends AppCompatActivity {
      */
     public void deleteTrip() {
         if (mTripId == null) return;
-        new DeleteTripTask().execute();
+        mLoadingText.setText(R.string.deleting_trip);
+        hideFrags();
+        new GetTrippersTask().execute();
     }
 
-    // hides the progress bar and displays the view pager of fragments
+    // visibility
     private void showFrags() {
+        mLoadingText.setText(R.string.loading_trip);
         mSpinner.setVisibility(View.GONE);
         mLoadingText.setVisibility(View.GONE);
         mViewPager.setVisibility(View.VISIBLE);
         mNavigation.setVisibility(View.VISIBLE);
+    }
+    private void hideFrags() {
+        mViewPager.setVisibility(View.GONE);
+        mNavigation.setVisibility(View.GONE);
+        mSpinner.setVisibility(View.VISIBLE);
+        mLoadingText.setVisibility(View.VISIBLE);
     }
 
     // GETTERS
@@ -294,12 +313,108 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * DeleteTripTask
-     * deletes this trip from the db
-     * when this happens the node js function is called and deletes all the sub collections from the db
-     * and all the photos from the bucket
-     */
+
+    // ASYNC TASKS FOR TRIP DELETION
+
+    private class GetTrippersTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripId == null) return null;
+
+            AccessDB.getTrippers(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        mTrippersList = task.getResult().getDocuments();
+                        if (mTrippersList.size() == 0) new GetPicsTask().execute();
+                        else new DeleteFromTrippersTask().execute();
+                    } else new GetPicsTask().execute();
+                }
+            });
+
+
+            return null;
+        }
+    }
+
+    private class DeleteFromTrippersTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripId == null || mTrippersList == null || mTrippersList.size() == 0) return null;
+
+            List<Task<Void>> taskList = new ArrayList<>();
+            for (DocumentSnapshot doc : mTrippersList) {
+                Task<Void> t = FirebaseFirestore.getInstance()
+                        .collection(Const.USERS_COLLECTION)
+                        .document(doc.getId())
+                        .collection(Const.USER_TRIPS_COLLECTION)
+                        .document(mTripId)
+                        .delete();
+                taskList.add(t);
+            }
+            Tasks.whenAll(taskList).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.d(Const.TAG, "onComplete: done deleting from trippers");
+                    new GetPicsTask().execute();
+                }
+            });
+            return null;
+        }
+    }
+
+    private class GetPicsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripId == null) return null;
+
+            AccessDB.getTripPhotos(mTripId).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        mPicsList = task.getResult().getDocuments();
+                        if (mPicsList.size() == 0) new DeleteTripTask().execute();
+                        else new DeletePicsTask().execute();
+                    } else new DeleteTripTask().execute();
+                }
+            });
+
+
+            return null;
+        }
+    }
+
+    private class DeletePicsTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (mTripId == null || mPicsList == null || mPicsList.size() == 0) return null;
+
+            List<Task<Void>> taskList = new ArrayList<>();
+
+            for (DocumentSnapshot doc : mPicsList) {
+                String path = (String) doc.get(Const.TRIP_PHOTO_KEY);
+                if (path != null) {
+                    Task<Void> t = FirebaseStorage.getInstance().getReference().child(path).delete();
+                    taskList.add(t);
+                }
+            }
+
+            Tasks.whenAll(taskList).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.d(Const.TAG, "onComplete: done deleting photos");
+                    new DeleteTripTask().execute();
+                }
+            });
+
+            return null;
+        }
+    }
+
     private class DeleteTripTask extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -316,7 +431,10 @@ public class TripActivity extends AppCompatActivity {
                         startActivity(intent);
                         finish();
                     }
-                    else Log.d(Const.TAG, "onComplete: fuck, it failed to delete");
+                    else {
+                        showFrags();
+                        Log.d(Const.TAG, "onComplete: fuck, it failed to delete");
+                    }
                 }
             });
 

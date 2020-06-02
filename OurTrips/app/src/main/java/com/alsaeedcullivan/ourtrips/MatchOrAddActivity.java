@@ -350,8 +350,9 @@ public class MatchOrAddActivity extends AppCompatActivity {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(Const.TAG, "onItemClick: " + mFriends.get(position).getUserId());
-                mSelected = mFriends.get(position);
+                // get the selected user
+                if (position >= mExcludedFriends.size()) return;
+                mSelected = mExcludedFriends.get(position);
                 // display the add tripper dialog
                 CustomDialogFragment.newInstance(CustomDialogFragment.ADD_TRIPPER_ID)
                         .show(getSupportFragmentManager(), CustomDialogFragment.TAG);
@@ -555,7 +556,6 @@ public class MatchOrAddActivity extends AppCompatActivity {
                                         " could not be added to the trip.", Toast.LENGTH_SHORT);
                                 t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                                 t.show();
-                                showList();
                             }
                         }
                     });
@@ -568,7 +568,6 @@ public class MatchOrAddActivity extends AppCompatActivity {
                                         " could not be added to the trip.", Toast.LENGTH_SHORT);
                                 t.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                                 t.show();
-                                showList();
                             }
                         }
                     });
@@ -576,7 +575,7 @@ public class MatchOrAddActivity extends AppCompatActivity {
             Tasks.whenAll(tripTask, friendTask).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    Log.d(Const.TAG, "onSuccess: it worked hell yeah");
+                    // send the user back to trip activity
                     Intent intent = new Intent(MatchOrAddActivity.this, TripActivity.class);
                     intent.putExtra(Const.TRIP_ID_TAG, mTripId);
                     startActivity(intent);
