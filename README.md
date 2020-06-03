@@ -1,7 +1,7 @@
 <<< Our Trips App >>>
 
 Authors:
-Omar Alsaeed & Ben Cullivan.
+Ben Cullivan & Omar Alsaeed.
 
 
 Color palette:
