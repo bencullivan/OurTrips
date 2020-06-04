@@ -3,7 +3,7 @@
 Authors:
 Ben Cullivan & Omar Alsaeed.
 
-**The OurTrips app is not being distributed commercially**
+**The OurTrips app is not being distributed commercially.**
 
 Color palette:
 https://coolors.co/d29daa-3a506b-7d84b2-0d0630-eac8ca
