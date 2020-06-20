@@ -3,7 +3,7 @@
 Authors: Ben Cullivan & Omar Alsaeed.
 
 Open Source Libraries from Github that were used:
-We did NOT modify these libraries, we merely used them for their functionality.
+We did not modify these libraries, we merely used them for their functionality.
 We claim no rights to these libraries or any of the software within them.
 
 • https://github.com/bumptech/glide
