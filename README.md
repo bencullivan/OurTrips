@@ -2,6 +2,11 @@
 
 Authors: Ben Cullivan & Omar Alsaeed.
 
+The Our Trips app was created with the goal of connecting people across the globe through vacations. Sign up for the app, 
+build your network of friends, and find dates that you and your friends are available to go on a trip! Our trips provides 
+a single centralized location for planning a trip, sharing media, locations, and comments with your fellow trippers, 
+and viewing past trips so that none of your memories are lost!
+
 Open Source Libraries from Github that were used:
 We did not modify these libraries, we merely used them for their functionality.
 We claim no rights to these libraries or any of the software within them.
