@@ -8,6 +8,7 @@ a single centralized location for planning a trip, sharing media, locations, and
 and viewing past trips so that none of your memories are lost!
 
 Open Source Libraries from Github that were used:
+
 We did not modify these libraries, we merely used them for their functionality.
 We claim no rights to these libraries or any of the software within them.
 
