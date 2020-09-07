@@ -9,9 +9,6 @@ and viewing past trips so that none of your memories are lost!
 
 Open Source Libraries from Github that were used:
 
-We did not modify these libraries, we merely used them for their functionality.
-We claim no rights to these libraries or any of the software within them.
-
 • [Glide](https://github.com/bumptech/glide)
 
 • [Android Image Cropper](https://github.com/ArthurHub/Android-Image-Cropper)
