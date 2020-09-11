@@ -19,4 +19,4 @@ Open Source Libraries from Github that were used:
 
 We had an AWESOME time creating this app!
 
-**The OurTrips app is not being distributed commercially.**
+The OurTrips app is not being distributed commercially.
